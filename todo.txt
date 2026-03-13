@@ -1,0 +1,3 @@
+
+getPilotInfo dans telephony est a reprendre
+Login en mode supervisé

@@ -1,0 +1,65 @@
+{
+  "name": "o2g-node-sdk",
+  "version": "2.4.0",
+  "description": "A Node.js SDK for the ALE International O2G (OmniPCX OpenTouch Gateway) platform.",
+  "main": "dist/o2g-node-sdk.js",
+  "types": "dist/o2g-node-sdk.d.ts",
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "docs": "typedoc --options typedoc.json",
+    "clean": "rimraf dist docs",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "files": [
+    "dist/o2g-node-sdk.js",
+    "dist/o2g-node-sdk.js.map",
+    "dist/o2g-node-sdk.d.ts"
+  ],
+  "keywords": [
+    "o2g",
+    "opentouch",
+    "omnipcx",
+    "ale",
+    "telephony",
+    "call-center",
+    "ccd",
+    "pbx"
+  ],
+  "author": "ALE International",
+  "license": "MIT",
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ALE-OPENNESS/o2g-node-sdk.git"
+  },
+  "homepage": "https://github.com/ALE-OPENNESS/o2g-node-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/ALE-OPENNESS/o2g-node-sdk/issues"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.13",
+    "@types/node-fetch": "^2.6.12",
+    "jest": "^30.2.0",
+    "prettier": "^3.8.1",
+    "rimraf": "^6.1.2",
+    "ts-jest": "^29.4.6",
+    "ts-loader": "^9.5.2",
+    "typedoc": "^0.28.7",
+    "typescript": "^5.8.3",
+    "webpack": "^5.100.1",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "fetch-cookie": "^3.1.0",
+    "inversify": "^7.6.1",
+    "node-fetch": "^3.3.2",
+    "reflect-metadata": "^0.2.2",
+    "tough-cookie": "^5.1.2",
+    "uuid": "^11.1.0"
+  }
+}

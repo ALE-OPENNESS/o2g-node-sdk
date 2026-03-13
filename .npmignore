@@ -1,0 +1,42 @@
+# Ignore source files (assuming you only publish compiled JS)
+src/
+
+# Ignore docs
+docs/
+
+# Ignore test files
+tests/
+__tests__/
+
+# Ignore config files you don’t want in npm package
+.vscode/
+.eslintrc*
+.prettierrc
+.gitignore
+.npmignore
+typedoc.json
+tsconfig.json
+
+# Ignore build scripts or configs
+webpack.config.js
+
+# Ignore node_modules (always ignored by default, but safe to add)
+node_modules/
+
+# Ignore logs and temp files
+*.log
+*.tmp
+
+# Ignore IDE files
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# 
+dist/internal
+
+# Include README and LICENSE files
+!README.md
+!LICENSE

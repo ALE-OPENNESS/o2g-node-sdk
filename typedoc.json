@@ -1,0 +1,11 @@
+{
+  "entryPoints": ["src/o2g-node-sdk.ts"],
+  "out": "docs",
+  "exclude": ["**/__tests__/**", "**/*.spec.ts", "src/internal/**"],
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "includeVersion": true,
+  "readme": "README.md",
+  "hideGenerator": true,
+  "theme": "default"
+}
