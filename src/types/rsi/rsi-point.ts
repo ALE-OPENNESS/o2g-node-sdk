@@ -21,7 +21,7 @@ import { RsiPointJson } from '../../internal/types/rsi/rsi-types';
 
 /**
  * RsiPoint represents a RSI point. When a call is received by a RSI
- * routing point, a {@link Rsi.ON_ROUTE_REQUEST} is sent to the application.
+ * routing point, a {@link ON_ROUTE_REQUEST} is sent to the application.
  */
 export class RsiPoint {
     #number: string;

@@ -32,11 +32,11 @@ import { RtiObjectIdentifier } from './rti-object-identifier';
  * This class groups CCD objects by type, including agents, pilots, queues, and processing groups
  * (both agent and other). Each object is represented by an {@link RtiObjectIdentifier}.
  *
- * Instances of this class are typically returned by the {@link RtiService}
+ * Instances of this class are typically returned by the {@link CallCenterRealtime}
  * to provide the list of available CCD objects for which real-time data can be retrieved.
  *
- * A {@link RtiFilter} can be created from an `RtiObjects` instance using
- * {@link #createFilter} to subscribe only to the selected objects in real-time event monitoring.
+ * A {@link CallCenterRealtime} can be created from an `RtiObjects` instance using
+ * {@link createFilter} to subscribe only to the selected objects in real-time event monitoring.
  *
  * @see RtiObjectIdentifier
  * @see RtiService
@@ -129,7 +129,7 @@ export class RtiObjects {
      * Creates a {@link RtiFilter} initialized with all CCD objects in this instance.
      *
      * The resulting filter can be used to create a real-time context for event monitoring
-     * with {@link RtiService}. It includes all agents, pilots, queues, and processing groups
+     * with {@link CallCenterRealtime}. It includes all agents, pilots, queues, and processing groups
      * present in this `RtiObjects` instance.
      *
      * @returns A {@link RtiFilter} containing all objects from this `RtiObjects` instance.

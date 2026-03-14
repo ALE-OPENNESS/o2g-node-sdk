@@ -65,7 +65,7 @@ export interface WebHook {
      *
      * @param dispatcher the event dispatcher to connect to
      */
-    connectDispatcher: (dispatcher: EventDispatcher) => void;
+    connectDispatcher: (dispatcher: Object) => void;
 }
 
 /**

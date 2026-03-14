@@ -22,36 +22,52 @@ import { PbxAttributeMap } from './pbx-attr-map';
 
 /**
  * Represents an attribute in a {@link PbxObject}.
- *
  * <p>
- * A PbxAttribute can be of the following types:
- * </p>
- *
+ * A `PbxAttribute` can be of the following types:
  * <ul>
  *   <li><b>Integer</b>: Equivalent to a number value.</li>
  *   <li><b>Boolean</b>: Equivalent to a boolean value.</li>
  *   <li><b>Enumerated</b>: Limited set of string values.</li>
  *   <li><b>OctetString / ByteString</b>: Treated as a string value.</li>
- *   <li><b>Sequence</b>: Structured data with named attributes. Example:
- *   <pre>{@code
- *     Skill := Sequence {
- *         Skill_Nb := Integer,
- *         Skill_Level := Integer,
- *         Skill_Activate := Boolean
- *     }
- *   }</pre>
+ *   <li><b>Sequence</b>: Structured data with named attributes:
+ *   ```
+ *   Skill := Sequence {
+ *       Skill_Nb       := Integer,
+ *       Skill_Level    := Integer,
+ *       Skill_Activate := Boolean
+ *   }
+ *   ```
  *   </li>
- *   <li><b>Set</b>: List of attributes of the same type, either simple or sequences. Examples:
- *   <pre>{@code
- *     SimpleSet := Set { Item := OctetString }
- *     SkillSet := Set { Item := Sequence {
- *         Skill_Nb := Integer,
- *         Skill_Level := Integer,
- *         Skill_Activate := Boolean
- *     }}
- *   }</pre>
+ *   <li><b>Set</b>: List of attributes of the same type, either simple or sequences:
+ *   ```
+ *   SimpleSet := Set { Item := OctetString }
+ *   SkillSet  := Set { Item := Sequence {
+ *       Skill_Nb       := Integer,
+ *       Skill_Level    := Integer,
+ *       Skill_Activate := Boolean
+ *   }}
+ *   ```
  *   </li>
  * </ul>
+ *
+ * @example
+ * ```typescript
+ * // Simple attributes — use for scalar values
+ * const stationType = PbxAttribute.createString("StationType", "ANALOG");
+ * const directory   = PbxAttribute.createString("Directory", "60200");
+ * const count       = PbxAttribute.createInteger("MaxCalls", 5);
+ * const enabled     = PbxAttribute.createBoolean("Enabled", true);
+ *
+ * // Sequence — use for structured attributes
+ * const skillMap = new PbxAttributeMap();
+ * skillMap.add(PbxAttribute.createInteger("Skill_Nb", 1));
+ * skillMap.add(PbxAttribute.createInteger("Skill_Level", 3));
+ * skillMap.add(PbxAttribute.createBoolean("Skill_Activate", true));
+ * const skill = PbxAttribute.createSequence("Skill", skillMap);
+ *
+ * // Use with PbxManagement to modify an object
+ * await O2G.pbxManagement.setObject(1, "Subscriber", "60200", [stationType, directory]);
+ * ```
  */
 export class PbxAttribute {
     #name?: string;
@@ -61,7 +77,6 @@ export class PbxAttribute {
 
     /**
      * @internal
-     * @param name - Optional attribute name
      */
     constructor(name?: string) {
         this.#name = name;
@@ -69,20 +84,16 @@ export class PbxAttribute {
 
     /**
      * Returns this attribute's name.
-     * @returns The attribute name, or null if not set
+     *
+     * @returns the attribute name, or `null` if not set
      */
     get name(): string | null {
         return this.#name ?? null;
     }
 
     /**
-     * Creates a PbxAttribute from JSON.
-     * @param json - The {@link PbxAttributeJson} representation
-     * @returns A new {@link PbxAttribute} instance
-     * @ignore
+     * @internal
      */
-    /** @internal */
-
     static fromJson(json: PbxAttributeJson): PbxAttribute {
         const attribute = new PbxAttribute(json.name);
         attribute.#values = json.value ?? [];
@@ -95,11 +106,7 @@ export class PbxAttribute {
     }
 
     /**
-     * Adds a nested sequence attribute.
-     * @param pbxAttribute - The parent attribute
-     * @param name - Name of the nested attribute
-     * @param json - JSON representation of the nested attribute
-     * @ignore
+     * @internal
      */
     static addSequenceAttribute(pbxAttribute: PbxAttribute, name: string, json: PbxAttributeJson): void {
         if (!pbxAttribute.#sequenceMap) {
@@ -113,10 +120,11 @@ export class PbxAttribute {
     }
 
     /**
-     * Creates a new PbxAttribute representing a Set of string values.
-     * @param attrName - Attribute name
-     * @param values - List of string values
-     * @returns A new {@link PbxAttribute} instance
+     * Creates a new `PbxAttribute` representing a set of string values.
+     *
+     * @param attrName the attribute name
+     * @param values   the list of string values
+     * @returns a new {@link PbxAttribute} instance
      */
     static createSetOfStrings(attrName: string, values: string[]): PbxAttribute {
         const attribute = new PbxAttribute(attrName);
@@ -125,10 +133,11 @@ export class PbxAttribute {
     }
 
     /**
-     * Creates a new PbxAttribute of type String.
-     * @param attrName - Attribute name
-     * @param value - String value
-     * @returns A new {@link PbxAttribute} instance
+     * Creates a new `PbxAttribute` of type String.
+     *
+     * @param attrName the attribute name
+     * @param value    the string value
+     * @returns a new {@link PbxAttribute} instance
      */
     static createString(attrName: string, value: string): PbxAttribute {
         const attribute = new PbxAttribute(attrName);
@@ -137,10 +146,11 @@ export class PbxAttribute {
     }
 
     /**
-     * Creates a new PbxAttribute of type Boolean.
-     * @param attrName - Attribute name
-     * @param value - Boolean value
-     * @returns A new {@link PbxAttribute} instance
+     * Creates a new `PbxAttribute` of type Boolean.
+     *
+     * @param attrName the attribute name
+     * @param value    the boolean value
+     * @returns a new {@link PbxAttribute} instance
      */
     static createBoolean(attrName: string, value: boolean): PbxAttribute {
         const attribute = new PbxAttribute(attrName);
@@ -149,10 +159,11 @@ export class PbxAttribute {
     }
 
     /**
-     * Creates a new PbxAttribute of type Integer.
-     * @param attrName - Attribute name
-     * @param value - Integer value
-     * @returns A new {@link PbxAttribute} instance
+     * Creates a new `PbxAttribute` of type Integer.
+     *
+     * @param attrName the attribute name
+     * @param value    the integer value
+     * @returns a new {@link PbxAttribute} instance
      */
     static createInteger(attrName: string, value: number): PbxAttribute {
         const attribute = new PbxAttribute(attrName);
@@ -161,10 +172,15 @@ export class PbxAttribute {
     }
 
     /**
-     * Creates a new PbxAttribute representing a Sequence.
-     * @param attrName - Attribute name
-     * @param sequence - {@link PbxAttributeMap} representing the sequence
-     * @returns A new {@link PbxAttribute} instance
+     * Creates a new `PbxAttribute` representing a Sequence.
+     * <p>
+     * A sequence is a structured attribute composed of named sub-attributes,
+     * built using a {@link PbxAttributeMap}.
+     *
+     * @param attrName the attribute name
+     * @param sequence the {@link PbxAttributeMap} representing the sequence
+     * @returns a new {@link PbxAttribute} instance
+     * @see createSequenceSet
      */
     static createSequence(attrName: string, sequence: PbxAttributeMap): PbxAttribute {
         const attribute = new PbxAttribute(attrName);
@@ -173,10 +189,15 @@ export class PbxAttribute {
     }
 
     /**
-     * Creates a new PbxAttribute representing a Set of sequences.
-     * @param attrName - Attribute name
-     * @param setOfSequences - List of {@link PbxAttributeMap} representing sequences
-     * @returns A new {@link PbxAttribute} instance
+     * Creates a new `PbxAttribute` representing a Set of sequences.
+     * <p>
+     * A set of sequences is a repeated structured attribute where each entry is
+     * a {@link PbxAttributeMap} with the same structure.
+     *
+     * @param attrName       the attribute name
+     * @param setOfSequences the list of {@link PbxAttributeMap} representing the sequences
+     * @returns a new {@link PbxAttribute} instance
+     * @see createSequence
      */
     static createSequenceSet(attrName: string, setOfSequences: PbxAttributeMap[]): PbxAttribute {
         const attribute = new PbxAttribute(attrName);
@@ -186,8 +207,9 @@ export class PbxAttribute {
 
     /**
      * Returns the attribute at the specified index in a Set of sequences.
-     * @param index - Index of the set
-     * @returns {@link PbxAttributeMap} at the specified index
+     *
+     * @param index the index of the entry in the set
+     * @returns the {@link PbxAttributeMap} at the specified index
      * @throws Error if the attribute is not a Set
      */
     getAt(index: number): PbxAttributeMap {
@@ -199,8 +221,9 @@ export class PbxAttribute {
     }
 
     /**
-     * Returns this attribute as a sequence of attributes.
-     * @returns {@link PbxAttributeMap} representing the sequence
+     * Returns this attribute as a sequence of named sub-attributes.
+     *
+     * @returns the {@link PbxAttributeMap} representing the sequence
      * @throws Error if the attribute is not a Sequence
      */
     asAttributeMap(): PbxAttributeMap {
@@ -212,7 +235,8 @@ export class PbxAttribute {
 
     /**
      * Returns this attribute as a list of {@link PbxAttributeMap}.
-     * @returns List of {@link PbxAttributeMap} representing a Set of sequences
+     *
+     * @returns the list of {@link PbxAttributeMap} representing the set of sequences
      * @throws Error if the attribute is not a sequence set
      */
     asListOfMaps(): PbxAttributeMap[] {
@@ -224,8 +248,9 @@ export class PbxAttribute {
 
     /**
      * Returns this attribute value as a boolean.
-     * @returns Boolean value
-     * @throws Error if value is not a valid boolean
+     *
+     * @returns the boolean value
+     * @throws Error if the value is not a valid boolean
      */
     asBoolean(): boolean {
         const value = this._assertUnique(this.#values);
@@ -238,7 +263,8 @@ export class PbxAttribute {
 
     /**
      * Sets this attribute value as a boolean.
-     * @param value - Boolean value
+     *
+     * @param value the boolean value
      */
     setBoolean(value: boolean): void {
         this.#values = [value ? 'true' : 'false'];
@@ -248,8 +274,9 @@ export class PbxAttribute {
 
     /**
      * Returns this attribute value as an integer.
-     * @returns Integer value
-     * @throws Error if value is not a valid integer
+     *
+     * @returns the integer value
+     * @throws Error if the value is not a valid integer
      */
     asInteger(): number {
         const value = this._assertUnique(this.#values);
@@ -262,7 +289,8 @@ export class PbxAttribute {
 
     /**
      * Sets this attribute value as an integer.
-     * @param value - Integer value
+     *
+     * @param value the integer value
      */
     setInteger(value: number): void {
         this.#values = [value.toString()];
@@ -272,7 +300,8 @@ export class PbxAttribute {
 
     /**
      * Returns this attribute value as a string.
-     * @returns String value
+     *
+     * @returns the string value
      */
     asString(): string {
         return this._assertUnique(this.#values);
@@ -280,7 +309,8 @@ export class PbxAttribute {
 
     /**
      * Sets this attribute value as a string.
-     * @param value - String value
+     *
+     * @param value the string value
      */
     setString(value: string): void {
         this.#values = [value];
@@ -290,17 +320,15 @@ export class PbxAttribute {
 
     /**
      * Returns this attribute value as an enumerated string.
-     * @returns String value
+     *
+     * @returns the enumerated string value
      */
     asEnum(): string {
         return this.asString();
     }
 
     /**
-     * Ensures the attribute has a single value and returns it.
-     * @param values - Array of string values
-     * @returns The single string value
-     * @throws Error if values array does not contain exactly one element
+     * @internal
      */
     private _assertUnique(values: string[] | undefined): string {
         if (Array.isArray(values) && values.length === 1) {
@@ -310,13 +338,8 @@ export class PbxAttribute {
     }
 
     /**
-     * Serializes the PbxAttribute to JSON.
-     * @param attr - The attribute to serialize
-     * @returns Array of {@link PbxAttributeJson} objects
-     * @ignore
+     * @internal
      */
-    /** @internal */
-
     static toJson(attr: PbxAttribute): PbxAttributeJson[] {
         const listAttr: PbxAttributeJson[] = [];
 

@@ -33,6 +33,9 @@ export class OnAgentSkillChanged {
     #loginName: string;
     #skills: AgentSkillSet;
 
+    /**
+     * @internal
+     */
     private constructor(loginName: string, skills: AgentSkillSet) {
         this.#loginName = loginName;
         this.#skills = skills;
@@ -86,7 +89,6 @@ export class OnAgentStateChanged {
      * @param json The OnAgentStateChangedJson object
      */
     /** @internal */
-
     static fromJson(json: OnAgentStateChangedJson): OnAgentStateChanged {
         return new OnAgentStateChanged(json.loginName, OperatorState.fromJson(json.state));
     }

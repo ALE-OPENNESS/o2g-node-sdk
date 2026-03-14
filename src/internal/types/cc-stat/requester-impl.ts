@@ -21,7 +21,7 @@ import { Language } from '../../../types/cc-stats/language';
 import { Requester } from '../../../types/cc-stats/requester';
 
 /**
- * {@code RequesterImpl} is an immutable implementation of {@link Requester}.
+ * `RequesterImpl` is an immutable implementation of {@link Requester}.
  *
  * It encapsulates the requester's identifier, preferred language, and
  * time zone information.

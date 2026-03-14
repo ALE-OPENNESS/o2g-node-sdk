@@ -57,14 +57,14 @@ export namespace DayOfWeek {
     };
 
     /**
-     * Converts a JSON enum to DayOfWeek enum
+     * @internal
      */
     export function fromJson(value: DayOfWeekJson): DayOfWeek {
         return jsonToDayOfWeek[value];
     }
 
     /**
-     * Converts a DayOfWeek enum to JSON enum
+     * @internal
      */
     export function toJson(value: DayOfWeek): DayOfWeekJson {
         return dayOfWeekToJson[value];

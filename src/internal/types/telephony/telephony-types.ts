@@ -150,7 +150,7 @@ export type TagJson = {
 };
 
 /**
- * {@code Capabilities} represents the call capabilities.
+ * `Capabilities` represents the call capabilities.
  */
 /** @internal */
 export type CallCapabilitiesJson = {
@@ -618,7 +618,7 @@ export type MiniMessageJson = {
 };
 
 /**
- * {@code PilotInfo} represents the the pilot information.
+ * `PilotInfo` represents the the pilot information.
  * @since 2.7
  */
 /** @internal */

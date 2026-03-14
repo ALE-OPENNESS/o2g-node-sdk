@@ -20,7 +20,7 @@
 import { Language } from './language';
 
 /**
- * {@code Requester} represents an entity (typically a supervisor) that requests
+ * `Requester` represents an entity (typically a supervisor) that requests
  * statistics from the system. It encapsulates the requester's identifier,
  * preferred language, and time zone information.
  *

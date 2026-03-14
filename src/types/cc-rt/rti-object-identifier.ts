@@ -23,12 +23,12 @@ import { RtiObjectIdentifierJson } from '../../internal/types/cc-rt/cc-rt-types'
  * Represents a CCD object identifier for which real-time information is available.
  *
  * Instances of this class provide details about a CCD object, such as agents, pilots,
- * or queues, that can be monitored using the {@link RtiService}.
+ * or queues, that can be monitored using the {@link CallCenterRealtime}.
  *
  * Each object includes a directory number, last name, first name, and a unique key.
  * This class is typically used to retrieve and reference objects for real-time events.
  *
- * @see RtiService
+ * @see CallCenterRealtime
  * @since 2.7.4
  */
 export class RtiObjectIdentifier {

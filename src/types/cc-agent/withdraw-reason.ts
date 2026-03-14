@@ -20,7 +20,7 @@
 import { WithdrawReasonJson } from '../../internal/types/cc-agent/cc-agent-types';
 
 /**
- * {@code WithdrawReason} represents a reason why a CCD agent is in a withdraw state.
+ * `WithdrawReason` represents a reason why a CCD agent is in a withdraw state.
  *
  * Withdraw reasons are used by the CCD system for reporting and statistical purposes.
  * They help to understand why an agent is temporarily unavailable for call distribution.
@@ -50,7 +50,7 @@ export class WithdrawReason {
     /**
      * Returns the human-readable label describing this withdraw reason.
      *
-     * @returns The descriptive label for the reason, or {@code null} if none is set.
+     * @returns The descriptive label for the reason, or `null` if none is set.
      */
     get label(): string | null {
         return this.#label ?? null;

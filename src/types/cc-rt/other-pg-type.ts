@@ -18,7 +18,7 @@
  */
 
 /**
- * {@code OtherProcessingGroupType} represents the different types of processing groups
+ * `OtherProcessingGroupType` represents the different types of processing groups
  * (other than agent groups).
  *
  * These types indicate the role or function of the processing group in the call center system.

@@ -22,7 +22,7 @@ import { ComRecord } from './com-record';
 import { Page } from './page';
 
 /**
- * {@code QueryResult} represents the result of a communication log query.
+ * `QueryResult` represents the result of a communication log query.
  *
  * Instances of this class contain the records returned by a query, along with
  * paging information and the total count of matching records.
@@ -31,7 +31,7 @@ import { Page } from './page';
  * including the offset and limit, and can be used to navigate through pages
  * of results.
  *
- * Each {@code QueryResult} contains:
+ * Each `QueryResult` contains:
  * - The total number of records matching the query (`count`)
  * - Paging information for the current result set (`page`)
  * - The list of communication records (`records`)

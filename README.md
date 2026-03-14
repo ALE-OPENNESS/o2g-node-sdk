@@ -23,7 +23,7 @@ import { O2G, Subscription, Telephony } from 'o2g-node-sdk';
 O2G.initialize("MyApp", { privateAddress: "192.168.1.1" });
 
 // 2. Login
-const success = await O2G.login("oxe12000", "password");
+const success = await O2G.login("jdoe", "password");
 if (!success) {
     console.error("Login failed");
     process.exit(1);
@@ -62,7 +62,7 @@ the session user is used automatically.
 
 ```typescript
 O2G.initialize("MyApp", { privateAddress: "192.168.1.1" });
-await O2G.login("oxe1232", "password");
+await O2G.login("jdoe", "password");
 
 // loginName is ignored — operates on the session user
 await O2G.telephony.getCalls();
@@ -79,9 +79,9 @@ O2G.initialize("MyApp", { privateAddress: "192.168.1.1" });
 await O2G.login("admin", "password");
 
 // loginName is mandatory in an administrator session
-await O2G.telephony.getCalls("oxe1234");
+await O2G.telephony.getCalls("jdoe");
 await O2G.usersManagement.getLogins();
-await O2G.callCenterAgent.getState("oxe1234");
+await O2G.callCenterAgent.getState("agent01");
 ```
 
 ### Supervised Session
@@ -96,7 +96,7 @@ import { O2G, SupervisedAccount } from 'o2g-node-sdk';
 O2G.initialize("MyApp", { privateAddress: "192.168.1.1" });
 
 // Open a supervised session on behalf of jdoe
-await O2G.login("admin", "password", SupervisedAccount.withPhoneNumber("12000"));
+await O2G.login("admin", "password", new SupervisedAccount("jdoe"));
 
 // Now operates as jdoe — loginName is ignored
 await O2G.telephony.getCalls();
@@ -214,9 +214,13 @@ O2G.callCenterAgent.on(CallCenterAgent.ON_AGENT_STATE_CHANGED, (event) => {
     console.log("Agent state changed:", event);
 });
 
-await O2G.callCenterAgent.logon("1243", "pg001");
+await O2G.callCenterAgent.logon("acd001", "pg001");
 await O2G.callCenterAgent.setReady();
 ```
+
+## API Reference
+
+- [O2G REST API Reference](https://api.dspp.al-enterprise.com/o2g/)
 
 ## Versioning
 

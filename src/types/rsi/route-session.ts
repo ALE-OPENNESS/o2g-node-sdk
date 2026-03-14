@@ -23,9 +23,9 @@ import { RouteSessionJson } from '../../internal/types/rsi/rsi-types';
  * RouteSession represents a route request session between a RSI point
  * and an application.
  * A route session is initiated by a RSI point by sending a
- * {@link Rsi.ON_ROUTE_REQUEST}.
+ * {@link ON_ROUTE_REQUEST}.
  * The application selects a route and answers the request by calling
- * {@link Rsi.routeSelect}.
+ * {@link routeSelect}.
  */
 export class RouteSession {
     #routeCrid: string;

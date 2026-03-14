@@ -31,7 +31,7 @@ export class Page {
      * specified length.
      *
      * @param offset the page offset
-     * @param length  the page length
+     * @param limit  the page length
      */
     constructor(offset: number, limit: number) {
         this._offset = offset;

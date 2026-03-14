@@ -239,7 +239,7 @@ export class CallCenterStatistics {
      *
      * @param requester - The requester who owns the context.
      * @param contextId - The unique identifier of the context.
-     * @returns The {@link Context} if found and retrieval is successful; `null`
+     * @returns The {@link StatsContext} if found and retrieval is successful; `null`
      * if there is an error or if no context exists with the specified identifier.
      */
     async getContext(requester: Requester, contextId: string): Promise<StatsContext | null> {

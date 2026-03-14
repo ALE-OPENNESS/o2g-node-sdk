@@ -37,6 +37,9 @@ export class AgentStatisticsRow {
     #number?: string;
     #group?: string;
 
+    /**
+     * @internal
+     */
     constructor(json: AgentStatisticsRowJson) {
         this.initializeFromJson(json);
     }

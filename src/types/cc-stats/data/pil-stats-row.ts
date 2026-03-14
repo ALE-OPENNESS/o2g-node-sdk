@@ -30,6 +30,9 @@ export class PilotStatisticsRow {
     #pilotName?: string;
     #pilotNumber?: string;
 
+    /**
+     * @internal
+     */
     constructor(json: PilotStatisticsRowJson) {
         this.initializeFromJson(json);
     }

@@ -24,7 +24,7 @@ import { DataObservationPeriod } from './data-obs-period';
 /**
  * Defines a time range and granularity for retrieving statistical data.
  *
- * A {@code SelectedPeriod} specifies both the observation duration and the temporal resolution
+ * A `SelectedPeriod` specifies both the observation duration and the temporal resolution
  * (slot size) used when aggregating statistics. It is used when querying data or generating
  * detailed or multi-day reports.
  *

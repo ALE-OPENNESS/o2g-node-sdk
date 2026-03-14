@@ -34,7 +34,7 @@ export class Identifier {
     /**
      * Returns the login name of the participant.
      *
-     * @return the login name, or {@code null} if not available
+     * @return the login name, or `null` if not available
      */
     get loginName(): string | null {
         return this.#loginName ?? null;
@@ -43,7 +43,7 @@ export class Identifier {
     /**
      * Returns the phone number of the participant.
      *
-     * @return the phone number, or {@code null} if not available
+     * @return the phone number, or `null` if not available
      */
     get phoneNumber(): string | null {
         return this.#phoneNumber ?? null;

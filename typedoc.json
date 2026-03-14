@@ -1,11 +1,25 @@
 {
-  "entryPoints": ["src/o2g-node-sdk.ts"],
-  "out": "docs",
-  "exclude": ["**/__tests__/**", "**/*.spec.ts", "src/internal/**"],
-  "excludePrivate": true,
-  "excludeProtected": true,
-  "includeVersion": true,
-  "readme": "README.md",
-  "hideGenerator": true,
-  "theme": "default"
+    "entryPoints": ["src/o2g-node-sdk.ts"],
+    "out": "docs",
+    "tsconfig": "tsconfig.build.json",
+    "name": "O2G Node.js SDK",
+    "readme": "README.md",
+    "includeVersion": true,
+    "excludeInternal": true,
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "exclude": [
+        "**/__tests__/**",
+        "**/*.spec.ts",
+        "src/internal/**"
+    ],
+    "hideGenerator": true,
+    "searchInComments": true,
+    "categorizeByGroup": true,
+    "theme": "default",
+    "logLevel": "Warn",
+    "validation": {
+        "notExported": false,
+        "invalidLink": false
+    }
 }
