@@ -3,7 +3,7 @@
   "version": "2.4.0",
   "description": "A Node.js SDK for the ALE International O2G (OmniPCX OpenTouch Gateway) platform.",
   "main": "dist/o2g-node-sdk.js",
-  "types": "dist/o2g-node-sdk.d.ts",
+  "types": "dist/types/o2g-node-sdk.d.ts",
   "scripts": {
     "build": "webpack --config webpack.config.js",
     "docs": "typedoc --options typedoc.json",
@@ -16,7 +16,7 @@
   "files": [
     "dist/o2g-node-sdk.js",
     "dist/o2g-node-sdk.js.map",
-    "dist/o2g-node-sdk.d.ts"
+    "dist/types"
   ],
   "keywords": [
     "o2g",
