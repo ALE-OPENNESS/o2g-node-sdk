@@ -40,7 +40,6 @@ import {
 import { IHttpClient } from '../util/IHttpClient';
 import { DateRange } from '../../types/common/date-range';
 import { StatisticsData } from '../../types/cc-stats/data/stats-data';
-import { format } from 'date-fns/format';
 import { TimeInterval } from '../../types/cc-stats/time-interval';
 import { ProgressCallback } from '../../types/cc-stats/events/progress-callback';
 import { StatsFormat } from '../../types/cc-stats/stats-format';
@@ -79,36 +78,55 @@ type ScheduledReportsJson = {
 };
 
 /**
+ * Formats a Date as 'yyyy-MM-dd HH:mm' using native JS.
+ * @internal
+ */
+function formatDateTime(date: Date): string {
+    const yyyy = date.getFullYear();
+    const MM = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const HH = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${MM}-${dd} ${HH}:${mm}`;
+}
+
+/**
+ * Formats a Date as 'yyyy-MM-dd' using native JS.
+ * @internal
+ */
+function formatDate(date: Date): string {
+    const yyyy = date.getFullYear();
+    const MM = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `${yyyy}-${MM}-${dd}`;
+}
+
+/**
  * Helper class to manage asynchronous statistic file requests.
  */
 class StatAsyncRequest {
     private directory: string;
     private progressCallback?: ProgressCallback;
 
-    // Internal resolver for the promise
     private _resolve!: (value: string) => void;
     private _reject!: (reason?: any) => void;
 
-    // Public promise representing the async operation
     readonly promise: Promise<string>;
 
     constructor(directory: string, progressCallback?: ProgressCallback) {
         this.directory = directory;
         this.progressCallback = progressCallback;
 
-        // Create a Promise and keep references to resolve/reject
         this.promise = new Promise<string>((resolve, reject) => {
             this._resolve = resolve;
             this._reject = reject;
         });
     }
 
-    /** Returns the directory for this request */
     getDirectory(): string {
         return this.directory;
     }
 
-    /** Reports progress to the callback */
     reportProgress(step: ProgressStep, nbObjects: number, processedObjects: number) {
         if (this.progressCallback) {
             const progress = nbObjects > 0 ? Math.floor((processedObjects / nbObjects) * 100) : 0;
@@ -116,12 +134,10 @@ class StatAsyncRequest {
         }
     }
 
-    /** Resolves the internal promise with the file path */
     complete(filePath: string) {
         this._resolve(filePath);
     }
 
-    /** Rejects the internal promise with an error */
     fail(reason?: any) {
         this._reject(reason);
     }
@@ -137,29 +153,22 @@ export default class CallCenterStatisticsRest extends RestService {
     constructor(uri: string, httpClient: IHttpClient, eventRegistry: EventRegistry) {
         super(uri, httpClient);
 
-        // register eventing
         eventRegistry.register(this.#eventEmitter, ON_ACD_STATS_PROGRESS, OnAcdStatsProgress);
 
-        // And subsribe to events
         this.#eventEmitter.on(ON_ACD_STATS_PROGRESS, (e: OnAcdStatsProgress) => {
             this.handleAcdStatsProgress(e);
         });
     }
 
-    // factory method to instanciate a StatAsyncRequest
     private createAsyncRequest = (dir: string, cb?: ProgressCallback) => new StatAsyncRequest(dir, cb);
 
-    // Unzip the received buffer and save in in a file
     private saveInDirectory(httpResponse: HttpResponse, directory: string): string | null {
         try {
             if (!httpResponse || !httpResponse.response) {
                 return null;
             }
 
-            // Convert ArrayBuffer to Buffer
             const compressedBuffer = Buffer.from(httpResponse.response as ArrayBuffer);
-
-            // Unzip content
             const zip = new AdmZip(compressedBuffer);
             const entries = zip.getEntries();
 
@@ -167,20 +176,13 @@ export default class CallCenterStatisticsRest extends RestService {
                 return null;
             }
 
-            // Ensure directory exists (equivalent to Files.createDirectories)
             fs.mkdirSync(directory, { recursive: true });
 
-            // Take first file in ZIP (same as Java logic)
             const firstEntry = entries[0];
             const fileName = firstEntry.entryName;
-
-            // Build timestamped file path
             const filePath = FileUtil.withTimestamp(directory, fileName);
-
-            // Extract file content
             const fileData = firstEntry.getData();
 
-            // Write file
             fs.writeFileSync(filePath, fileData);
 
             return filePath;
@@ -190,25 +192,21 @@ export default class CallCenterStatisticsRest extends RestService {
         }
     }
 
-    // Download a data file
     private async downloadDataFile(fileUri: string, directory: string, request: StatAsyncRequest) {
         try {
             const uriGet = UtilUri.appendPath(UtilUri.getBaseUri(this._uri), fileUri);
 
             const filePath = this.saveInDirectory(await this._httpClient.get(uriGet, 'arrayBuffer'), directory);
             if (filePath) {
-                // Resolve the request promise
                 request.complete(filePath);
             } else {
                 request.fail('Unable to save data in ' + directory);
             }
         } catch (error) {
-            // Reject the request promise on error
             request.fail(error);
         }
     }
 
-    // Manage the O2G event
     private handleAcdStatsProgress(e: OnAcdStatsProgress) {
         const step = e.step;
 
@@ -222,15 +220,12 @@ export default class CallCenterStatisticsRest extends RestService {
                 break;
 
             case AcdStatsProgressStep.PROCESSED:
-                // Force a 100% value
                 this.#currentAsyncRequest.reportProgress(ProgressStep.PROCESSED, 1, 1);
                 break;
 
             case AcdStatsProgressStep.FORMATED:
-                // Force a 100% value
                 this.#currentAsyncRequest.reportProgress(ProgressStep.FORMATTED, 1, 1);
 
-                // Trigger file download
                 this.downloadDataFile(
                     e.fullResPath!,
                     this.#currentAsyncRequest.getDirectory(),
@@ -423,8 +418,8 @@ export default class CallCenterStatisticsRest extends RestService {
             'days/data'
         );
 
-        uriGet = UtilUri.appendQuery(uriGet, 'begindate', format(range.from, 'yyyy-MM-dd HH:mm'));
-        uriGet = UtilUri.appendQuery(uriGet, 'enddate', format(range.to, 'yyyy-MM-dd HH:mm'));
+        uriGet = UtilUri.appendQuery(uriGet, 'begindate', formatDateTime(range.from));
+        uriGet = UtilUri.appendQuery(uriGet, 'enddate', formatDateTime(range.to));
         uriGet = UtilUri.appendQuery(uriGet, 'format', 'json');
 
         const _json = this.getResult<StatsJson>(await this._httpClient.get(uriGet));
@@ -445,7 +440,7 @@ export default class CallCenterStatisticsRest extends RestService {
 
         if (!date) date = new Date();
 
-        uriGet = UtilUri.appendQuery(uriGet, 'date', format(date, 'yyyy-MM-dd'));
+        uriGet = UtilUri.appendQuery(uriGet, 'date', formatDate(date));
         if (timeInterval) {
             uriGet = UtilUri.appendQuery(uriGet, 'slotType', timeInterval);
         }
@@ -484,7 +479,7 @@ export default class CallCenterStatisticsRest extends RestService {
             'oneday/data'
         );
 
-        uriGet = UtilUri.appendQuery(uriGet, 'date', format(AssertUtil.notNull(date, 'data'), 'yyyy-MM-dd'));
+        uriGet = UtilUri.appendQuery(uriGet, 'date', formatDate(AssertUtil.notNull(date, 'date')));
         if (timeInterval) {
             uriGet = UtilUri.appendQuery(uriGet, 'slotType', timeInterval);
         }
@@ -535,9 +530,8 @@ export default class CallCenterStatisticsRest extends RestService {
             'days/data'
         );
 
-        uriGet = UtilUri.appendQuery(uriGet, 'begindate', format(range.from, 'yyyy-MM-dd HH:mm'));
-        uriGet = UtilUri.appendQuery(uriGet, 'enddate', format(range.to, 'yyyy-MM-dd HH:mm'));
-        uriGet = UtilUri.appendQuery(uriGet, 'format', 'json');
+        uriGet = UtilUri.appendQuery(uriGet, 'begindate', formatDateTime(range.from));
+        uriGet = UtilUri.appendQuery(uriGet, 'enddate', formatDateTime(range.to));
 
         if (statFormat == StatsFormat.CSV) {
             uriGet = UtilUri.appendQuery(uriGet, 'format', 'csv');

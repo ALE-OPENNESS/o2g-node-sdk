@@ -19,7 +19,6 @@
 
 import os from 'os';
 import { v4 as uuidv4 } from 'uuid';
-import { format } from 'date-fns/format';
 import * as path from 'path';
 
 /** @internal */
@@ -37,18 +36,22 @@ export class FileUtil {
     }
 
     static withTimestamp(directory: string, fileName: string): string {
-        // Split name and extension
         const parsed = path.parse(fileName);
         const name = parsed.name;
         const extension = parsed.ext;
 
-        // Format timestamp: yyyyMMdd-HHmmss
-        const timestamp = format(new Date(), 'yyyyMMdd-HHmmss');
+        // Format timestamp: yyyyMMdd-HHmmss using native JS
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const MM = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const HH = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        const timestamp = `${yyyy}${MM}${dd}-${HH}${mm}${ss}`;
 
-        // Build new filename
         const newFileName = `${name}-${timestamp}${extension}`;
 
-        // Resolve against directory
         return path.join(directory, newFileName);
     }
 }
