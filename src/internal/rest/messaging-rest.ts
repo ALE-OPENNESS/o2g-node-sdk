@@ -21,7 +21,7 @@ import { RestService } from './rest-service';
 import UtilUri from '../util/util-uri';
 import { AssertUtil } from '../util/assert';
 import { HttpContent } from '../util/http-content';
-import { Logger } from '../util/logger';
+import { Logger, LogLevel } from '../util/logger';
 import { MailBox } from '../../types/messaging/mailbox';
 import { MailBoxInfoJson, MailBoxJson, VoiceMessageJson } from '../types/messaging/messaging-types';
 import { MailBoxInfo } from '../../types/messaging/mailbox-info';
@@ -40,14 +40,16 @@ type VoicemailsListJson = {
 
 /** @internal */
 export default class MessagingRest extends RestService {
-    private _logger = Logger.create('MessagingRest');
+    #logger = Logger.create('MessagingRest');
 
     constructor(uri: string, httpClient: IHttpClient) {
         super(uri, httpClient);
     }
 
     async getMailboxes(loginName: string | null): Promise<MailBox[] | null> {
-        this._logger.info(`getMailboxes loginName=${loginName}`);
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getMailboxes loginName=${loginName}`);
+        }
 
         let uriGet = this._uri;
         if (loginName) {
@@ -55,9 +57,14 @@ export default class MessagingRest extends RestService {
         }
 
         const json = this.getResult<MailBoxesJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getMailboxes result={}`, json);
+        }
+
         if (json && Array.isArray(json.mailboxes)) {
             return json.mailboxes.map(MailBox.fromJson);
-        } else {
+        } 
+        else {
             return null;
         }
     }
@@ -67,7 +74,9 @@ export default class MessagingRest extends RestService {
         password: string | null,
         loginName: string | null
     ): Promise<MailBoxInfo | null> {
-        this._logger.info(`getMailboxInfo mailboxId=${mailboxId}, loginName=${loginName}`);
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getMailboxInfo mailboxId=${mailboxId}, loginName=${loginName}`);
+        }
 
         let uriPost = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId'));
         if (loginName != null) {
@@ -81,13 +90,22 @@ export default class MessagingRest extends RestService {
 
             const httpResponse = await this._httpClient.post(uriPost, new HttpContent(json));
             const _json = this.getResult<MailBoxInfoJson>(httpResponse);
+            if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+                this.#logger.debug(`getMailboxInfo result={}`, _json);
+            }
+
             if (!_json) return null;
             return MailBoxInfo.fromJson(_json);
-        } else {
+        } 
+        else {
             uriPost = UtilUri.appendQuery(uriPost, 'withUserPwd');
 
             const httpResponse = await this._httpClient.post(uriPost);
             const _json = this.getResult<MailBoxInfoJson>(httpResponse);
+            if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+                this.#logger.debug(`getMailboxInfo result={}`, _json);
+            }
+
             if (!_json) return null;
             return MailBoxInfo.fromJson(_json);
         }
@@ -100,7 +118,9 @@ export default class MessagingRest extends RestService {
         limit: number | null,
         loginName: string | null
     ): Promise<VoiceMessage[] | null> {
-        this._logger.info(`getVoiceMessages mailboxId=${mailboxId}, loginName=${loginName}`);
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getVoiceMessages mailboxId={}, newOnly={}, offet={}, limit={}, loginName={}`, mailboxId, newOnly, offset, limit, loginName);
+        }
 
         let uriGet = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId'), 'voicemails');
         if (loginName != null) {
@@ -118,12 +138,15 @@ export default class MessagingRest extends RestService {
         }
 
         const json = this.getResult<VoicemailsListJson>(await this._httpClient.get(uriGet));
-        if (json && Array.isArray(json.voicemails)) {
-            this._logger.info(`getVoiceMessages return ${json.voicemails.length} message(s)`);
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getVoiceMessages result={}`, json);
+        }
 
+        if (json && Array.isArray(json.voicemails)) {
             return json.voicemails.map(VoiceMessage.fromJson);
-        } else {
-            this._logger.error(`Error in getVoiceMessages`);
+        } 
+        else {
+            this.#logger.error(`Error in getVoiceMessages`);
             return null;
         }
     }
@@ -134,12 +157,18 @@ export default class MessagingRest extends RestService {
         wavPath: string | null,
         loginName: string | null
     ): Promise<string | null> {
+
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`downloadVoiceMessage mailboxId={}, voicemailId={}, wavPath={}, loginName={}`, mailboxId, voicemailId, wavPath, loginName);
+        }
+
         let uriGet = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId'),
             'voicemails',
             AssertUtil.notNullOrEmpty(voicemailId, 'voicemailId')
         );
+
 
         if (loginName != null) {
             uriGet = UtilUri.appendQuery(uriGet, 'loginName', loginName);
@@ -151,6 +180,10 @@ export default class MessagingRest extends RestService {
     }
 
     async acknowledgeVoiceMessage(mailboxId: string, voicemailId: string, loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`acknowledgeVoiceMessage mailboxId=${mailboxId}, voicemailId=${voicemailId}, loginName=${loginName}`);
+        }
+        
         let uriGet = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId'),
@@ -171,6 +204,11 @@ export default class MessagingRest extends RestService {
     }
 
     async deleteVoiceMessages(mailboxId: string, msgIds: string[], loginName: string | null = null): Promise<boolean> {
+
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`acknowledgeVoiceMessage mailboxId={}, msgIds={}, loginName={}`, mailboxId, msgIds, loginName);
+        }
+        
         let uriDelete = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId'), 'voicemails');
 
         if (loginName != null) {
@@ -190,6 +228,11 @@ export default class MessagingRest extends RestService {
         voicemailId: string,
         loginName: string | null = null
     ): Promise<boolean> {
+
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deleteVoiceMessage mailboxId=${mailboxId}, voicemailId=${voicemailId}, loginName=${loginName}`);
+        }
+        
         let uriDelete = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId'),

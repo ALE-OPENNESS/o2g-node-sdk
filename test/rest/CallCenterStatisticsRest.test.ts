@@ -19,10 +19,10 @@
 
 import { EventRegistry } from "../../src/internal/events/event-dispatcher";
 import CallCenterStatisticsRest from "../../src/internal/rest/ccStatistics-rest";
-import { AgentFilterImpl } from "../../src/internal/types/cc-stat/ag-filter-impl";
-import { ContextImpl } from "../../src/internal/types/cc-stat/context-impl";
-import { PilotFilterImpl } from "../../src/internal/types/cc-stat/pil-filter-impl";
-import { RequesterImpl } from "../../src/internal/types/cc-stat/requester-impl";
+import { AgentFilterImpl } from "../../src/internal/types/cc-stats/ag-filter-impl";
+import { ContextImpl } from "../../src/internal/types/cc-stats/context-impl";
+import { PilotFilterImpl } from "../../src/internal/types/cc-stats/pil-filter-impl";
+import { RequesterImpl } from "../../src/internal/types/cc-stats/requester-impl";
 import { HttpResponse } from "../../src/internal/util/http-response";
 import { IHttpClient } from "../../src/internal/util/IHttpClient";
 import { StatsAgentByPilotAttributes } from "../../src/types/cc-stats/agbypilot-attributes";
@@ -43,7 +43,7 @@ import { ScheduledReport } from "../../src/types/cc-stats/scheduled/scheduled-re
 import { ReportObservationPeriod } from "../../src/types/cc-stats/scheduled/report-obs-period";
 import { Recurrence } from "../../src/types/cc-stats/scheduled/recurrence";
 import { DayOfWeek } from "../../src/o2g-node-sdk";
-import { ScheduledReportImpl } from "../../src/internal/types/cc-stat/scheduled-rep-impl";
+import { ScheduledReportImpl } from "../../src/internal/types/cc-stats/scheduled-rep-impl";
 
 
 describe("CallCenterStatisticsRest", () => {
@@ -400,7 +400,7 @@ describe("CallCenterStatisticsRest", () => {
 
         // Act
         const context: StatsContext = new ContextImpl("ctx01", "john doe");
-        const data = await service.getDaysData(context, new DateRange(new Date(2026, 1, 10, 1, 0), new Date(2026, 1, 15, 4, 30)));
+        const data = await service.getDaysData(context, false, new DateRange(new Date(2026, 1, 10, 1, 0), new Date(2026, 1, 15, 4, 30)));
 
         // Assert
         expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
@@ -424,11 +424,11 @@ describe("CallCenterStatisticsRest", () => {
 
         // Act
         const context: StatsContext = new ContextImpl("ctx01", "john doe");
-        const data = await service.getDayData(context, new Date(2026, 1, 10, 1, 0), TimeInterval.HALF_HOUR);
+        const data = await service.getDayData(context, true, new Date(2026, 1, 10, 1, 0), TimeInterval.HALF_HOUR);
 
         // Assert
         expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
-        expect(mockHttpClient.get).toHaveBeenCalledWith("/ccstate/scope/john%20doe/ctx/ctx01/oneday/data?date=2026-02-10&slotType=halfAnHour&format=json");
+        expect(mockHttpClient.get).toHaveBeenCalledWith("/ccstate/scope/john%20doe/ctx/ctx01/oneday/data?date=2026-02-10&slotType=halfAnHour&format=json&shortHeader=true");
 
         // Analyse call
         expect(data).toBeInstanceOf(StatisticsData);
@@ -448,7 +448,7 @@ describe("CallCenterStatisticsRest", () => {
 
         // Act
         const context: StatsContext = new ContextImpl("ctx01", "john doe");
-        const data = await service.getDayData(context, new Date(2026, 1, 10, 1, 0));
+        const data = await service.getDayData(context, false, new Date(2026, 1, 10, 1, 0));
 
         // Assert
         expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
@@ -483,6 +483,7 @@ describe("CallCenterStatisticsRest", () => {
         const context: StatsContext = new ContextImpl("ctx01", "john doe");
         const result = await service.getDayFileData(
             context,
+            true,
             new Date(2026, 1, 10, 1, 0),
             TimeInterval.HALF_HOUR,
             StatsFormat.CSV,
@@ -491,7 +492,7 @@ describe("CallCenterStatisticsRest", () => {
 
         // Assert
         expect(mockHttpClient.get).toHaveBeenCalled();
-        expect(mockHttpClient.get).toHaveBeenCalledWith("/ccstate/scope/john%20doe/ctx/ctx01/oneday/data?date=2026-02-10&slotType=halfAnHour&format=csv&async=true");
+        expect(mockHttpClient.get).toHaveBeenCalledWith("/ccstate/scope/john%20doe/ctx/ctx01/oneday/data?date=2026-02-10&slotType=halfAnHour&format=csv&shortHeader=true&async=true");
 
         // Analyse call
         expect(result).toBe("C://temp/dayStat.xls");
@@ -517,6 +518,7 @@ describe("CallCenterStatisticsRest", () => {
         const context: StatsContext = new ContextImpl("ctx01", "john doe");
         const result = await service.getDaysFileData(
             context,
+            false,
             new DateRange(new Date(2026, 1, 10, 1, 0), new Date(2026, 1, 15, 4, 30)),
             StatsFormat.CSV,
             os.tmpdir()
@@ -524,7 +526,7 @@ describe("CallCenterStatisticsRest", () => {
 
         // Assert
         expect(mockHttpClient.get).toHaveBeenCalled();
-        expect(mockHttpClient.get).toHaveBeenCalledWith("/ccstate/scope/john%20doe/ctx/ctx01/days/data?begindate=2026-02-10%2001%3A00&enddate=2026-02-15%2004%3A30&format=json&format=csv&async=true");
+        expect(mockHttpClient.get).toHaveBeenCalledWith("/ccstate/scope/john%20doe/ctx/ctx01/days/data?begindate=2026-02-10%2001%3A00&enddate=2026-02-15%2004%3A30&format=csv&async=true");
 
         // Analyse call
         expect(result).toBe("C://temp/dayStat.xls");

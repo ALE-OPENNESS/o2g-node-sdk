@@ -22,10 +22,10 @@ import { Language } from '../../types/cc-stats/language';
 import { Requester } from '../../types/cc-stats/requester';
 import { StatsContext } from '../../types/cc-stats/stats-context';
 import { StatsFilter } from '../../types/cc-stats/stats-filter';
-import { AgentFilterImpl } from '../types/cc-stat/ag-filter-impl';
-import { ContextImpl } from '../types/cc-stat/context-impl';
-import { PilotFilterImpl } from '../types/cc-stat/pil-filter-impl';
-import { RequesterImpl } from '../types/cc-stat/requester-impl';
+import { AgentFilterImpl } from '../types/cc-stats/ag-filter-impl';
+import { ContextImpl } from '../types/cc-stats/context-impl';
+import { PilotFilterImpl } from '../types/cc-stats/pil-filter-impl';
+import { RequesterImpl } from '../types/cc-stats/requester-impl';
 import { AssertUtil } from '../util/assert';
 import UtilUri from '../util/util-uri';
 import { RestService } from './rest-service';
@@ -36,7 +36,7 @@ import {
     StatsJson,
     StatsScheduleJson,
     SupervisorJson,
-} from '../types/cc-stat/cc-stat-types';
+} from '../types/cc-stats/cc-stat-types';
 import { IHttpClient } from '../util/IHttpClient';
 import { DateRange } from '../../types/common/date-range';
 import { StatisticsData } from '../../types/cc-stats/data/stats-data';
@@ -45,7 +45,7 @@ import { ProgressCallback } from '../../types/cc-stats/events/progress-callback'
 import { StatsFormat } from '../../types/cc-stats/stats-format';
 import { EventRegistry, IEventSink } from '../events/event-dispatcher';
 import { EventEmitter } from 'events';
-import { OnAcdStatsProgress } from '../types/cc-stat/on-stats-progress';
+import { OnAcdStatsProgress } from '../types/cc-stats/on-stats-progress';
 import { ProgressStep } from '../../types/cc-stats/events/progress-step';
 import AdmZip from 'adm-zip';
 import { HttpResponse } from '../util/http-response';
@@ -55,7 +55,8 @@ import { HttpContent } from '../util/http-content';
 import { Recurrence } from '../../types/cc-stats/scheduled/recurrence';
 import { ReportObservationPeriod } from '../../types/cc-stats/scheduled/report-obs-period';
 import { ScheduledReport } from '../../types/cc-stats/scheduled/scheduled-report';
-import { ScheduledReportImpl } from '../types/cc-stat/scheduled-rep-impl';
+import { ScheduledReportImpl } from '../types/cc-stats/scheduled-rep-impl';
+import { Logger, LogLevel } from '../util/logger';
 
 /** @internal */
 type SupervisedJson = {
@@ -146,6 +147,8 @@ class StatAsyncRequest {
 const ON_ACD_STATS_PROGRESS = 'OnAcdStatsProgress';
 
 export default class CallCenterStatisticsRest extends RestService {
+    #logger = Logger.create('CallCenterStatisticsRest');
+
     #currentAsyncRequest: StatAsyncRequest | null = null;
     #running = false;
     #eventEmitter = new EventEmitter();
@@ -186,8 +189,9 @@ export default class CallCenterStatisticsRest extends RestService {
             fs.writeFileSync(filePath, fileData);
 
             return filePath;
-        } catch (error) {
-            console.error('Error while saving file:', error);
+        } 
+        catch (error) {
+            this.#logger.error('Error while saving file:', error);
             return null;
         }
     }
@@ -199,10 +203,12 @@ export default class CallCenterStatisticsRest extends RestService {
             const filePath = this.saveInDirectory(await this._httpClient.get(uriGet, 'arrayBuffer'), directory);
             if (filePath) {
                 request.complete(filePath);
-            } else {
+            } 
+            else {
                 request.fail('Unable to save data in ' + directory);
             }
-        } catch (error) {
+        } 
+        catch (error) {
             request.fail(error);
         }
     }
@@ -212,6 +218,9 @@ export default class CallCenterStatisticsRest extends RestService {
 
         if (!this.#currentAsyncRequest) {
             return;
+        }
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`handleAcdStatsProgress {}`, e);
         }
 
         switch (step) {
@@ -259,6 +268,10 @@ export default class CallCenterStatisticsRest extends RestService {
         timezone: string,
         agents: string[]
     ): Promise<Requester | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`createRequester id={}, language={}, timezone={}, agents={}`, id, language, timezone, agents);
+        }
+
         const uriPost = UtilUri.appendPath(this._uri, 'scope');
 
         const supervised: SupervisedJson[] = AssertUtil.notEmpty(agents, 'agents').map((agent) => ({
@@ -277,6 +290,10 @@ export default class CallCenterStatisticsRest extends RestService {
         };
 
         const json = JSON.stringify(statScope);
+        
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`createRequester request=${json}`);
+        }
 
         const httpResponse = await this._httpClient.post(uriPost, new HttpContent(json));
         if (!httpResponse.isSuccessStatusCode()) return null;
@@ -285,6 +302,10 @@ export default class CallCenterStatisticsRest extends RestService {
     }
 
     async deleteRequester(requester: Requester): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deleteRequester requester={}`, requester);
+        }
+        
         const uriDelete = UtilUri.appendPath(
             this._uri,
             'scope',
@@ -296,9 +317,18 @@ export default class CallCenterStatisticsRest extends RestService {
     }
 
     async getRequester(id: string): Promise<Requester | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getRequester id=${id}`);
+        }
+
         const uriGet = UtilUri.appendPath(this._uri, 'scope', encodeURIComponent(AssertUtil.notNullOrEmpty(id, 'id')));
 
         const _json = this.getResult<SupervisorJson>(await this._httpClient.get(uriGet));
+
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getRequester result={}`, _json);
+        }
+
         if (!_json) return null;
         return new RequesterImpl(_json.identifier, _json.language, _json.timezone);
     }
@@ -309,6 +339,10 @@ export default class CallCenterStatisticsRest extends RestService {
         description: string,
         filter: StatsFilter
     ): Promise<StatsContext | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`createContext requester={}, label={}, description={}, filter={}`, requester, label, description, filter);
+        }
+
         const uriPost = UtilUri.appendPath(
             this._uri,
             'scope',
@@ -323,7 +357,8 @@ export default class CallCenterStatisticsRest extends RestService {
             _filter = {
                 agentFilter: (filter as AgentFilterImpl).toJson(),
             };
-        } else {
+        } 
+        else {
             _filter = {
                 pilotFilter: (filter as PilotFilterImpl).toJson(),
             };
@@ -336,7 +371,16 @@ export default class CallCenterStatisticsRest extends RestService {
             filter: _filter,
         });
 
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`createContext request=${json}`);
+        }
+
         const _json = this.getResult<RespIdJson>(await this._httpClient.post(uriPost, new HttpContent(json)));
+
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`createContext result={}`, _json);
+        }
+
         if (!_json) return null;
 
         let _context: ContextImpl = new ContextImpl(_json.id, requester.id);
@@ -348,6 +392,10 @@ export default class CallCenterStatisticsRest extends RestService {
     }
 
     async getContexts(requester: Requester): Promise<StatsContext[] | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getContexts requester={}`, requester);
+        }
+
         const uriGet = UtilUri.appendPath(
             this._uri,
             'scope',
@@ -356,14 +404,23 @@ export default class CallCenterStatisticsRest extends RestService {
         );
 
         const _json = this.getResult<StatsContextsJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getContexts result={}`, _json);
+        }
+
         if (_json && Array.isArray(_json.contexts)) {
             return _json.contexts.map(ContextImpl.fromJson);
-        } else {
+        } 
+        else {
             return null;
         }
     }
 
     async deleteContexts(requester: Requester): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deleteContexts requester={}`, requester);
+        }
+        
         const uriDelete = UtilUri.appendPath(
             this._uri,
             'scope',
@@ -376,6 +433,10 @@ export default class CallCenterStatisticsRest extends RestService {
     }
 
     async getContext(requester: Requester, contextId: string): Promise<StatsContext | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getContext requester={}, contextId={}`, requester, contextId);
+        }
+
         const uriGet = UtilUri.appendPath(
             this._uri,
             'scope',
@@ -385,6 +446,11 @@ export default class CallCenterStatisticsRest extends RestService {
         );
 
         const _json = this.getResult<StatsContextJson>(await this._httpClient.get(uriGet));
+        
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getContext result={}`, _json);
+        }
+
         if (!_json) {
             return null;
         }
@@ -393,6 +459,10 @@ export default class CallCenterStatisticsRest extends RestService {
     }
 
     async deleteContext(context: StatsContext): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deleteContext context={}`, context);
+        }
+
         const uriDelete = UtilUri.appendPath(
             this._uri,
             'scope',
@@ -405,7 +475,11 @@ export default class CallCenterStatisticsRest extends RestService {
         return httpResponse.isSuccessStatusCode();
     }
 
-    async getDaysData(context: StatsContext, range: DateRange): Promise<StatisticsData | null> {
+    async getDaysData(context: StatsContext, shortHeader: boolean, range: DateRange): Promise<StatisticsData | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getDaysData context={}, range={}`, context, range);
+        }
+
         AssertUtil.notNull(context, 'context');
         AssertUtil.notNull(range, 'range');
 
@@ -421,14 +495,25 @@ export default class CallCenterStatisticsRest extends RestService {
         uriGet = UtilUri.appendQuery(uriGet, 'begindate', formatDateTime(range.from));
         uriGet = UtilUri.appendQuery(uriGet, 'enddate', formatDateTime(range.to));
         uriGet = UtilUri.appendQuery(uriGet, 'format', 'json');
+        if (shortHeader) {
+            uriGet = UtilUri.appendQuery(uriGet, 'shortHeader', 'true');
+        }
 
         const _json = this.getResult<StatsJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getDaysData result={}`, _json);
+        }
+
         if (!_json) return null;
 
         return StatisticsData.fromJson(_json);
     }
 
-    async getDayData(context: StatsContext, date?: Date, timeInterval?: TimeInterval): Promise<StatisticsData | null> {
+    async getDayData(context: StatsContext, shortHeader: boolean, date?: Date, timeInterval?: TimeInterval): Promise<StatisticsData | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getDaysData context={}, date={}, timeInterval={}`, context, date, timeInterval);
+        }
+
         let uriGet = UtilUri.appendPath(
             this._uri,
             'scope',
@@ -445,8 +530,15 @@ export default class CallCenterStatisticsRest extends RestService {
             uriGet = UtilUri.appendQuery(uriGet, 'slotType', timeInterval);
         }
         uriGet = UtilUri.appendQuery(uriGet, 'format', 'json');
+        if (shortHeader) {
+            uriGet = UtilUri.appendQuery(uriGet, 'shortHeader', 'true');
+        }
 
         const _json = this.getResult<StatsJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getDaysData result={}`, _json);
+        }
+
         if (!_json) return null;
 
         return StatisticsData.fromJson(_json);
@@ -454,14 +546,19 @@ export default class CallCenterStatisticsRest extends RestService {
 
     async getDayFileData(
         context: StatsContext,
+        shortHeader: boolean,
         date: Date,
         timeInterval: TimeInterval,
         statFormat: StatsFormat,
         directory: string,
         progressCallback?: ProgressCallback
     ): Promise<string> {
+
         if (this.#running) {
             throw new Error('A statistic request is already in progress');
+        }
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getDayFileData context={}, date={}, timeInterval={}, statFormat={}, directory={}`, context, date, timeInterval, statFormat, directory);
         }
 
         this.#running = true;
@@ -488,6 +585,9 @@ export default class CallCenterStatisticsRest extends RestService {
         } else if (statFormat == StatsFormat.EXCEL) {
             uriGet = UtilUri.appendQuery(uriGet, 'format', 'xls');
         }
+        if (shortHeader) {
+            uriGet = UtilUri.appendQuery(uriGet, 'shortHeader', 'true');
+        }
         uriGet = UtilUri.appendQuery(uriGet, 'async', 'true');
 
         const httpResponse = await this._httpClient.get(uriGet);
@@ -503,6 +603,7 @@ export default class CallCenterStatisticsRest extends RestService {
 
     async getDaysFileData(
         context: StatsContext,
+        shortHeader: boolean,
         range: DateRange,
         statFormat: StatsFormat,
         directory: string,
@@ -513,6 +614,10 @@ export default class CallCenterStatisticsRest extends RestService {
 
         if (this.#running) {
             throw new Error('A statistic request is already in progress');
+        }
+
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getDayFileData context={}, range={}, statFormat={}, directory={}`, context, range, statFormat, directory);
         }
 
         this.#running = true;
@@ -538,6 +643,9 @@ export default class CallCenterStatisticsRest extends RestService {
         } else if (statFormat == StatsFormat.EXCEL) {
             uriGet = UtilUri.appendQuery(uriGet, 'format', 'xls');
         }
+        if (shortHeader) {
+            uriGet = UtilUri.appendQuery(uriGet, 'shortHeader', 'true');
+        }
         uriGet = UtilUri.appendQuery(uriGet, 'async', 'true');
 
         const httpResponse = await this._httpClient.get(uriGet);
@@ -552,6 +660,10 @@ export default class CallCenterStatisticsRest extends RestService {
     }
 
     async cancelRequest(context: StatsContext): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`cancelRequest context=${JSON.stringify(context)}`);
+        }
+
         const uriDelete = UtilUri.appendPath(
             this._uri,
             'scope',
@@ -569,9 +681,15 @@ export default class CallCenterStatisticsRest extends RestService {
         description: string,
         observationPeriod: ReportObservationPeriod,
         recurrence: Recurrence,
-        format: StatsFormat,
+        statFormat: StatsFormat,
         recipients: string[]
     ): Promise<ScheduledReport | null> {
+
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`createRecurrentScheduledReport context={}, id={}, description={}, observationPeriod={}, recurrence={}, statFormat={}, recipients={}`, 
+                context, id, description, observationPeriod, recurrence, statFormat, recipients);
+        }
+
         AssertUtil.notNull(context, 'context');
 
         const uriPost = UtilUri.appendPath(
@@ -593,10 +711,17 @@ export default class CallCenterStatisticsRest extends RestService {
             obsPeriod: AssertUtil.notNull(observationPeriod, 'observationPeriod').toJson(),
             frequency: AssertUtil.notNull(recurrence, 'recurrence').toJson(),
             recipients: recipients,
-            fileType: format,
+            fileType: statFormat,
         });
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`createRecurrentScheduledReport request=${json}`);
+        }
 
         const _json = this.getResult<RespIdJson>(await this._httpClient.post(uriPost, new HttpContent(json)));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`createRecurrentScheduledReport result={}`, _json);
+        }
+
         if (!_json) return null;
 
         return new ScheduledReportImpl(
@@ -605,7 +730,7 @@ export default class CallCenterStatisticsRest extends RestService {
             description,
             observationPeriod,
             recurrence,
-            format,
+            statFormat,
             recipients
         );
     }
@@ -615,9 +740,15 @@ export default class CallCenterStatisticsRest extends RestService {
         id: string,
         description: string,
         observationPeriod: ReportObservationPeriod,
-        format: StatsFormat,
+        statFormat: StatsFormat,
         recipients: string[]
     ): Promise<ScheduledReport | null> {
+
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`createOneTimeScheduledReport context={}, id={}, description={}, observationPeriod={}, statFormat={}, recipients={}`, 
+                context, id, description, observationPeriod, statFormat, recipients);
+        }
+
         AssertUtil.notNull(context, 'context');
 
         const uriPost = UtilUri.appendPath(
@@ -641,16 +772,29 @@ export default class CallCenterStatisticsRest extends RestService {
                 periodicity: 'once',
             },
             recipients: recipients,
-            fileType: format,
+            fileType: statFormat,
         });
 
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`createOneTimeScheduledReport request=${json}`);
+        }
+
         const _json = this.getResult<RespIdJson>(await this._httpClient.post(uriPost, new HttpContent(json)));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`createOneTimeScheduledReport result={}`, _json);
+        }
+
         if (!_json) return null;
 
-        return new ScheduledReportImpl(context, _json.id, description, observationPeriod, null, format, recipients);
+        return new ScheduledReportImpl(context, _json.id, description, observationPeriod, null, statFormat, recipients);
     }
 
     async getScheduledReports(context: StatsContext): Promise<ScheduledReport[] | null> {
+
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getScheduledReports context={}`, context);
+        }
+
         AssertUtil.notNull(context, 'context');
 
         const uriGet = UtilUri.appendPath(
@@ -663,18 +807,27 @@ export default class CallCenterStatisticsRest extends RestService {
         );
 
         const _json = this.getResult<ScheduledReportsJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getScheduledReports result={}`, _json);
+        }
+
         if (_json && Array.isArray(_json.schedules)) {
             return _json.schedules.map((json) => {
                 const report = ScheduledReportImpl.fromJson(json);
                 report.context = context;
                 return report;
             });
-        } else {
+        } 
+        else {
             return null;
         }
     }
 
     async deleteScheduledReport(report: ScheduledReport): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deleteScheduledReport report={}`, report);
+        }
+
         const context = AssertUtil.notNull(report, 'report').context;
 
         const uriDelete = UtilUri.appendPath(
@@ -692,6 +845,10 @@ export default class CallCenterStatisticsRest extends RestService {
     }
 
     async setScheduledReportEnabled(report: ScheduledReport, enabled: boolean): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`setScheduledReportEnabled report={}, enabled={}`, report, enabled);
+        }
+
         const context = AssertUtil.notNull(report, 'report').context;
 
         let uriPost = UtilUri.appendPath(
@@ -708,12 +865,15 @@ export default class CallCenterStatisticsRest extends RestService {
         uriPost = UtilUri.appendQuery(uriPost, 'enable', enabled ? 'true' : 'false');
 
         const httpResponse = await this._httpClient.post(uriPost);
-
-        console.log('VALUEOF' + httpResponse);
         return httpResponse.isSuccessStatusCode();
     }
 
     async getScheduledReport(context: StatsContext, scheduleReportId: string): Promise<ScheduledReport | null> {
+
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getScheduledReport context={}, scheduleReportId={}`, context, scheduleReportId);
+        }
+
         AssertUtil.notNull(context, 'context');
 
         const uriGet = UtilUri.appendPath(
@@ -727,6 +887,10 @@ export default class CallCenterStatisticsRest extends RestService {
         );
 
         const _json = this.getResult<StatsScheduleJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getScheduledReport result={}`, _json);
+        }
+
         if (!_json) {
             return null;
         }
@@ -738,6 +902,10 @@ export default class CallCenterStatisticsRest extends RestService {
     }
 
     async updateScheduledReport(report: ScheduledReport): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`updateScheduledReport report={}`, report);
+        }
+
         const context = AssertUtil.notNull(report, 'report').context;
 
         let uriPut = UtilUri.appendPath(
@@ -763,6 +931,9 @@ export default class CallCenterStatisticsRest extends RestService {
             recipients: recipients,
             fileType: report.format,
         });
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`updateScheduledReport request=${json}`);
+        }
 
         const httpResponse = await this._httpClient.put(uriPut, new HttpContent(json));
         return httpResponse.isSuccessStatusCode();

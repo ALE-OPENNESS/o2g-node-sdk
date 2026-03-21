@@ -26,6 +26,7 @@ import { ChargingResult } from '../../types/analytics/charging-result';
 import { DateRange } from '../../types/common/date-range';
 import { ChargingFileJson, ChargingResultJson, IncidentJson } from '../types/analytics/analytics-types';
 import { IHttpClient } from '../util/IHttpClient';
+import { Logger, LogLevel } from '../util/logger';
 
 /** @internal */
 type ChargingFileResultJson = {
@@ -39,6 +40,8 @@ type IncidentsJson = {
 
 /** @internal */
 export default class AnalyticsRest extends RestService {
+    #logger = Logger.create('AnalyticsRest');
+
     constructor(uri: string, httpClient: IHttpClient) {
         super(uri, httpClient);
     }
@@ -56,6 +59,11 @@ export default class AnalyticsRest extends RestService {
     }
 
     async getIncidents(nodeId: number, last: number): Promise<Array<Incident> | null> {
+        
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getIncidents nodeId={}, last={}`, nodeId, last);
+        }
+
         let uriGet = UtilUri.appendPath(this._uri, 'incidents');
         uriGet = UtilUri.appendQuery(uriGet, 'nodeId', AssertUtil.positive(nodeId, 'nodeId').toString());
 
@@ -64,14 +72,24 @@ export default class AnalyticsRest extends RestService {
         }
 
         let _json = this.getResult<IncidentsJson>(await this._httpClient.get(uriGet));
+
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getIncidents result={}`, _json);
+        }
+
         if (_json && Array.isArray(_json.incidents)) {
             return _json.incidents.map(Incident.fromJson);
-        } else {
+        } 
+        else {
             return null;
         }
     }
 
     async getChargingFiles(nodeId: number, filter: DateRange | null): Promise<Array<ChargingFile> | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getChargingFiles nodeId={}, filter={}`, nodeId, filter);
+        }
+
         let uriGet = UtilUri.appendPath(this._uri, 'charging', 'files');
         uriGet = UtilUri.appendQuery(uriGet, 'nodeId', AssertUtil.positive(nodeId, 'nodeId').toString());
 
@@ -81,9 +99,14 @@ export default class AnalyticsRest extends RestService {
         }
 
         let _json = this.getResult<ChargingFileResultJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getChargingFiles result={}`, _json);
+        }
+
         if (_json && Array.isArray(_json.files)) {
             return _json.files.map(ChargingFile.fromJson);
-        } else {
+        } 
+        else {
             return null;
         }
     }
@@ -94,6 +117,11 @@ export default class AnalyticsRest extends RestService {
         topResults: number | null,
         all: boolean
     ): Promise<ChargingResult | null> {
+        
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getChargingsFromFilter nodeId={}, filter={}, topResults={}, all={}`, nodeId, filter, topResults, all);
+        }
+
         let uriGet = UtilUri.appendPath(this._uri, 'charging');
         uriGet = UtilUri.appendQuery(uriGet, 'nodeId', AssertUtil.positive(nodeId, 'nodeId').toString());
 
@@ -111,6 +139,10 @@ export default class AnalyticsRest extends RestService {
         }
 
         const _json = this.getResult<ChargingResultJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getChargingsFromFilter result={}`, _json);
+        }
+
         if (!_json) return null;
         return ChargingResult.fromJson(_json, filter);
     }
@@ -121,6 +153,11 @@ export default class AnalyticsRest extends RestService {
         topResults: number | null,
         all: boolean
     ): Promise<ChargingResult | null> {
+        
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getChargingsFromFiles nodeId={}, files={}, topResults={}, all={}`, nodeId, files, topResults, all);
+        }
+
         let uriGet = UtilUri.appendPath(this._uri, 'charging');
         uriGet = UtilUri.appendQuery(uriGet, 'nodeId', AssertUtil.positive(nodeId, 'nodeId').toString());
         uriGet = UtilUri.appendQuery(
@@ -140,6 +177,10 @@ export default class AnalyticsRest extends RestService {
         }
 
         const _json = this.getResult<ChargingResultJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getChargingsFromFiles result={}`, _json);
+        }
+
         if (!_json) return null;
         return ChargingResult.fromJson(_json);
     }

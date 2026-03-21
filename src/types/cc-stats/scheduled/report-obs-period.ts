@@ -17,7 +17,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { ScheduledSelPeriodJson } from '../../../internal/types/cc-stat/cc-stat-types';
+import { ScheduledSelPeriodJson } from '../../../internal/types/cc-stats/cc-stat-types';
 
 /**
  * Represents an observation period used in a scheduled statistic request.

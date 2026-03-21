@@ -31,12 +31,12 @@ describe('SystemStatus', () => {
 
             const jsonString = `{
             "logicalAddress": {
-                "fqdn": "roxe-inst-2.bstlabrd.fr.alcatel-lucent.com",
-                "ip": "172.25.152.114"
+                "fqdn": "o2g.main.server.com",
+                "ip": "10.0.1.123"
             },
             "startDate": "2025-12-19T16:26:23.940Z",
             "ha": false,
-            "primary": "roxe-inst-2.bstlabrd.fr.alcatel-lucent.com",
+            "primary": "o2g.main.server.com",
             "primaryVersion": "14.7.005.000",
             "primaryServicesStatus": {
                 "services": [
@@ -65,8 +65,8 @@ describe('SystemStatus', () => {
                 "name": "bsbice29",
                 "nodeId": 7,
                 "mainAddress": {
-                    "fqdn": "bsbice29.bstlabrd.fr.alcatel-lucent.com",
-                    "ip": "172.25.152.29"
+                    "fqdn": "oxe.lab.main.col",
+                    "ip": "10.3.1.120"
                 },
                 "secondaryAddress": {},
                 "version": "n4.513.9",
@@ -78,11 +78,11 @@ describe('SystemStatus', () => {
                 "lmsConnectionStatus": false
                 },
                 {
-                "name": "172.25.187.68",
+                "name": "12.123.6.10",
                 "nodeId": 60,
                 "mainAddress": {
-                    "fqdn": "172.25.187.68",
-                    "ip": "172.25.187.68"
+                    "fqdn": "12.123.6.10",
+                    "ip": "12.123.6.10"
                 },
                 "secondaryAddress": {},
                 "version": "n2.514.0",
@@ -97,8 +97,8 @@ describe('SystemStatus', () => {
                 "name": "bsbice35",
                 "nodeId": 9,
                 "mainAddress": {
-                    "fqdn": "bsbice35.bstlabrd.fr.alcatel-lucent.com",
-                    "ip": "172.25.152.35"
+                    "fqdn": "oxe3.system.com",
+                    "ip": "30.1.1.23"
                 },
                 "secondaryAddress": {},
                 "version": "n4.509.0",
@@ -113,7 +113,7 @@ describe('SystemStatus', () => {
                 "name": "bsbice34",
                 "nodeId": 5,
                 "mainAddress": {
-                    "fqdn": "bsbice34.bstlabrd.fr.alcatel-lucent.com",
+                    "fqdn": "oxe34.lab.virtt.com",
                     "ip": "172.25.152.34"
                 },
                 "secondaryAddress": {},
@@ -223,6 +223,10 @@ describe('SystemStatus', () => {
                 }
                 ]
             },
+            "systemResources": {
+                "fqdn": "o2g.main.server.com",
+                "ip": "10.0.1.123"
+            },
             "tcollected": false,
             "callCenterFeaturesActive": true,
             "configurationType": "FULL_SERVICES",
@@ -234,12 +238,12 @@ describe('SystemStatus', () => {
 
             // Basic checks
             expect(systemStatus.haMode).toBe(false);
-            expect(systemStatus.primary).toBe("roxe-inst-2.bstlabrd.fr.alcatel-lucent.com");
+            expect(systemStatus.primary).toBe("o2g.main.server.com");
             expect(systemStatus.primaryVersion).toBe("14.7.005.000");
 
             // Nested object checks
-            expect(systemStatus.logicalAddress!.fqdn).toBe("roxe-inst-2.bstlabrd.fr.alcatel-lucent.com");
-            expect(systemStatus.logicalAddress!.ip).toBe("172.25.152.114");
+            expect(systemStatus.logicalAddress!.fqdn).toBe("o2g.main.server.com");
+            expect(systemStatus.logicalAddress!.ip).toBe("10.0.1.123");
 
             // Date check
             expect(systemStatus.startDate instanceof Date).toBe(true);
@@ -252,6 +256,8 @@ describe('SystemStatus', () => {
 
             // License check
             expect(systemStatus.license!.type).toBe("FLEXLM");
+
+            expect(systemStatus.systemResources?.fqdn).toBe("o2g.main.server.com");
 
             // Configuration
             expect(systemStatus.configurationType).toBe("FULL_SERVICES");

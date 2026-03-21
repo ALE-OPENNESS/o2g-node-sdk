@@ -26,6 +26,8 @@ import {
     OnPbxLinkDown,
     OnPbxLinkUp,
     OnPbxLoaded,
+    OnRemoteServerLinkDown,
+    OnRemoteServerLinkUp,
     OnServerStart,
 } from './types/maint/maint-events';
 import { EventRegistry } from './internal/events/event-dispatcher';
@@ -65,6 +67,18 @@ import { SystemStatus } from './types/maint/sys-status';
  */
 export class Maintenance extends EventEmitter {
     #maintenanceRest: MaintenanceRest;
+
+    /**
+     * Occurs when connection to remote twin server is lost.
+     * @event
+     */
+    static readonly ON_REMOTE_SERVER_LINK_DOWN = 'OnRemoteServerLinkDown';
+
+    /**
+     * Occurs when connection to remote twin server is recovered.
+     * @event
+     */
+    static readonly ON_REMOTE_SERVER_LINK_UP = 'OnRemoteServerLinkUp';
 
     /**
      * Occurs when a CTI link is down.
@@ -123,6 +137,8 @@ export class Maintenance extends EventEmitter {
         eventRegistry.register(this, Maintenance.ON_CTI_LINK_DOWN, OnCtiLinkDown);
         eventRegistry.register(this, Maintenance.ON_PBX_LINK_UP, OnPbxLinkUp);
         eventRegistry.register(this, Maintenance.ON_PBX_LINK_DOWN, OnPbxLinkDown);
+        eventRegistry.register(this, Maintenance.ON_REMOTE_SERVER_LINK_DOWN, OnRemoteServerLinkDown);
+        eventRegistry.register(this, Maintenance.ON_REMOTE_SERVER_LINK_UP, OnRemoteServerLinkUp);
     }
 
     /**

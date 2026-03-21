@@ -17,7 +17,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/** @internal */
 export enum LogLevel {
     DEBUG = 'DEBUG',
     INFO = 'INFO',
@@ -26,163 +25,162 @@ export enum LogLevel {
     NONE = 'NONE',
 }
 
-/** @internal */
-export enum Color {
-    Black = 0,
-    Red = 1,
-    Green = 2,
-    Yellow = 3,
-    Blue = 4,
-    Magenta = 5,
-    Cyan = 6,
-    Grey = 7,
-    White = 9,
-    Default = 9,
-}
-
-let GlobalLogLevel: LogLevel = LogLevel.DEBUG;
-
-const logLevelColors: Color[] = [
-    Color.Cyan, // DEBUG
-    Color.Green, // INFO
-    Color.Yellow, // WARN
-    Color.Red, // ERROR
-    Color.Default, // NONE
-];
-
-/** @internal */
-interface LoggerOptions {
-    useColors?: boolean;
-    color?: Color;
-    showTimestamp?: boolean;
-    useLocalTime?: boolean;
-    showLevel?: boolean;
-}
-
-/** @internal */
-const defaultOptions: Required<LoggerOptions> = {
-    useColors: false,
-    color: Color.Default,
-    showTimestamp: true,
-    useLocalTime: false,
-    showLevel: true,
+const LogLevelPriority: Record<LogLevel, number> = {
+    [LogLevel.DEBUG]: 0,
+    [LogLevel.INFO]: 1,
+    [LogLevel.WARN]: 2,
+    [LogLevel.ERROR]: 3,
+    [LogLevel.NONE]: 4,
 };
 
-/** @internal */
+export interface LoggerOptions {
+    level?: LogLevel;
+    useColors?: boolean;
+    showTimestamp?: boolean;
+    useLocalTime?: boolean;
+}
+
+const defaultOptions: Required<LoggerOptions> = {
+    level: LogLevel.NONE,
+    useColors: true,
+    showTimestamp: true,
+    useLocalTime: false,
+};
+
+type Transport = (level: LogLevel, message: string, meta?: unknown[]) => void;
+
+const isBrowser = typeof window !== 'undefined';
+
+function defaultTransport(level: LogLevel, message: string, meta?: unknown[]) {
+    const method =
+        level === LogLevel.ERROR ? 'error' : level === LogLevel.WARN ? 'warn' : 'log';
+    (console as any)[method](message, ...(meta || []));
+}
+
 export class Logger {
     private category: string;
     private options: Required<LoggerOptions>;
+    private transport: Transport;
 
-    constructor(category: string, options?: LoggerOptions) {
+    constructor(category: string, options?: LoggerOptions, transport: Transport = defaultTransport) {
         this.category = category;
         this.options = { ...defaultOptions, ...options };
-    }
-
-    debug(format: string, ...args: unknown[]): void {
-        if (this._shouldLog(LogLevel.DEBUG)) this._write(LogLevel.DEBUG, this._formatText(format, args));
-    }
-
-    log(format: string, ...args: unknown[]): void {
-        if (this._shouldLog(LogLevel.DEBUG)) this.debug(format, ...args);
-    }
-
-    info(format: string, ...args: unknown[]): void {
-        if (this._shouldLog(LogLevel.INFO)) this._write(LogLevel.INFO, this._formatText(format, args));
-    }
-
-    warn(format: string, ...args: unknown[]): void {
-        if (this._shouldLog(LogLevel.WARN)) this._write(LogLevel.WARN, this._formatText(format, args));
-    }
-
-    error(format: string, ...args: unknown[]): void {
-        if (this._shouldLog(LogLevel.ERROR)) this._write(LogLevel.ERROR, this._formatText(format, args));
-    }
-
-    private _shouldLog(level: LogLevel): boolean {
-        const logLevels = Object.values(LogLevel);
-        const currentLevel =
-            typeof window !== 'undefined' && (window as any).LOG ? (window as any).LOG.toUpperCase() : GlobalLogLevel;
-        return logLevels.indexOf(level) >= logLevels.indexOf(currentLevel as LogLevel);
-    }
-
-    private _formatText(format: string, args: unknown[]): string {
-        let i = 0;
-        return format.replace(/\{\w+\}/g, () => {
-            return i < args.length ? String(args[i++]) : '';
-        });
-    }
-
-    private _write(level: LogLevel, text: string): void {
-        const format = this._format(level, text);
-        const formattedText = this._createLogMessage(level, text, format);
-
-        const output = level === LogLevel.ERROR ? console.error : console.log;
-
-        const parts: any[] = [];
-
-        if (this.options.useColors) {
-            if (this.options.showTimestamp) parts.push(format.timestamp, this._getTimestamp());
-            if (this.options.showLevel) parts.push(format.level, `[${level}]`);
-            parts.push(format.category, this.category);
-            parts.push(format.text, text);
-        } else {
-            let line = '';
-            if (this.options.showTimestamp) line += this._getTimestamp() + ' ';
-            if (this.options.showLevel) line += `[${level}] `;
-            line += `${this.category}: ${text}`;
-            parts.push(line);
-        }
-
-        output(...parts);
-    }
-
-    private _format(level: LogLevel, text: string): Record<string, string> {
-        const levelIndex = Object.values(LogLevel).indexOf(level);
-        const levelColor = logLevelColors[levelIndex] ?? Color.Default;
-
-        return {
-            timestamp: this.options.useColors && this.options.showTimestamp ? `color:${Color.Grey}` : '',
-            level: this.options.useColors && this.options.showLevel ? `color:${levelColor}` : '',
-            category: this.options.useColors ? `color:${this.options.color}; font-weight:bold` : '',
-            text: ': ',
-        };
-    }
-
-    private _createLogMessage(level: LogLevel, text: string, format: Record<string, string>): string {
-        let result = '';
-
-        if (this.options.showTimestamp) {
-            result += this._getTimestamp() + ' ';
-        }
-
-        if (this.options.showLevel) {
-            result += `[${level}] `;
-        }
-
-        result += `${this.category}: ${text}`;
-        return result;
-    }
-
-    private _getTimestamp(): string {
-        return this.options.useLocalTime ? new Date().toLocaleString() : new Date().toISOString();
+        this.transport = transport;
     }
 
     static create(category: string, options?: LoggerOptions): Logger {
         return new Logger(category, options);
     }
+
+    /**
+     * Check if the given log level is currently enabled.
+     */
+    isLevelEnabled(level: LogLevel): boolean {
+        return LogLevelPriority[level] >= LogLevelPriority[this.options.level];
+    }
+
+    private shouldLog(level: LogLevel): boolean {
+        return this.isLevelEnabled(level);
+    }
+
+    private getTimestamp(): string {
+        return this.options.useLocalTime
+            ? new Date().toLocaleString()
+            : new Date().toISOString();
+    }
+
+    private formatMessage(level: LogLevel, message: string): string {
+        let result = '';
+        if (this.options.showTimestamp) {
+            result += this.getTimestamp() + ' ';
+        }
+        result += `[${level}] ${this.category}: ${message}`;
+        return result;
+    }
+
+    private formatBrowser(level: LogLevel, message: string): [string, string[]] {
+        const colors: Record<LogLevel, string> = {
+            DEBUG: 'color: cyan',
+            INFO: 'color: green',
+            WARN: 'color: orange',
+            ERROR: 'color: red',
+            NONE: '',
+        };
+
+        let msg = '';
+        const styles: string[] = [];
+
+        if (this.options.showTimestamp) {
+            msg += '%c' + this.getTimestamp() + ' ';
+            styles.push('color: grey');
+        }
+
+        msg += '%c[' + level + '] ';
+        styles.push(colors[level]);
+
+        msg += '%c' + this.category + ': ';
+        styles.push('font-weight: bold');
+
+        msg += '%c' + message;
+        styles.push('');
+
+        return [msg, styles];
+    }
+
+    private write(level: LogLevel, message: string, meta?: unknown[]) {
+        if (!this.shouldLog(level)) return;
+
+        let displayMessage = message;
+        if (meta && meta.length > 0) {
+            const metaStr = meta
+                .map(m => (typeof m === 'object' ? JSON.stringify(m) : String(m)))
+                .join(' ');
+            displayMessage += ' ' + metaStr;
+        }
+
+        if (isBrowser && this.options.useColors) {
+            const [msg, styles] = this.formatBrowser(level, displayMessage);
+            this.transport(level, msg, [...styles, ...(meta || [])]);
+        } else {
+            const formatted = this.formatMessage(level, displayMessage);
+            this.transport(level, formatted, meta);
+        }
+    }
+
+    private interpolate(format: string, args: unknown[]): string {
+        let i = 0;
+        return format.replace(/\{\}/g, () => String(args[i++]));
+    }
+
+    debug(format: string, ...args: unknown[]) {
+        this.write(LogLevel.DEBUG, this.interpolate(format, args), args);
+    }
+
+    info(format: string, ...args: unknown[]) {
+        this.write(LogLevel.INFO, this.interpolate(format, args), args);
+    }
+
+    warn(format: string, ...args: unknown[]) {
+        this.write(LogLevel.WARN, this.interpolate(format, args), args);
+    }
+
+    error(format: string, ...args: unknown[]) {
+        this.write(LogLevel.ERROR, this.interpolate(format, args), args);
+    }
+
+    child(sub: string): Logger {
+        return new Logger(`${this.category}:${sub}`, this.options, this.transport);
+    }
+
+    setLevel(level: LogLevel) {
+        this.options.level = level;
+    }
 }
 
-/* Public API */
-export default {
-    Colors: Color,
-    LogLevels: LogLevel,
-    setLogLevel: (level: LogLevel) => {
-        GlobalLogLevel = level;
-    },
-    /*
-    ,
-    create: (category: string, options?: LoggerOptions): Logger => {
-        return new Logger(category, options);
-    },
-    */
+export const httpTransport: Transport = (level, message, meta) => {
+    fetch('/logs', {
+        method: 'POST',
+        body: JSON.stringify({ level, message, meta }),
+        headers: { 'Content-Type': 'application/json' },
+    }).catch(() => {});
 };

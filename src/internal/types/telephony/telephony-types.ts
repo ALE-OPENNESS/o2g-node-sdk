@@ -514,6 +514,11 @@ export type DeviceCapabilitiesJson = {
     unParkCall?: boolean;
 };
 
+
+export type DeviceStatesJson = {
+    deviceStates: DeviceStateJson[];
+}
+
 /**
  * Represent the telephonic state of a user.
  */
@@ -533,6 +538,8 @@ export type TelephonicStateJson = {
      * The user state.
      */
     userState?: UserState;
+
+    deviceStates?: DeviceStatesJson;
 };
 
 /**

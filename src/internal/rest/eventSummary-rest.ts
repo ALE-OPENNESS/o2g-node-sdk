@@ -22,20 +22,31 @@ import UtilUri from '../util/util-uri';
 import { EventSummaryCounters } from '../../types/eventsummary/event-summary-counter';
 import { EventSummaryJson } from '../types/eventsummary/eventsummary-types';
 import { IHttpClient } from '../util/IHttpClient';
+import { Logger, LogLevel } from '../util/logger';
 
 /** @internal */
 export default class EventSumaryRest extends RestService {
+    #logger = Logger.create('EventSumaryRest');
+
     constructor(uri: string, httpClient: IHttpClient) {
         super(uri, httpClient);
     }
 
     async get(loginName: string | null = null): Promise<EventSummaryCounters | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`get loginName=${loginName}`);
+        }
+
         let uriGet = this._uri;
         if (loginName) {
             uriGet = UtilUri.appendQuery(uriGet, 'loginName', loginName);
         }
 
         const _json = this.getResult<EventSummaryJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`get result={}`, _json);
+        }
+
         if (!_json) return null;
         return EventSummaryCounters.fromJson(_json);
     }

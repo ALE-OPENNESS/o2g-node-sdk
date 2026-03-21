@@ -1,6 +1,6 @@
 {
   "name": "o2g-node-sdk",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "description": "A Node.js SDK for the ALE International O2G (OmniPCX OpenTouch Gateway) platform.",
   "main": "dist/o2g-node-sdk.js",
   "types": "dist/types/o2g-node-sdk.d.ts",

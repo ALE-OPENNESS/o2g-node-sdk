@@ -24,6 +24,8 @@ import {
     OnPbxLinkDownJson,
     OnPbxLinkUpJson,
     OnPbxLoadedJson,
+    OnRemoteServerLinkDownJson,
+    OnRemoteServerLinkUpJson,
     OnServerStartJson,
 } from '../../internal/types/maint/maint-types';
 
@@ -230,5 +232,58 @@ export class OnServerStart {
 
     static fromJson(json: OnServerStartJson): OnServerStart {
         return new OnServerStart(json.serverId);
+    }
+}
+
+
+/**
+ * Notification sent when connection to remote twin server is lost.
+ */
+export class OnRemoteServerLinkDown {
+    #host: string;
+
+    private constructor(host: string) {
+        this.#host = host;
+    }
+
+    /**
+     * Gets the node identifier for which the PBX link is down.
+     *
+     * @returns The node ID.
+     */
+    get host(): string {
+        return this.#host;
+    }
+
+    /** @internal */
+
+    static fromJson(json: OnRemoteServerLinkDownJson): OnRemoteServerLinkDown {
+        return new OnRemoteServerLinkDown(json.host);
+    }
+}
+
+/**
+ * Notification sent when connection to remote twin server is recovered.
+ */
+export class OnRemoteServerLinkUp {
+    #host: string;
+
+    private constructor(host: string) {
+        this.#host = host;
+    }
+
+    /**
+     * Gets the node identifier for which the PBX link is down.
+     *
+     * @returns The node ID.
+     */
+    get host(): string {
+        return this.#host;
+    }
+
+    /** @internal */
+
+    static fromJson(json: OnRemoteServerLinkUpJson): OnRemoteServerLinkUp {
+        return new OnRemoteServerLinkUp(json.host);
     }
 }

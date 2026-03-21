@@ -22,14 +22,21 @@ import { HttpContent } from '../util/http-content';
 import { Subscription } from '../../subscription';
 import { SubscriptionResult } from '../types/common/common-types';
 import { IHttpClient } from '../util/IHttpClient';
+import { Logger, LogLevel } from '../util/logger';
 
 /** @internal */
 export default class SubscriptionsRest extends RestService {
+    #logger = Logger.create('SubscriptionsRest');
+
     constructor(uri: string, httpClient: IHttpClient) {
         super(uri, httpClient);
     }
 
     async create(subscription: Subscription): Promise<SubscriptionResult | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`create subscription=${JSON.stringify(subscription)}`);
+        }
+
         const payload: any = {
             filter: subscription.filter,
             version: subscription.version,
@@ -37,12 +44,16 @@ export default class SubscriptionsRest extends RestService {
 
         if (subscription.webHook?.url) {
             payload.webHookUrl = subscription.webHook.url;
-        } else {
+        } 
+        else {
             payload.timeout = subscription.timeout;
         }
 
         const subscriptionJson = JSON.stringify(payload);
-        console.debug('subscriptionJson: ' + subscriptionJson);
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.debug(`create request=${subscriptionJson}`);
+        }
+        
         const httpContent = new HttpContent(subscriptionJson);
 
         const response = await this._httpClient.post(this._uri, httpContent);

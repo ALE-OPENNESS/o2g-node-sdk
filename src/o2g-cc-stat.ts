@@ -273,11 +273,12 @@ export class CallCenterStatistics {
      *
      * @param context - The context defining the scope and filters for the statistics.
      * @param range - The date range over which to collect statistics.
+     * @param shortHeader - True to return only limited number of headers in response
      * @returns A {@link StatisticsData} object containing the data,
      *          or `null` if the data could not be retrieved.
      */
-    async getDaysData(context: StatsContext, range: DateRange): Promise<StatisticsData | null> {
-        return this.#ccStatisticsRest.getDaysData(context, range);
+    async getDaysData(context: StatsContext, range: DateRange, shortHeader: boolean = false): Promise<StatisticsData | null> {
+        return this.#ccStatisticsRest.getDaysData(context, shortHeader, range);
     }
 
     /**
@@ -293,10 +294,11 @@ export class CallCenterStatistics {
      * @param date - (Optional) The specific day for which to collect statistics; defaults to today if not provided
      * @param timeInterval - (Optional) The time slot interval for reporting (e.g., 15 or 30 minutes);
      *                       defaults to `TimeInterval.QUARTE_HOUR` if not provided
+     * @param shortHeader - True to return only limited number of headers in response
      * @returns A `StatisticsData` object containing the data, or `null` if the data could not be retrieved
      */
-    async getDayData(context: StatsContext, date?: Date, timeInterval?: TimeInterval): Promise<StatisticsData | null> {
-        return this.#ccStatisticsRest.getDayData(context, date, timeInterval);
+    async getDayData(context: StatsContext, date?: Date, timeInterval?: TimeInterval, shortHeader: boolean = false): Promise<StatisticsData | null> {
+        return this.#ccStatisticsRest.getDayData(context, shortHeader, date, timeInterval);
     }
 
     /**
@@ -334,6 +336,7 @@ export class CallCenterStatistics {
      * @param date             the date for which to generate the report
      * @param timeInterval     the length of each reporting interval within the day
      * @param format           the output format for the report file
+     * @param shortHeader      true to return only limited number of headers in response
      * @param directory        the directory in which to save the generated report file
      * @param progressCallback optional callback invoked to report progress of the operation
      * @returns a `Promise` that resolves with the path to the generated report file,
@@ -348,10 +351,11 @@ export class CallCenterStatistics {
         date: Date,
         timeInterval: TimeInterval,
         format: StatsFormat,
+        shortHeader: boolean = false,
         directory: string,
         progressCallback?: ProgressCallback
     ): Promise<string> {
-        return this.#ccStatisticsRest.getDayFileData(context, date, timeInterval, format, directory, progressCallback);
+        return this.#ccStatisticsRest.getDayFileData(context, shortHeader, date, timeInterval, format, directory, progressCallback);
     }
 
     /**
@@ -388,6 +392,7 @@ export class CallCenterStatistics {
      * @param context          the context defining the scope and filters for the statistics
      * @param range            the date range over which to collect statistics
      * @param format           the output format for the report file
+     * @param shortHeader      true to return only limited number of headers in response
      * @param directory        the directory in which to save the generated report file
      * @param progressCallback optional callback invoked to report progress of the operation
      * @returns a `Promise` that resolves with the path to the generated report file,
@@ -401,10 +406,11 @@ export class CallCenterStatistics {
         context: StatsContext,
         range: DateRange,
         format: StatsFormat,
+        shortHeader: boolean = false,
         directory: string,
         progressCallback?: ProgressCallback
     ): Promise<string> {
-        return this.#ccStatisticsRest.getDaysFileData(context, range, format, directory, progressCallback);
+        return this.#ccStatisticsRest.getDaysFileData(context, shortHeader, range, format, directory, progressCallback);
     }
 
     /**

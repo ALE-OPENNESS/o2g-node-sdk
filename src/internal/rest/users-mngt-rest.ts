@@ -24,6 +24,7 @@ import { User } from '../../types/users/user';
 import { UserJson } from '../types/users/users-types';
 import { IHttpClient } from '../util/IHttpClient';
 import { HttpContent } from '../util/http-content';
+import { Logger, LogLevel } from '../util/logger';
 
 /** @internal */
 type LoginsResponse = {
@@ -32,25 +33,40 @@ type LoginsResponse = {
 
 /** @internal */
 export default class UsersManagementRest extends RestService {
+    #logger = Logger.create('UsersManagementRest');
+
     constructor(uri: string, httpClient: IHttpClient) {
         super(uri, httpClient);
     }
 
     async getLogins(nodeIds: number[] | null): Promise<string[] | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getLogins nodeIds=${nodeIds}`);
+        }
+
         let uriGet = this._uri;
         if (nodeIds) {
             uriGet = UtilUri.appendQuery(uriGet, 'nodeIds', nodeIds.join(';'));
         }
 
         const logins = this.getResult<LoginsResponse>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getLogins result={}`, logins);
+        }
+
         if (logins && Array.isArray(logins.loginNames)) {
             return logins.loginNames;
-        } else {
+        } 
+        else {
             return null;
         }
     }
 
     async getByDeviceNumber(deviceNumber: string): Promise<string | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getByDeviceNumber deviceNumber=${deviceNumber}`);
+        }
+
         const uriGet = UtilUri.appendQuery(
             this._uri,
             'deviceNumber=',
@@ -58,14 +74,23 @@ export default class UsersManagementRest extends RestService {
         );
 
         const logins = this.getResult<LoginsResponse>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getByDeviceNumber result={}`, logins);
+        }
+
         if (logins && Array.isArray(logins.loginNames)) {
             return logins.loginNames[0];
-        } else {
+        } 
+        else {
             return null;
         }
     }
 
     async createUsers(nodeId: number, deviceNumbers: string[] | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`createUsers nodeId=${nodeId}, deviceNumbers=${deviceNumbers}`);
+        }
+
         let uriPost = this._uri;
 
         let req: any = new Object();
@@ -73,8 +98,12 @@ export default class UsersManagementRest extends RestService {
 
         if (deviceNumbers && deviceNumbers.length > 0) {
             req.deviceNumbers = deviceNumbers;
-        } else {
+        } 
+        else {
             req.all = true;
+        }
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`createUsers request={}`, req);
         }
 
         let httpResponse = await this._httpClient.post(uriPost, new HttpContent(JSON.stringify(req)));
@@ -82,14 +111,26 @@ export default class UsersManagementRest extends RestService {
     }
 
     async getByLoginName(loginName: string): Promise<User | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getByLoginName loginName=${loginName}`);
+        }
+
         const uriGet = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(loginName, 'loginName'));
 
         const _json = this.getResult<UserJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getByLoginName result={}`, _json);
+        }
+
         if (!_json) return null;
         return User.fromJson(_json);
     }
 
     async deleteUser(loginName: string): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deleteUser loginName=${loginName}`);
+        }
+
         const uriDelete = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(loginName, 'loginName'));
 
         const httpResponse = await this._httpClient.delete(uriDelete);

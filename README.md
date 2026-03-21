@@ -19,7 +19,7 @@ npm install o2g-node-sdk
 ```typescript
 import { O2G, Subscription, Telephony } from 'o2g-node-sdk';
 
-// 1. Initialize the SDK
+// 1. Initialize the SDK, configure the O2G IP address or FQDN
 O2G.initialize("MyApp", { privateAddress: "192.168.1.1" });
 
 // 2. Login

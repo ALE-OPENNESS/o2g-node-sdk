@@ -29,9 +29,12 @@ import { ComHistoryRecordJson, ComHistoryRecordsJson } from '../types/comlog/com
 import { IHttpClient } from '../util/IHttpClient';
 import { FilterOption } from '../../types/comlog/filter-option';
 import { ComRecord } from '../../types/comlog/com-record';
+import { Logger, LogLevel } from '../util/logger';
 
 /** @internal */
 export default class CommunicationLogRest extends RestService {
+    #logger = Logger.create('CommunicationLogRest');
+
     constructor(uri: string, httpClient: IHttpClient) {
         super(uri, httpClient);
     }
@@ -42,6 +45,11 @@ export default class CommunicationLogRest extends RestService {
         optimized: boolean,
         loginName: string | null
     ): Promise<QueryResult | null> {
+        
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getComRecords filter={}, page={}, optimized={}, loginName={}`, filter, page, optimized, loginName);
+        }
+
         let uriGet = this._uri;
         if (loginName) {
             uriGet = UtilUri.appendQuery(uriGet, 'loginName', loginName);
@@ -68,7 +76,8 @@ export default class CommunicationLogRest extends RestService {
             if (filter.role) {
                 if (filter.role === Role.CALLEE) {
                     uriGet = UtilUri.appendQuery(uriGet, 'role', 'CALLEE');
-                } else if (filter.role == Role.CALLER) {
+                } 
+                else if (filter.role == Role.CALLER) {
                     uriGet = UtilUri.appendQuery(uriGet, 'role', 'CALLER');
                 }
             }
@@ -97,22 +106,38 @@ export default class CommunicationLogRest extends RestService {
         }
 
         const _json = this.getResult<ComHistoryRecordsJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getComRecords result={}`, _json);
+        }
+
         if (!_json) return null;
         return QueryResult.fromJson(_json);
     }
 
     async getComRecord(recordId: string, loginName: string | null): Promise<ComRecord | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getComRecord recordId=${recordId}, loginName=${loginName}`);
+        }
+
         let uriGet = UtilUri.appendPath(this._uri, recordId);
         if (loginName) {
             uriGet = UtilUri.appendQuery(uriGet, 'loginName', loginName);
         }
 
         const _json = this.getResult<ComHistoryRecordJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getComRecord result={}`, _json);
+        }
+
         if (!_json) return null;
         return ComRecord.fromJson(_json);
     }
 
     async deleteComRecord(recordId: string, loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deleteComRecord recordId=${recordId}, loginName=${loginName}`);
+        }
+
         let uriDelete = UtilUri.appendPath(this._uri, recordId);
         if (loginName) {
             uriDelete = UtilUri.appendQuery(uriDelete, 'loginName', loginName);
@@ -123,6 +148,10 @@ export default class CommunicationLogRest extends RestService {
     }
 
     async deleteComRecords(filter: QueryFilter | null, loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deleteComRecords filter={}, loginName={}`, filter, loginName);
+        }
+
         let uriDelete = this._uri;
         if (loginName) {
             uriDelete = UtilUri.appendQuery(uriDelete, 'loginName', loginName);
@@ -168,6 +197,10 @@ export default class CommunicationLogRest extends RestService {
     }
 
     async deleteComRecordsById(recordIds: string[], loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deleteComRecordsById recordIds={}, loginName={}`, recordIds, loginName);
+        }
+
         let uriDelete = UtilUri.appendQuery(this._uri, 'recordIdList', recordIds.join(','));
         if (loginName) {
             uriDelete = UtilUri.appendQuery(uriDelete, 'loginName', loginName);
@@ -187,24 +220,39 @@ export default class CommunicationLogRest extends RestService {
         req.recordIds = recordIds;
 
         const json = JSON.stringify(req);
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`_ackOrUnAckComRecords request=${json}`);
+        }
 
         var httpResponse = await this._httpClient.put(uriPut, new HttpContent(json));
         return httpResponse.isSuccessStatusCode();
     }
 
     async acknowledgeComRecords(recordIds: string[], loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`acknowledgeComRecords recordIds={}, loginName={}`, recordIds, loginName);
+        }
         return this._ackOrUnAckComRecords('true', recordIds, loginName);
     }
 
     async acknowledgeComRecord(recordId: string, loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`acknowledgeComRecord recordIds={}, loginName={}`, recordId, loginName);
+        }
         return this._ackOrUnAckComRecords('true', [recordId], loginName);
     }
 
     async unacknowledgeComRecords(recordIds: string[], loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`unacknowledgeComRecords recordIds={}, loginName={}`, recordIds, loginName);
+        }
         return this._ackOrUnAckComRecords('false', recordIds, loginName);
     }
 
     async unacknowledgeComRecord(recordId: string, loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`unacknowledgeComRecord recordIds={}, loginName={}`, recordId, loginName);
+        }
         return this._ackOrUnAckComRecords('false', [recordId], loginName);
     }
 }

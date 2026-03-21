@@ -23,13 +23,18 @@ import { AgentSkillSet } from './agent-skill-set';
 import { OperatorType } from './operator-type';
 
 /**
- * `OperatorConfig` represents the configuration of a CCD operator.
+ * Represents the configuration of a CCD operator.
+ * <p>
+ * A CCD operator can be an {@link OperatorType.AGENT} or an
+ * {@link OperatorType.SUPERVISOR}. This class provides access to the
+ * operator's type, associated pro-ACD station, group memberships, skills,
+ * and feature settings such as headset usage, self-assignment capability
+ * and multiline configuration.
+ * <p>
+ * An `OperatorConfig` instance is returned by
+ * {@link CallCenterAgent.getConfiguration}.
  *
- * A CCD operator can be an {@link OperatorType.AGENT | agent}
- * or an {@link OperatorType.SUPERVISOR | supervisor}. This class
- * provides access to the operator’s type, associated pro-ACD station,
- * group memberships, skills, and feature settings
- * (such as headset usage, self-assignment capability, or multiline configuration).
+ * @see CallCenterAgent.getConfiguration
  */
 export class OperatorConfig {
     #type: OperatorType;
@@ -65,102 +70,83 @@ export class OperatorConfig {
     }
 
     /**
-     * Returns the type of CCD operator (agent or supervisor).
+     * The type of this CCD operator.
      *
-     * @returns The operator type.
+     * @returns the {@link OperatorType} of this operator
      */
     get type(): OperatorType {
         return this.#type;
     }
 
     /**
-     * Returns the associated pro-ACD station.
+     * The pro-ACD station extension number associated with this operator.
      *
-     * @returns The pro-ACD station extension number,
-     *          or `null` if none is associated.
+     * @returns the pro-ACD station number, or `null` if none is configured
      */
     get proacd(): string | null {
         return this.#proacd ?? null;
     }
 
     /**
-     * Returns the agent groups the operator is attached to,
-     * including the preferred group if defined.
+     * The agent groups this operator belongs to, including the preferred
+     * group if defined.
      *
-     * @returns The {@link AgentGroups} instance representing
-     *          the operator’s group memberships,
-     *          or `null` if none are configured.
+     * @returns the {@link AgentGroups} instance, or `null` if no groups are configured
      */
     get processingGroups(): AgentGroups | null {
         return this.#processingGroups ?? null;
     }
 
     /**
-     * Returns the operator’s assigned skills.
+     * The skills assigned to this operator.
      *
-     * @returns The {@link AgentSkillSet} instance representing
-     *          the operator’s skills,
-     *          or `null` if none are defined.
+     * @returns the {@link AgentSkillSet} instance, or `null` if no skills are defined
      */
     get skills(): AgentSkillSet | null {
         return this.#skills ?? null;
     }
 
     /**
-     * Indicates whether the operator can choose their own processing group.
+     * Whether the operator can choose their own processing group.
      *
-     * @returns `true` if the operator can self-assign a group;
-     *          `false` otherwise.
+     * @returns `true` if the operator can self-assign a group; `false` otherwise
      */
     get selfAssign(): boolean {
         return this.#selfAssign ?? false;
     }
 
     /**
-     * Indicates whether the operator has the headset feature enabled.
+     * Whether the headset feature is enabled for this operator.
+     * <p>
+     * When enabled, the operator can answer calls using a headset device.
      *
-     * The headset feature allows a CCD operator to answer calls using a headset device.
-     *
-     * @returns `true` if headset functionality is enabled;
-     *          `false` otherwise.
+     * @returns `true` if headset functionality is enabled; `false` otherwise
      */
     get headset(): boolean {
         return this.#headset ?? false;
     }
 
     /**
-     * Indicates whether the operator can request help from a supervisor.
+     * Whether the operator can request help from a supervisor.
      *
-     * @returns `true` if the operator can request help;
-     *          `false` otherwise.
+     * @returns `true` if the operator can request help; `false` otherwise
      */
     get help(): boolean {
         return this.#help ?? false;
     }
 
     /**
-     * Indicates whether the operator is configured as multiline.
+     * Whether the operator is configured for multiline handling.
      *
-     * @returns `true` if the operator supports multiline handling;
-     *          `false` otherwise.
+     * @returns `true` if the operator supports multiline handling; `false` otherwise
      */
     get multiline(): boolean {
         return this.#multiline ?? false;
     }
 
     /**
-     * Creates an `OperatorConfig` instance from a JSON object.
-     *
-     * This method converts the provided {@link AgentConfigJson}
-     * into a fully constructed `OperatorConfig`, including
-     * nested {@link AgentGroups} and {@link AgentSkillSet} instances
-     * when present.
-     *
-     * @param json - The JSON representation of an operator configuration.
-     * @returns A new `OperatorConfig` instance.
+     * @internal
      */
-    /** @internal */
-
     static fromJson(json: AgentConfigJson): OperatorConfig {
         return new OperatorConfig(
             json.type,

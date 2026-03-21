@@ -17,7 +17,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { SelectedPeriodJson, StatsJson } from '../../../internal/types/cc-stat/cc-stat-types';
+import { SelectedPeriodJson, StatsJson } from '../../../internal/types/cc-stats/cc-stat-types';
 import { AgentStatisticsRow } from './ag-stats-row';
 import { PilotStatisticsRow } from './pil-stats-row';
 import { SelectedPeriod } from './selected-period';

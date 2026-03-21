@@ -29,6 +29,7 @@ import { Pin } from '../../types/phoneset/pin';
 import { DynamicState } from '../../types/phoneset/dynamic-state';
 import { DeviceJson } from '../types/common/common-types';
 import { IHttpClient } from '../util/IHttpClient';
+import { Logger, LogLevel } from '../util/logger';
 
 /** @internal */
 type DeviceListJson = {
@@ -47,22 +48,35 @@ type SoftKeyListJson = {
 
 /** @internal */
 export default class PhoneSetProgrammingRest extends RestService {
+    #logger = Logger.create('PhoneSetProgrammingRest');
+    
     constructor(uri: string, httpClient: IHttpClient) {
         super(uri, httpClient);
     }
 
     async getDevices(loginName: string | null): Promise<Device[] | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getDevices loginName={}`, loginName);
+        }
+
         const uriGet = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(loginName, 'loginName'), 'devices');
 
         const devices = this.getResult<DeviceListJson>(await this._httpClient.get(uriGet));
+        this.#logger.debug(`getDevices result={}`, devices);
+
         if (devices && Array.isArray(devices.devices)) {
             return devices.devices.map(Device.fromJson);
-        } else {
+        } 
+        else {
             return null;
         }
     }
 
     async getDevice(loginName: string | null, deviceId: string): Promise<Device | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getDevice loginName={}, deviceId={}`, loginName, deviceId);
+        }
+
         const uriGet = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(loginName, 'loginName'),
@@ -74,6 +88,10 @@ export default class PhoneSetProgrammingRest extends RestService {
     }
 
     async getProgrammableKeys(loginName: string | null, deviceId: string): Promise<ProgrammeableKey[] | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getProgrammableKeys loginName={}, deviceId={}`, loginName, deviceId);
+        }
+
         const uriGet = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(loginName, 'loginName'),
@@ -83,14 +101,23 @@ export default class PhoneSetProgrammingRest extends RestService {
         );
 
         const json = this.getResult<ProgrammeableKeyListJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getProgrammableKeys result={}`, json);
+        }
+
         if (json && Array.isArray(json.pkeys)) {
             return json.pkeys.map(ProgrammeableKey.fromJson);
-        } else {
+        } 
+        else {
             return null;
         }
     }
 
     async getProgrammedKeys(loginName: string | null, deviceId: string): Promise<ProgrammeableKey[] | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getProgrammedKeys loginName={}, deviceId={}`, loginName, deviceId);
+        }
+
         const uriGet = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(loginName, 'loginName'),
@@ -100,14 +127,23 @@ export default class PhoneSetProgrammingRest extends RestService {
         );
 
         const json = this.getResult<ProgrammeableKeyListJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getProgrammedKeys result={}`, json);
+        }
+
         if (json && Array.isArray(json.pkeys)) {
             return json.pkeys.map((pk) => ProgrammeableKey.fromJson(pk));
-        } else {
+        } 
+        else {
             return null;
         }
     }
 
     async setProgrammableKey(loginName: string | null, deviceId: string, key: ProgrammeableKey): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`setProgrammableKey loginName={}, deviceId={}, key={}`, loginName, deviceId, key);
+        }
+
         const uriPut = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(loginName, 'loginName'),
@@ -118,12 +154,19 @@ export default class PhoneSetProgrammingRest extends RestService {
         );
 
         const json = JSON.stringify(key.toJson());
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`setProgrammableKey request={}`, json);
+        }
 
         const httpResponse = await this._httpClient.put(uriPut, new HttpContent(json));
         return httpResponse.isSuccessStatusCode();
     }
 
     async deleteProgrammableKey(loginName: string | null, deviceId: string, position: number): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deleteProgrammableKey loginName={}, deviceId={}, position={}`, loginName, deviceId, position);
+        }
+
         const uriDelete = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(loginName, 'loginName'),
@@ -138,6 +181,10 @@ export default class PhoneSetProgrammingRest extends RestService {
     }
 
     async getSoftKeys(loginName: string | null, deviceId: string): Promise<SoftKey[] | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getSoftKeys loginName={}, deviceId={}`, loginName, deviceId);
+        }
+
         const uriGet = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(loginName, 'loginName'),
@@ -147,14 +194,23 @@ export default class PhoneSetProgrammingRest extends RestService {
         );
 
         const json = this.getResult<SoftKeyListJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getSoftKeys result={}`, json);
+        }
+
         if (json && Array.isArray(json.skeys)) {
             return json.skeys.map(SoftKey.fromJson);
-        } else {
+        } 
+        else {
             return null;
         }
     }
 
     async setSoftKey(loginName: string | null, deviceId: string, key: SoftKey): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`setSoftKey loginName={}, deviceId={}, key={}`, loginName, deviceId, key);
+        }
+
         const uriPut = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(loginName, 'loginName'),
@@ -165,12 +221,19 @@ export default class PhoneSetProgrammingRest extends RestService {
         );
 
         const json = JSON.stringify(key.toJson());
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`setSoftKey request={}`, json);
+        }
 
         const httpResponse = await this._httpClient.put(uriPut, new HttpContent(json));
         return httpResponse.isSuccessStatusCode();
     }
 
     async deleteSoftKey(loginName: string | null, deviceId: string, position: number): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deleteSoftKey loginName={}, deviceId={}, position={}`, loginName, deviceId, position);
+        }
+
         const uriDelete = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(loginName, 'loginName'),
@@ -190,6 +253,11 @@ export default class PhoneSetProgrammingRest extends RestService {
         action: string,
         activate: boolean
     ): Promise<boolean> {
+
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`_doDeviceAction loginName={}, deviceId={}, action={}, activate={}`, loginName, deviceId, action, activate);
+        }
+
         let uriPut = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(loginName, 'loginName'),
@@ -221,6 +289,10 @@ export default class PhoneSetProgrammingRest extends RestService {
     }
 
     async getPinCode(loginName: string | null, deviceId: string): Promise<Pin | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getPinCode loginName={}, deviceId={}`, loginName, deviceId);
+        }
+
         const uriGet = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(loginName, 'loginName'),
@@ -230,11 +302,19 @@ export default class PhoneSetProgrammingRest extends RestService {
         );
 
         const _json = this.getResult<PinCodeJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getPinCode request=xxxxxxx`);
+        }
+
         if (!_json) return null;
         return Pin.fromJson(_json);
     }
 
     async setPinCode(loginName: string | null, deviceId: string, code: Pin): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`setPinCode loginName={}, deviceId={}, code={}`, loginName, deviceId, code);
+        }
+
         const uriPut = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(loginName, 'loginName'),
@@ -250,6 +330,10 @@ export default class PhoneSetProgrammingRest extends RestService {
     }
 
     async getDynamicState(loginName: string | null, deviceId: string): Promise<DynamicState | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getDynamicState loginName={}, deviceId={}`, loginName, deviceId);
+        }
+
         const uriGet = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(loginName, 'loginName'),
@@ -259,11 +343,19 @@ export default class PhoneSetProgrammingRest extends RestService {
         );
 
         const _json = this.getResult<DynamicStateJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getDynamicState result={}`, _json);
+        }
+
         if (!_json) return null;
         return DynamicState.fromJson(_json);
     }
 
     async setAssociate(loginName: string | null, deviceId: string, associate: string): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`setAssociate loginName={}, deviceId={}, associate={}`, loginName, deviceId, associate);
+        }
+
         const uriPut = UtilUri.appendPath(
             this._uri,
             AssertUtil.notNullOrEmpty(loginName, 'loginName'),
@@ -275,16 +367,25 @@ export default class PhoneSetProgrammingRest extends RestService {
         const json = JSON.stringify({
             associate: AssertUtil.notNullOrEmpty(associate, 'associate'),
         });
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`setAssociate request={}`, json);
+        }
 
         const httpResponse = await this._httpClient.put(uriPut, new HttpContent(json));
         return httpResponse.isSuccessStatusCode();
     }
 
     async activateRemoteExtension(loginName: string | null, deviceId: string): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`activateRemoteExtension loginName={}, deviceId={}`, loginName, deviceId);
+        }
         return this._doDeviceAction(loginName, deviceId, 'REActive', true);
     }
 
     async deactivateRemoteExtension(loginName: string | null, deviceId: string): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deactivateRemoteExtension loginName={}, deviceId={}`, loginName, deviceId);
+        }
         return this._doDeviceAction(loginName, deviceId, 'REActive', false);
     }
 }

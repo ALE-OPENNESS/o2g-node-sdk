@@ -17,6 +17,8 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+
+import { OperationalState } from "../../src/types/telephony/device/operational-state";
 import { TelephonicState } from "../../src/types/telephony/telephonic-state";
 import { UserState } from "../../src/types/telephony/user/user-state";
 
@@ -32,7 +34,13 @@ describe("TelephonicState", () => {
             "deviceCapabilities": [
                 { "deviceId": "device1", "makeCall": true }
             ],
-            "userState": "BUSY"
+            "userState": "BUSY",
+            "deviceStates": {
+                "deviceStates": [
+                    { "deviceId": "device1", "state": "IN_SERVICE" },
+                    { "deviceId": "device2", "state": "OUT_OF_SERVICE" }
+                ]
+            }
         }`;
 
         const state = TelephonicState.fromJson(JSON.parse(jsonString));
@@ -47,6 +55,13 @@ describe("TelephonicState", () => {
         expect(state.deviceCapabilities?.[0].canMakeCall).toBe(true);
 
         expect(state.userState).toBe(UserState.BUSY);
+        
+        expect(state.deviceStates?.length).toBe(2);
+        expect(state.deviceStates![0].deviceId).toBe("device1");
+        expect(state.deviceStates![0].state).toBe(OperationalState.IN_SERVICE);
+        expect(state.deviceStates![1].deviceId).toBe("device2");
+        expect(state.deviceStates![1].state).toBe(OperationalState.OUT_OF_SERVICE);
+
     });
 
     it("should handle missing optional fields", () => {

@@ -128,6 +128,12 @@ export interface ScheduledReport {
     get enabled(): boolean;
 
     /**
+     * Indicates whether the data are returned with short header (compact number of header attributes).
+     * @returns `true` if the short header is considered; otherwise `false`.
+     */
+    get shortHeader(): boolean;
+
+    /**
      * Returns the date and time when the report was last executed.
      *
      * @return the last execution date, or null if never executed

@@ -22,17 +22,28 @@ import UtilUri from '../util/util-uri';
 import { SystemStatus } from '../../types/maint/sys-status';
 import { SystemStatusJson } from '../types/maint/maint-types';
 import { IHttpClient } from '../util/IHttpClient';
+import { Logger, LogLevel } from '../util/logger';
 
 /** @internal */
 export default class MaintenanceRest extends RestService {
+    #logger = Logger.create('MaintenanceRest');
+
     constructor(uri: string, httpClient: IHttpClient) {
         super(uri, httpClient);
     }
 
     async getSystemStatus(): Promise<SystemStatus | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getSystemStatus`);
+        }
+
         const uriGet = UtilUri.appendPath(this._uri, 'status');
 
         const _json = this.getResult<SystemStatusJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getSystemStatus result={}`, _json);
+        }
+
         if (!_json) return null;
         return SystemStatus.fromJson(_json);
     }

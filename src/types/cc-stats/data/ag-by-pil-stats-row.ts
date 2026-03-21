@@ -17,7 +17,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { AgentByPilotStatisticsRowJson } from '../../../internal/types/cc-stat/cc-stat-types';
+import { AgentByPilotStatisticsRowJson } from '../../../internal/types/cc-stats/cc-stat-types';
 import { StatValue } from './stat-value';
 import { StatsAgentByPilotAttributes } from '../agbypilot-attributes';
 

@@ -37,6 +37,7 @@ export class ContextImpl implements StatsContext {
     #label?: string;
     #description?: string;
     #isScheduled: boolean = false;
+    #hasShortHeader: boolean = false;
 
     /**
      * @internal
@@ -106,6 +107,10 @@ export class ContextImpl implements StatsContext {
         return this.#description;
     }
 
+    get shortHeader(): boolean {
+        return this.#hasShortHeader;
+    }
+
     /**
      * Indicates whether this context is associated with a scheduled report.
      * @returns true if scheduled, false otherwise
@@ -138,6 +143,7 @@ export class ContextImpl implements StatsContext {
         }
 
         ctx.#isScheduled = json.isScheduled;
+        ctx.#hasShortHeader = json.shortHeader;
 
         // Convert the filter JSON into a StatsFilter instance
         if (json.filter) {

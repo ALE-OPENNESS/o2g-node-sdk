@@ -17,7 +17,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { AbstractFilter } from '../../internal/types/cc-stat/abstract-filter';
+import { AbstractFilter } from '../../internal/types/cc-stats/abstract-filter';
 import { StatsPilotAttributes } from './pilot-attributes';
 
 /**

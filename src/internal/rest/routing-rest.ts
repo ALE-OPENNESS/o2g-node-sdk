@@ -35,14 +35,21 @@ import { Overflow } from '../../types/routing/overflow';
 import { RoutingCapabilities } from '../../types/routing/routing-capabilities';
 import { RoutingState } from '../../types/routing/routing-state';
 import { IHttpClient } from '../util/IHttpClient';
+import { Logger, LogLevel } from '../util/logger';
 
 /** @internal */
 export default class RoutingRest extends RestService {
+    #logger = Logger.create('RoutingRest');
+
     constructor(uri: string, httpClient: IHttpClient) {
         super(uri, httpClient);
     }
 
     async activateDnd(loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`activateDnd loginName=${loginName}`);
+        }
+
         let uriPost = UtilUri.appendPath(this._uri, 'dnd');
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
@@ -53,6 +60,10 @@ export default class RoutingRest extends RestService {
     }
 
     async cancelDnd(loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`cancelDnd loginName=${loginName}`);
+        }
+
         let uriDelete = UtilUri.appendPath(this._uri, 'dnd');
         if (loginName) {
             uriDelete = UtilUri.appendQuery(uriDelete, 'loginName', loginName);
@@ -63,28 +74,48 @@ export default class RoutingRest extends RestService {
     }
 
     async getDndState(loginName: string | null): Promise<DndState | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getDndState loginName=${loginName}`);
+        }
+
         let uriGet = UtilUri.appendPath(this._uri, 'dnd');
         if (loginName) {
             uriGet = UtilUri.appendQuery(uriGet, 'loginName', loginName);
         }
 
         const _json = this.getResult<DndStateJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getDndState result={}`, _json);
+        }
+
         if (_json == null) return null;
         return DndState.fromJson(_json);
     }
 
     async getCapabilities(loginName: string | null): Promise<RoutingCapabilities | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getCapabilities loginName=${loginName}`);
+        }
+
         let uriGet = this._uri;
         if (loginName) {
             uriGet = UtilUri.appendQuery(uriGet, 'loginName', loginName);
         }
 
         const _json = this.getResult<RoutingCapabilitiesJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getCapabilities result={}`, _json);
+        }
+
         if (_json == null) return null;
         return RoutingCapabilities.fromJson(_json);
     }
 
     async cancelForward(loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`cancelForward loginName=${loginName}`);
+        }
+
         let uriDelete = UtilUri.appendPath(this._uri, 'forwardroute');
         if (loginName) {
             uriDelete = UtilUri.appendQuery(uriDelete, 'loginName', loginName);
@@ -95,26 +126,41 @@ export default class RoutingRest extends RestService {
     }
 
     async getForward(loginName: string | null): Promise<Forward | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getForward loginName=${loginName}`);
+        }
+
         let uriGet = UtilUri.appendPath(this._uri, 'forwardroute');
         if (loginName) {
             uriGet = UtilUri.appendQuery(uriGet, 'loginName', loginName);
         }
 
         const httpResponse = await this._httpClient.get(uriGet);
-        const json = httpResponse.response;
+        const _json = httpResponse.response;
+
         if (httpResponse.isSuccessStatusCode()) {
-            if (json.length === 0) {
+            if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+                this.#logger.debug(`getForward result={}`, _json);
+            }
+
+            if (_json.length === 0) {
                 return Forward.fromJson(null);
-            } else {
-                const forwardRoute: ForwardRouteJson = JSON.parse(json);
+            } 
+            else {
+                const forwardRoute: ForwardRouteJson = JSON.parse(_json);
                 return Forward.fromJson(forwardRoute);
             }
-        } else {
+        } 
+        else {
             return null;
         }
     }
 
     async forwardOnVoiceMail(condition: ForwardCondition, loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`forwardOnVoiceMail condition={}, loginName={}`, condition, loginName);
+        }
+
         let uriPost = UtilUri.appendPath(this._uri, 'forwardroute');
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
@@ -124,12 +170,19 @@ export default class RoutingRest extends RestService {
         let json = JSON.stringify({
             forwardRoute: _forward.toJson(),
         });
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`forwardOnVoiceMail request=${json}`);
+        }
 
         const httpResponse = await this._httpClient.post(uriPost, new HttpContent(json));
         return httpResponse.isSuccessStatusCode();
     }
 
     async forwardOnNumber(number: string, condition: ForwardCondition, loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`forwardOnNumber number={}, condition={}, loginName={}`, number, condition, loginName);
+        }
+
         let uriPost = UtilUri.appendPath(this._uri, 'forwardroute');
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
@@ -140,12 +193,19 @@ export default class RoutingRest extends RestService {
         const json = JSON.stringify({
             forwardRoute: _forward.toJson(),
         });
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`forwardOnNumber request=${json}`);
+        }
 
         const httpResponse = await this._httpClient.post(uriPost, new HttpContent(json));
         return httpResponse.isSuccessStatusCode();
     }
 
     async overflowOnVoiceMail(condition: OverflowCondition, loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`overflowOnVoiceMail condition={}, loginName={}`, condition, loginName);
+        }
+
         let uriPost = UtilUri.appendPath(this._uri, 'overflowroute');
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
@@ -156,32 +216,50 @@ export default class RoutingRest extends RestService {
         const json = JSON.stringify({
             overflowRoutes: _overflow.toJson(),
         });
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`overflowOnVoiceMail request=${json}`);
+        }
 
         const httpResponse = await this._httpClient.post(uriPost, new HttpContent(json));
         return httpResponse.isSuccessStatusCode();
     }
 
     async getOverflow(loginName: string | null): Promise<Overflow | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getOverflow loginName=${loginName}`);
+        }
+
         let uriGet = UtilUri.appendPath(this._uri, 'overflowroute');
         if (loginName) {
             uriGet = UtilUri.appendQuery(uriGet, 'loginName', loginName);
         }
 
         const httpResponse = await this._httpClient.get(uriGet);
-        const json = httpResponse.response;
+        const _json = httpResponse.response;
+
         if (httpResponse.isSuccessStatusCode()) {
-            if (json.length === 0) {
+            if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+                this.#logger.debug(`getOverflow result={}`, _json);
+            }
+
+            if (_json.length === 0) {
                 return Overflow.fromJson(null);
-            } else {
-                const _overflowRouteJson: OverflowRouteJson = JSON.parse(json);
+            } 
+            else {
+                const _overflowRouteJson: OverflowRouteJson = JSON.parse(_json);
                 return Overflow.fromJson(_overflowRouteJson);
             }
-        } else {
+        } 
+        else {
             return null;
         }
     }
 
     async cancelOverflow(loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`cancelOverflow loginName=${loginName}`);
+        }
+
         let uriDelete = UtilUri.appendPath(this._uri, 'overflowroute');
         if (loginName) {
             uriDelete = UtilUri.appendQuery(uriDelete, 'loginName', loginName);
@@ -192,6 +270,10 @@ export default class RoutingRest extends RestService {
     }
 
     async setRemoteExtensionActivation(active: boolean, loginName: string | null): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`setRemoteExtensionActivation active=${active}, loginName=${loginName}`);
+        }
+
         let uriPost = this._uri;
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
@@ -209,18 +291,29 @@ export default class RoutingRest extends RestService {
                 },
             ],
         });
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`setRemoteExtensionActivation request=${json}`);
+        }
 
         const httpResponse = await this._httpClient.post(uriPost, new HttpContent(json));
         return httpResponse.isSuccessStatusCode();
     }
 
     async getRoutingState(loginName: string | null): Promise<RoutingState | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getRoutingState loginName=${loginName}`);
+        }
+
         let uriGet = UtilUri.appendPath(this._uri, 'state');
         if (loginName) {
             uriGet = UtilUri.appendQuery(uriGet, 'loginName', loginName);
         }
 
         const _json = this.getResult<RoutingStateJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getForward result={}`, _json);
+        }
+
         if (!_json) return null;
         return RoutingState.fromJson(_json);
     }

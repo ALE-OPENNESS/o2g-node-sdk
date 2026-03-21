@@ -20,6 +20,7 @@
 import { TelephonicStateJson } from '../../internal/types/telephony/telephony-types';
 import { Device } from '../common/device';
 import { Call } from './call';
+import { DeviceState } from './device/device-state';
 import { UserState } from './user/user-state';
 
 /**
@@ -35,14 +36,16 @@ export class TelephonicState {
     #calls?: Call[];
     #deviceCapabilities?: Device.Capabilities[];
     #userState?: UserState;
+    #deviceStates?: DeviceState[]
 
     /**
      * @internal
      */
-    private constructor(calls?: Call[], deviceCapabilities?: Device.Capabilities[], userState?: UserState) {
+    private constructor(calls?: Call[], deviceCapabilities?: Device.Capabilities[], userState?: UserState, deviceStates?: DeviceState[]) {
         this.#calls = calls;
         this.#deviceCapabilities = deviceCapabilities;
         this.#userState = userState;
+        this.#deviceStates = deviceStates;
     }
 
     /**
@@ -73,13 +76,24 @@ export class TelephonicState {
     }
 
     /**
+     * Returns the current devices state.
+     *
+     * @returns The `DeviceState` of the all user's device, or `null` if not set
+     */
+    get deviceStates() : DeviceState[] | null {
+        return this.#deviceStates ?? null;
+    }
+
+
+    /**
      * @internal
      */
     static fromJson(json: TelephonicStateJson): TelephonicState {
         return new TelephonicState(
             json.calls?.map(Call.fromJson) ?? undefined,
             json.deviceCapabilities?.map(Device.Capabilities.fromJson) ?? undefined,
-            json.userState
+            json.userState,
+            (json.deviceStates && json.deviceStates.deviceStates) ? json.deviceStates.deviceStates.map(DeviceState.fromJson) : undefined
         );
     }
 }

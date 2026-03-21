@@ -39,6 +39,7 @@ export class ScheduledReportImpl implements ScheduledReport {
     #lastExecDate: Date | null;
     #enable: boolean;
     #context: StatsContext | null;
+    #shortHeader: boolean;
 
     constructor(
         context: StatsContext,
@@ -58,6 +59,7 @@ export class ScheduledReportImpl implements ScheduledReport {
         this.#recipients = recipients.slice();
         this.#state = ScheduledReport.State.NOT_EXECUTED;
         this.#enable = false;
+        this.#shortHeader = false;
         this.#lastExecDate = null;
     }
 
@@ -128,6 +130,11 @@ export class ScheduledReportImpl implements ScheduledReport {
         return this.#enable;
     }
 
+    get shortHeader(): boolean {
+        return this.#shortHeader;
+    }
+
+
     get lastExecutionDate(): Date | null {
         return this.#lastExecDate;
     }
@@ -154,6 +161,7 @@ export class ScheduledReportImpl implements ScheduledReport {
         // Set additional fields that are not in constructor
         report.#state = json.state;
         report.#enable = json.enable;
+        report.#shortHeader = json.shortHeader;
         report.#lastExecDate = json.lastExecDate ? new Date(json.lastExecDate) : null;
 
         return report;

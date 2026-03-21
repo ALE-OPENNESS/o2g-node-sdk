@@ -59,8 +59,15 @@ export interface StatsContext {
     get description(): string | undefined;
 
     /**
+     * Indicates whether the data are returned with short header (compact number of header attributes).
+     * @returns `true` if the short header is considered; otherwise `false`.
+     */
+    get shortHeader() : boolean;
+
+    /**
      * Indicates whether this context is associated with a scheduled report.
      * @returns `true` if the context is scheduled; otherwise `false`.
+     * @since 2.7.5
      */
     get scheduled(): boolean;
 

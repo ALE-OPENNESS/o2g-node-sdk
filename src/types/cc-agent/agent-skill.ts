@@ -17,44 +17,112 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { AgentSkillJson } from "../../internal/types/cc-agent/cc-agent-types";
+
 /**
- * Represents a CCD operator skill.
- * Skills are used by the "Advanced Call Routing" strategy.
+ * Represents a skill assigned to a CCD agent.
+ * <p>
+ * Skills are used by the <b>Advanced Call Routing</b> strategy to influence
+ * how calls are distributed among agents. Each skill has a unique identifier,
+ * a proficiency level, and may belong to a specific domain.
+ * <p>
+ * An agent's skills are available via {@link AgentSkillSet}, which is returned
+ * as part of the agent configuration from {@link CallCenterAgent.getConfiguration}.
+ *
+ * @see AgentSkillSet
+ * @see CallCenterAgent.getConfiguration
  */
 export class AgentSkill {
-    /** Unique identifier of this skill */
-    #number: number;
+    #number?: number;
+    #level?: number;
+    #active?: boolean;
+    #domain?: number;
+    #name?: string;
+    #abvName?: string;
 
-    /** Skill level */
-    #level: number;
-
-    /** Whether the skill is active */
-    #active: boolean;
-
-    private constructor(number: number, level: number, active: boolean) {
+    /**
+     * @internal
+     */
+    private constructor(number?: number, level?: number, active?: boolean, domain?: number, name?: string, abvName?: string) {
         this.#number = number;
         this.#level = level;
         this.#active = active;
+        this.#domain = domain;
+        this.#name = name;
+        this.#abvName = abvName;
     }
 
-    /** @internal */
-
-    static fromJson(json: { number: number; level: number; active: boolean }): AgentSkill {
-        return new AgentSkill(json.number, json.level, json.active);
+    /**
+     * @internal
+     */
+    static fromJson(json: AgentSkillJson): AgentSkill {
+        return new AgentSkill(
+            json.number,
+            json.level,
+            json.active,
+            json.domain,
+            json.name,
+            json.abvName
+        );
     }
 
-    /** Getter for the skill number */
+    /**
+     * The unique identifier of this skill.
+     *
+     * @returns the skill number, or `-1` if not set
+     */
     get number(): number {
-        return this.#number;
+        return this.#number ?? -1;
     }
 
-    /** Getter for the skill level */
+    /**
+     * The proficiency level of this skill.
+     * <p>
+     * A higher level typically indicates greater expertise or priority
+     * when routing calls.
+     *
+     * @returns the skill level, or `-1` if not set
+     */
     get level(): number {
-        return this.#level;
+        return this.#level ?? -1;
     }
 
-    /** Getter for whether the skill is active */
+    /**
+     * Whether this skill is currently active.
+     *
+     * @returns `true` if the skill is active; `false` otherwise
+     */
     get active(): boolean {
-        return this.#active;
+        return this.#active ?? false;
+    }
+
+    /**
+     * The domain identifier this skill belongs to.
+     *
+     * @returns the domain id, or `-1` if not set
+     * @since 2.7.5
+     */
+    get domain(): number {
+        return this.#domain ?? -1;
+    }
+
+    /**
+     * The full name of this skill.
+     *
+     * @returns the skill name, or `null` if not set
+     * @since 2.7.5
+     */
+    get name(): string | null {
+        return this.#name ?? null;
+    }
+
+    /**
+     * The abbreviated name of this skill.
+     *
+     * @returns the abbreviated skill name, or `null` if not set
+     * @since 2.7.5
+     */
+    get abvName(): string | null {
+        return this.#abvName ?? null;
     }
 }

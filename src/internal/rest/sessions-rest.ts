@@ -23,23 +23,38 @@ import UtilUri from '../util/util-uri';
 import { SessionInfo } from '../types/common/common-types';
 import { IHttpClient } from '../util/IHttpClient';
 import { SupervisedAccount } from '../../supervised-account';
+import { Logger, LogLevel } from '../util/logger';
 
 /** @internal */
 export default class SessionsRest extends RestService {
+    #logger = Logger.create('SessionsRest');
+
     constructor(uri: string, httpClient: IHttpClient) {
         super(uri, httpClient);
     }
 
     async open(applicationName: string, supervisedAccount: SupervisedAccount | null): Promise<SessionInfo | null> {
+
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`open applicationName=${applicationName}, supervisedAccount=${JSON.stringify(supervisedAccount)}`);
+        }
+
         const sessionRequest = JSON.stringify({
             applicationName,
             ...(supervisedAccount && { supervisedAccount: supervisedAccount.toJson() }),
         });
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`open request={}`, sessionRequest);
+        }
 
         return this.getResult(await this._httpClient.post(this._uri, new HttpContent(sessionRequest)));
     }
 
     async close(): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`close`);
+        }
+
         const httpResponse = await this._httpClient.delete(this._uri);
         return httpResponse.isSuccessStatusCode();
     }

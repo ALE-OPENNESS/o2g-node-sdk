@@ -26,68 +26,130 @@ import { RtiObjectIdentifier } from '../../types/cc-rt/rti-object-identifier';
 import { RtiContext } from '../../types/cc-rt/rti-context';
 import { HttpContent } from '../util/http-content';
 import { IHttpClient } from '../util/IHttpClient';
+import { Logger, LogLevel } from '../util/logger';
 
 /** @internal */
 export default class CallCenterRealtimeRest extends RestService {
+    #logger = Logger.create('CallCenterRealtimeRest');
+
     constructor(uri: string, httpClient: IHttpClient) {
         super(uri, httpClient);
     }
 
     async getRtiObjects(): Promise<RtiObjects | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getRtiObjects`);
+        }
+
         const _json = this.getResult<RtiObjectsJson>(await this._httpClient.get(this._uri));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getConfiguration result={}`, _json);
+        }
+
         if (!_json) return null;
         return RtiObjects.fromJson(_json);
     }
 
     async getAgents(): Promise<RtiObjectIdentifier[] | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getAgents`);
+        }
+
         const uriGet = UtilUri.appendPath(this._uri, 'agents');
 
         const _json = this.getResult<RtiObjectsJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getAgents result={}`, _json);
+        }
+
         if (!_json) return null;
         return RtiObjects.fromJson(_json).agents;
     }
 
     async getPilots(): Promise<RtiObjectIdentifier[] | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getPilots`);
+        }
         const uriGet = UtilUri.appendPath(this._uri, 'pilots');
 
         const _json = this.getResult<RtiObjectsJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getPilots result={}`, _json);
+        }
+
         if (!_json) return null;
         return RtiObjects.fromJson(_json).pilots;
     }
 
     async getQueues(): Promise<RtiObjectIdentifier[] | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getQueues`);
+        }
+
         const uriGet = UtilUri.appendPath(this._uri, 'queues');
 
         const _json = this.getResult<RtiObjectsJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getQueues result={}`, _json);
+        }
+
         if (!_json) return null;
         return RtiObjects.fromJson(_json).queues;
     }
 
     async getAgentProcessingGroups(): Promise<RtiObjectIdentifier[] | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getAgentProcessingGroups`);
+        }
+
         const uriGet = UtilUri.appendPath(this._uri, 'pgAgents');
 
         const _json = this.getResult<RtiObjectsJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getAgentProcessingGroups result={}`, _json);
+        }
+
         if (!_json) return null;
         return RtiObjects.fromJson(_json).agentProcessingGroups;
     }
 
     async getOtherProcessingGroups(): Promise<RtiObjectIdentifier[] | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getOtherProcessingGroups`);
+        }
+
         const uriGet = UtilUri.appendPath(this._uri, 'pgOthers');
 
         const _json = this.getResult<RtiObjectsJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getOtherProcessingGroups result={}`, _json);
+        }
+
         if (!_json) return null;
         return RtiObjects.fromJson(_json).otherProcessingGroups;
     }
 
     async getContext(): Promise<RtiContext | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getContext`);
+        }
+
         const uriGet = UtilUri.appendPath(this._uri, 'ctx');
 
         const _json = this.getResult<RtiContextJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getContext result={}`, _json);
+        }
+
         if (!_json) return null;
         return RtiContext.fromJson(_json);
     }
 
     async deleteContext(): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deleteContext`);
+        }
+
         const uriDelete = UtilUri.appendPath(this._uri, 'ctx');
 
         const httpResponse = await this._httpClient.delete(uriDelete);
@@ -95,15 +157,26 @@ export default class CallCenterRealtimeRest extends RestService {
     }
 
     async setContext(context: RtiContext): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`setContext context={}`, context);
+        }
+
         const uriPost = UtilUri.appendPath(this._uri, 'ctx');
 
         const json = JSON.stringify(AssertUtil.notNull(context, 'context').toJson());
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`setContext request=${json}`);
+        }
 
         const httpResponse = await this._httpClient.post(uriPost, new HttpContent(json));
         return httpResponse.isSuccessStatusCode();
     }
 
     async start(): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`start}`);
+        }
+        
         const uriPost = UtilUri.appendPath(this._uri, 'snapshot');
         const httpResponse = await this._httpClient.post(uriPost);
         return httpResponse.isSuccessStatusCode();

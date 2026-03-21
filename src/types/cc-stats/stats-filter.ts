@@ -17,10 +17,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { AgentFilterImpl } from '../../internal/types/cc-stat/ag-filter-impl';
-import { StatsFilterJson } from '../../internal/types/cc-stat/cc-stat-types';
-import { PilotFilterImpl } from '../../internal/types/cc-stat/pil-filter-impl';
+import { AgentFilterImpl } from '../../internal/types/cc-stats/ag-filter-impl';
+import { StatsFilterJson } from '../../internal/types/cc-stats/cc-stat-types';
+import { PilotAbandonedCallsFilterImpl } from '../../internal/types/cc-stats/pil-aband-calls-filter-impl';
+import { PilotFilterImpl } from '../../internal/types/cc-stats/pil-filter-impl';
 import { AgentFilter } from './agent-filter';
+import { PilotAbandonedCallsFilter } from './pilot-abandonned-calls-filter';
 import { PilotFilter } from './pilot-filter';
 
 /**
@@ -60,14 +62,28 @@ export abstract class StatsFilter {
     }
 
     /**
+     * Creates a new filter for selecting calls abandoned on pilots.
+     *
+     * @returns a new `PilotAbandonedCallsFilter` instance
+     */
+    static createPilotAbandonedCallsFilter(): PilotAbandonedCallsFilter {
+        return new PilotAbandonedCallsFilterImpl();
+    }
+
+    /**
      * @internal
      */
     static fromJson(json: StatsFilterJson): StatsFilter | null {
         if (json.agentFilter) {
             return AgentFilterImpl.fromJson(json.agentFilter);
-        } else if (json.pilotFilter) {
+        } 
+        else if (json.pilotFilter) {
             return PilotFilterImpl.fromJson(json.pilotFilter);
-        } else {
+        }
+        else if (json.pilotAbandonedCallFilter) {
+            return PilotAbandonedCallsFilterImpl.fromJson(json.pilotAbandonedCallFilter);
+        }
+        else {
             return null;
         }
     }

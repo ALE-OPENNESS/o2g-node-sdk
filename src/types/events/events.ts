@@ -17,7 +17,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { OnAcdStatsProgress } from '../../internal/types/cc-stat/on-stats-progress';
+import { OnAcdStatsProgress } from '../../internal/types/cc-stats/on-stats-progress';
 import {
     OnAgentSkillChanged,
     OnAgentStateChanged,
@@ -48,6 +48,8 @@ import {
     OnServerStart,
     OnPbxLinkDown,
     OnPbxLinkUp,
+    OnRemoteServerLinkDown,
+    OnRemoteServerLinkUp,
 } from '../maint/maint-events';
 import {
     OnPbxObjectInstanceCreated,
@@ -146,6 +148,8 @@ export interface EventMap {
     OnLicenseExpiration: OnLicenseExpiration;
     OnPbxLoaded: OnPbxLoaded;
     OnServerStart: OnServerStart;
+    OnRemoteServerLinkDown: OnRemoteServerLinkDown;
+    OnRemoteServerLinkUp: OnRemoteServerLinkUp;
 
     // pbxmngt
     OnPbxObjectInstanceCreated: OnPbxObjectInstanceCreated;

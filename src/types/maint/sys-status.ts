@@ -49,6 +49,7 @@ export class SystemStatus {
     #secondaryServicesStatus?: ServiceStatus;
     #pbxs?: PbxStatus[];
     #license?: LicenseStatus;
+    #systemResources?: ServerAddress;
     #configurationType?: ConfigurationType;
     #applicationId?: string;
     #subscriberFilter?: SubscriberFilter;
@@ -67,7 +68,8 @@ export class SystemStatus {
         subscriberFilter?: SubscriberFilter,
         secondary?: string,
         secondaryVersion?: string,
-        secondaryServicesStatus?: ServiceStatus
+        secondaryServicesStatus?: ServiceStatus,
+        systemResources?: ServerAddress,
     ) {
         this.#logicalAddress = logicalAddress;
         this.#startDate = startDate;
@@ -83,6 +85,7 @@ export class SystemStatus {
         this.#secondary = secondary;
         this.#secondaryVersion = secondaryVersion;
         this.#secondaryServicesStatus = secondaryServicesStatus;
+        this.#systemResources = systemResources;
     }
 
     /** Logical address of this O2G server
@@ -162,6 +165,14 @@ export class SystemStatus {
         return this.#license ?? null;
     }
 
+    /** System resources of this O2G server
+     * @returns {LicenseStatus | null} System resources or null if not available
+     */
+    get systemResources(): ServerAddress | null {
+        return this.#systemResources ?? null;
+    }
+
+
     /** Configuration type of the O2G server
      * @returns {ConfigurationType | null} Configuration type or null if not available
      */
@@ -207,7 +218,8 @@ export class SystemStatus {
             json.subscriberFilter,
             json.secondary,
             json.secondaryVersion,
-            json.secondaryServicesStatus ? ServiceStatus.fromJson(json.secondaryServicesStatus) : undefined
+            json.secondaryServicesStatus ? ServiceStatus.fromJson(json.secondaryServicesStatus) : undefined,
+            json.systemResources ? ServerAddress.fromJson(json.systemResources) : undefined
         );
     }
 }

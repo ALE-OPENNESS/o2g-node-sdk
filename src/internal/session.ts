@@ -53,7 +53,7 @@ export class Session {
     #subscriptionId!: string;
     #chunkEventing!: ChunkEventing;
 
-    private _logger = Logger.create('Session');
+    #logger = Logger.create('Session');
 
     constructor(serviceFactory: ServiceFactory, sessionInfo: SessionInfo, login: string) {
         this.#serviceFactory = serviceFactory;
@@ -161,10 +161,10 @@ export class Session {
 
     private startKeepAlive() {
         const keepAlive_ms = this.#sessionInfo.timeToLive * 900;
-        this._logger.debug(`Keep Alive: ${keepAlive_ms}`);
+        this.#logger.debug(`Keep Alive: ${keepAlive_ms}`);
 
         this.#keepAliveID = setInterval(() => {
-            this._logger.debug('Send Keep Alive');
+            this.#logger.debug('Send Keep Alive');
             var sessionService = this.#serviceFactory.getSessionsService();
             sessionService.keepAlive();
         }, keepAlive_ms);
@@ -178,7 +178,7 @@ export class Session {
         let sessionService = this.#serviceFactory.getSessionsService();
         await sessionService.close();
 
-        this._logger.info('Session is closed.');
+        this.#logger.info('Session is closed.');
     }
 
     async listenEvents(subscription: Subscription) {
@@ -193,22 +193,23 @@ export class Session {
 
         if (!subscriptionResult || subscriptionResult.status != 'ACCEPTED') {
             const reason = subscriptionResult ? subscriptionResult.status : 'Unknown';
-            this._logger.error('Subscription has been refused. Fix the subscription request.');
+            this.#logger.error('Subscription has been refused. Fix the subscription request.');
             throw new Error(`Subscription has been refused: ${reason}`);
         }
 
         this.#subscriptionId = subscriptionResult.subscriptionId;
-        this._logger.debug('Subscription has been accepted.');
+        this.#logger.debug('Subscription has been accepted.');
 
         // check the eventing:
         const webHook: WebHook | null = subscription.webHook;
         if (webHook) {
-            this._logger.info(`Start eventing on webhook mode on : ${webHook.url}`);
+            this.#logger.info(`Start eventing on webhook mode on : ${webHook.url}`);
 
             const eventDispatcher: EventDispatcher = ObjectsContainer.get<IEventSink>(TYPES.EventSink);
             webHook.connectDispatcher(eventDispatcher);
-        } else {
-            this._logger.info('Start eventing on chunk mode.');
+        } 
+        else {
+            this.#logger.info('Start eventing on chunk mode.');
 
             const pollingUrl =
                 this.#serviceFactory.accessMode === AccessMode.Private
@@ -218,7 +219,7 @@ export class Session {
             this.#chunkEventing = new ChunkEventing(pollingUrl, eventSink);
             this.#chunkEventing.start();
 
-            this._logger.info('Eventing is started.');
+            this.#logger.info('Eventing is started.');
         }
     }
 }

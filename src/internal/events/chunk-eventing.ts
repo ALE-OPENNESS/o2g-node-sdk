@@ -17,30 +17,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { Logger, LogLevel } from '../util/logger';
 import { EventDispatcher } from './event-dispatcher';
 
 /** @internal */
 export default class ChunkEventing {
-    private _uri: string;
-    private _abortController: AbortController | null = null;
-    private _eventDispatcher: EventDispatcher;
-    private _isRunning = false;
-    private _reconnectScheduled = false;
+    #logger = Logger.create('ChunkEventing');
+
+    #uri: string;
+    #abortController: AbortController | null = null;
+    #eventDispatcher: EventDispatcher;
+    #isRunning = false;
+    #reconnectScheduled = false;
 
     constructor(uri: string, eventDispatcher: EventDispatcher) {
-        this._uri = uri;
-        this._eventDispatcher = eventDispatcher;
+        this.#uri = uri;
+        this.#eventDispatcher = eventDispatcher;
     }
 
     async start(): Promise<void> {
-        if (this._isRunning || this._reconnectScheduled) {
-            console.warn('ChunkEventing: Already running or reconnect scheduled.');
+        if (this.#isRunning || this.#reconnectScheduled) {
+            this.#logger.warn('ChunkEventing: Already running or reconnect scheduled.');
             return;
         }
 
-        this._isRunning = true;
-        this._abortController = new AbortController();
-        const signal = this._abortController.signal;
+        this.#isRunning = true;
+        this.#abortController = new AbortController();
+        const signal = this.#abortController.signal;
 
         const fetchOptions: RequestInit = {
             method: 'POST',
@@ -49,17 +52,23 @@ export default class ChunkEventing {
         };
 
         try {
-            const response = await fetch(this._uri, fetchOptions);
+            if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+                this.#logger.debug(`ChunkEventing: fetch ${this.#uri}`)
+            }
+            const response = await fetch(this.#uri, fetchOptions);
 
             if (!response.ok) {
-                console.error(`ChunkEventing: HTTP error ${response.status} - ${response.statusText}`);
+                this.#logger.error(`ChunkEventing: HTTP error ${response.status} - ${response.statusText}`);
+                
                 const errorBody = await response.text();
-                console.error('ChunkEventing: Response body:', errorBody);
+
+                this.#logger.error('unkEChventing: Response body={}', errorBody);
+                
                 return this.scheduleReconnect();
             }
 
             if (!response.body) {
-                console.error('ChunkEventing: Response body is null.');
+                this.#logger.error('ChunkEventing: Response body is null.');
                 return this.scheduleReconnect();
             }
 
@@ -78,11 +87,15 @@ export default class ChunkEventing {
 
                     if (line) {
                         try {
-                            console.debug('receive ' + line);
+                            if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+                                this.#logger.debug('receive {}', line);
+                            }
+
                             const event = JSON.parse(line);
-                            this._eventDispatcher.dispatch(event);
-                        } catch (e) {
-                            console.error('ChunkEventing: Failed to parse line:', line, e);
+                            this.#eventDispatcher.dispatch(event);
+                        } 
+                        catch (e) {
+                            this.#logger.error('ChunkEventing: Failed to parse line: {} => error={}', line, e);
                         }
                     }
                 }
@@ -91,49 +104,61 @@ export default class ChunkEventing {
                     if (buffer.length > 0) {
                         try {
                             const finalEvent = JSON.parse(buffer);
-                            this._eventDispatcher.dispatch(finalEvent);
-                            console.log('ChunkEventing: Final event dispatched:', finalEvent);
-                        } catch (e) {
-                            console.error('ChunkEventing: Failed to parse final buffer:', e);
+                            this.#eventDispatcher.dispatch(finalEvent);
+
+                            if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+                                this.#logger.debug('ChunkEventing: Final event dispatched: {}', finalEvent);
+                            }
+                        } 
+                        catch (e) {
+                            this.#logger.error('ChunkEventing: Failed to parse final buffer: {}', e);
                         }
                     }
-                    console.log('ChunkEventing: Stream ended.');
+                    this.#logger.info('ChunkEventing: Stream ended.');
                     break;
                 }
             }
         } catch (error: any) {
             if (error.name === 'AbortError') {
-                console.log('ChunkEventing: Fetch aborted.');
-            } else {
-                console.error('ChunkEventing: Fetch error:', error);
+                this.#logger.debug('ChunkEventing: Fetch aborted.');
+            } 
+            else {
+                if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+                    this.#logger.debug('ChunkEventing: Fetch error: {}', error);
+                }
                 return this.scheduleReconnect();
             }
-        } finally {
-            this._abortController = null;
-            this._isRunning = false;
+        } 
+        finally {
+            this.#abortController = null;
+            this.#isRunning = false;
         }
     }
 
     stop(): void {
-        if (this._abortController) {
-            this._abortController.abort();
-            console.log('ChunkEventing: Streaming stopped.');
+        if (this.#abortController) {
+            this.#abortController.abort();
+            if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+                this.#logger.debug('ChunkEventing: Streaming stopped.');
+            }
         }
-        this._reconnectScheduled = false;
+        this.#reconnectScheduled = false;
     }
 
     private scheduleReconnect(initial = false): void {
-        if (this._reconnectScheduled) return;
-        this._reconnectScheduled = true;
+        if (this.#reconnectScheduled) return;
+        this.#reconnectScheduled = true;
 
         const delay = initial ? 0 : 1000;
 
-        console.log(`ChunkEventing: Reconnecting in ${delay / 1000}s...`);
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`ChunkEventing: Reconnecting in {} s...`, delay / 1000);
+        }
 
         setTimeout(() => {
-            this._reconnectScheduled = false;
+            this.#reconnectScheduled = false;
             this.start().catch((err) => {
-                console.error('ChunkEventing: Reconnection failed:', err);
+                this.#logger.error('ChunkEventing: Reconnection failed: {}', err);
                 // Retry again after 1s on next failure
                 this.scheduleReconnect(false);
             });

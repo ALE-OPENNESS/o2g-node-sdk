@@ -34,6 +34,7 @@ import {
 } from '../types/pbxmngt/pbxmngt-types';
 import { Pbx } from '../../types/pbxmngt/pbx';
 import { IHttpClient } from '../util/IHttpClient';
+import { Logger, LogLevel } from '../util/logger';
 
 /** @internal */
 type PbxsJson = {
@@ -42,42 +43,77 @@ type PbxsJson = {
 
 /** @internal */
 export default class PbxManagementRest extends RestService {
+    #logger = Logger.create('PbxManagementRest');
+
     constructor(uri: string, httpClient: IHttpClient) {
         super(uri, httpClient);
     }
 
     async getPbxs(): Promise<Array<number> | null> {
-        const pbxs = this.getResult<PbxsJson>(await this._httpClient.get(this._uri));
-        if (pbxs && Array.isArray(pbxs.nodeIds)) {
-            return pbxs.nodeIds.map((e) => parseInt(e));
-        } else {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getPbxs`);
+        }
+
+        const _json = this.getResult<PbxsJson>(await this._httpClient.get(this._uri));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getPbxs result={}`, _json);
+        }
+
+        if (_json && Array.isArray(_json.nodeIds)) {
+            return _json.nodeIds.map((e) => parseInt(e));
+        } 
+        else {
             return null;
         }
     }
 
     async getPbx(nodeId: number): Promise<Pbx | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getPbx nodeId=${nodeId}`);
+        }
+
         const uriGet = UtilUri.appendPath(this._uri, AssertUtil.positive(nodeId, 'nodeId').toString());
 
         const _json = this.getResult<PbxJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getPbx result={}`, _json);
+        }
+
         if (!_json) return null;
         return Pbx.fromJson(_json);
     }
 
     async getObjectModel(nodeId: number, objectName: string | null): Promise<Model | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getObjectModel nodeId=${nodeId}, objectName=${objectName}`);
+        }
+
         let uriGet = UtilUri.appendPath(this._uri, AssertUtil.positive(nodeId, 'nodeId').toString(), 'model');
         if (objectName) {
             uriGet = UtilUri.appendPath(uriGet, objectName);
         }
 
         const _json = this.getResult<ObjectModelJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getObjectModel result={}`, _json);
+        }
+
         if (!_json) return null;
         return Model.fromJson(_json);
     }
 
     async getNodeObject(nodeId: number): Promise<PbxObject | null> {
-        let uriGet = UtilUri.appendPath(this._uri, AssertUtil.positive(nodeId, 'nodeId').toString(), 'instances');
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getNodeObject nodeId=${nodeId}`);
+        }
+
+        const uriGet = UtilUri.appendPath(this._uri, AssertUtil.positive(nodeId, 'nodeId').toString(), 'instances');
 
         const _json = this.getResult<PbxObjectJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getNodeObject result={}`, _json);
+        }
+
         if (!_json) return null;
         return PbxObject.fromJson(_json);
     }
@@ -88,6 +124,11 @@ export default class PbxManagementRest extends RestService {
         objectId: string,
         attributes: string | PbxAttribute[] | null
     ): Promise<PbxObject | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getObject nodeId={}, objectInstanceDefinition={}, objectId={}, attributes={}`, 
+                nodeId, objectInstanceDefinition, objectId, attributes);
+        }
+
         let uriGet = UtilUri.appendPath(
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
@@ -100,12 +141,17 @@ export default class PbxManagementRest extends RestService {
             if (Array.isArray(attributes)) {
                 // Array of PbxAttribute
                 uriGet = UtilUri.appendQuery(uriGet, 'attributes', attributes.map((attr) => attr.name).join(','));
-            } else {
+            } 
+            else {
                 uriGet = UtilUri.appendQuery(uriGet, 'attributes', attributes);
             }
         }
 
         const _json = this.getResult<PbxObjectJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getObject result={}`, _json);
+        }
+
         if (!_json) return null;
         return PbxObject.fromJson(_json);
     }
@@ -115,6 +161,10 @@ export default class PbxManagementRest extends RestService {
         objectInstanceDefinition: string,
         filter: string | InstanceFilter | null
     ): Promise<string[] | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getObjectInstances nodeId={}, objectInstanceDefinition={}, filter={}`, nodeId, objectInstanceDefinition, filter);
+        }
+
         let uriGet = UtilUri.appendPath(
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
@@ -132,6 +182,10 @@ export default class PbxManagementRest extends RestService {
         }
 
         const _json = this.getResult<PbxObjectIdsJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getObjectInstances result={}`, _json);
+        }
+
         if (!_json) return null;
         return _json.objectIds;
     }
@@ -142,6 +196,10 @@ export default class PbxManagementRest extends RestService {
         objectId: string,
         attributes: PbxAttribute[]
     ): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`setObject nodeId={}, objectInstanceDefinition={}, objectId={}, attributes={}`, nodeId, objectInstanceDefinition, objectId, attributes);
+        }
+
         const uriPut = UtilUri.appendPath(
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
@@ -156,12 +214,19 @@ export default class PbxManagementRest extends RestService {
         const json = JSON.stringify({
             attributes: o2GPbxAttributeList,
         });
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`setObject request=${json}`);
+        }
 
         const httpResponse = await this._httpClient.put(uriPut, new HttpContent(json));
         return httpResponse.isSuccessStatusCode();
     }
 
     async createObject(nodeId: number, objectInstanceDefinition: string, attributes: PbxAttribute[]): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`createObject nodeId={}, objectInstanceDefinition={}, attributes={}`), nodeId, objectInstanceDefinition, attributes;
+        }
+
         const uriPost = UtilUri.appendPath(
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
@@ -175,6 +240,9 @@ export default class PbxManagementRest extends RestService {
         const json = JSON.stringify({
             attributes: o2GPbxAttributeList,
         });
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`createObject request=${json}`);
+        }
 
         const httpResponse = await this._httpClient.post(uriPost, new HttpContent(json));
         return httpResponse.isSuccessStatusCode();
@@ -186,6 +254,10 @@ export default class PbxManagementRest extends RestService {
         objectId: string,
         forceDelete: boolean
     ): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`deleteObject nodeId={}, objectInstanceDefinition={}, objectId={}, forceDelete={}`, nodeId, objectInstanceDefinition, objectId, forceDelete);
+        }
+
         let uriDelete = UtilUri.appendPath(
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),

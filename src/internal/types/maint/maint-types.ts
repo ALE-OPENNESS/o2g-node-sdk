@@ -200,6 +200,8 @@ export type SystemStatusJson = {
 
     license?: LicenseStatusJson;
 
+    systemResources? : ServerAddressJson;
+
     /**
      * The O2G Server configuration
      */
@@ -253,6 +255,25 @@ export type OnPbxLinkUpJson = {
      */
     nodeId: string;
 };
+
+
+/** @internal */
+export type OnRemoteServerLinkDownJson = {
+    /**
+     * the nodeId which PBX link is down.
+     */
+    host: string;
+};
+
+/** @internal */
+export type OnRemoteServerLinkUpJson = {
+    /**
+     * the nodeId which PBX link is down.
+     */
+    host: string;
+};
+
+
 
 /**
  * Notification sent when the license file will soon expire or has recently expired.

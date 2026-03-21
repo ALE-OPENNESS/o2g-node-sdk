@@ -25,6 +25,7 @@ import { Preferences } from '../../types/users/preferences';
 import { SupportedLanguages } from '../../types/users/supported-languages';
 import { IHttpClient } from '../util/IHttpClient';
 import { HttpContent } from '../util/http-content';
+import { Logger, LogLevel } from '../util/logger';
 
 /** @internal */
 type LoginsResponse = {
@@ -33,23 +34,36 @@ type LoginsResponse = {
 
 /** @internal */
 export default class UsersRest extends RestService {
+    #logger = Logger.create('UsersRest');
+
     constructor(uri: string, httpClient: IHttpClient) {
         super(uri, httpClient);
     }
 
     async getByLoginName(loginName: string | null = null): Promise<User | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getByLoginName loginName=${loginName}`);
+        }
+
         let uriGet = this._uri;
         if (loginName) {
             uriGet = UtilUri.appendPath(uriGet, loginName);
         }
 
         const _json = this.getResult<UserJson>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getByLoginName result={}`, _json);
+        }
 
         if (!_json) return null;
         return User.fromJson(_json);
     }
 
     async getLogins(nodeIds: number[] | null, onlyACD: boolean, onlyWithExtLogin: boolean): Promise<string[] | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getLogins nodeIds={}, onlyACD={}, onlyWithExtLogin={}`, nodeIds, onlyACD, onlyWithExtLogin);
+        }
+
         let uriGet = this._uri.replace('/users', '/logins');
         if (nodeIds) {
             uriGet = UtilUri.appendQuery(uriGet, 'nodeIds', nodeIds.join(';'));
@@ -63,40 +77,72 @@ export default class UsersRest extends RestService {
             uriGet = UtilUri.appendQuery(uriGet, 'onlyWithExtLogin');
         }
 
-        const logins = this.getResult<LoginsResponse>(await this._httpClient.get(uriGet));
-        if (logins && Array.isArray(logins.loginNames)) {
-            return logins.loginNames;
-        } else {
+        const _json = this.getResult<LoginsResponse>(await this._httpClient.get(uriGet));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getLogins result={}`, _json);
+        }
+
+        if (_json && Array.isArray(_json.loginNames)) {
+            return _json.loginNames;
+        } 
+        else {
             return null;
         }
     }
 
     async getByCompanyPhone(companyPhone: string): Promise<User | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getByCompanyPhone companyPhone=${companyPhone}`);
+        }
+
         const _json = this.getResult<UserJson>(
             await this._httpClient.get(UtilUri.appendQuery(this._uri, 'companyPhone', companyPhone))
         );
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getByCompanyPhone result={}`, _json);
+        }
 
         if (!_json) return null;
         return User.fromJson(_json);
     }
 
     async getPreferences(loginName: string): Promise<Preferences | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getPreferences loginName=${loginName}`);
+        }
+
         const _json = this.getResult<PreferencesJson>(
             await this._httpClient.get(UtilUri.appendPath(this._uri, loginName, 'preferences'))
         );
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getPreferences result={}`, _json);
+        }
+
         if (!_json) return null;
         return Preferences.fromJson(_json);
     }
 
     async getSupportedLanguages(loginName: string): Promise<SupportedLanguages | null> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`getSupportedLanguages loginName=${loginName}`);
+        }
+
         const _json = this.getResult<SupportedLanguagesJson>(
             await this._httpClient.get(UtilUri.appendPath(this._uri, loginName, 'preferences/supportedLanguages'))
         );
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`getSupportedLanguages result={}`, _json);
+        }
+
         if (!_json) return null;
         return SupportedLanguages.fromJson(_json);
     }
 
     async changePassword(loginName: string, oldPassword: string, newPassword: string): Promise<boolean> {
+        if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
+            this.#logger.info(`changePassword loginName=${loginName}`);
+        }
+
         let json = JSON.stringify({
             oldPassword: oldPassword,
             newPassword: newPassword,

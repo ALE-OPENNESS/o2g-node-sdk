@@ -23,13 +23,19 @@ import { OperatorType } from '../../../types/cc-agent/operator-type';
 /** @internal */
 export type AgentSkillJson = {
     /** Unique identifier of this skill */
-    number: number;
+    number?: number;
 
     /** Skill level */
-    level: number;
+    level?: number;
 
     /** Whether the skill is active */
-    active: boolean;
+    active?: boolean;
+
+    domain?: number;
+
+    name?: string;
+    
+    abvName ?: string;
 };
 
 /**

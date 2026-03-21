@@ -17,7 +17,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { PeriodicityJson, ReportFrequencyJson } from '../../../internal/types/cc-stat/cc-stat-types';
+import { PeriodicityJson, ReportFrequencyJson } from '../../../internal/types/cc-stats/cc-stat-types';
 import { DayOfWeek } from '../../common/day-of-week';
 
 /**

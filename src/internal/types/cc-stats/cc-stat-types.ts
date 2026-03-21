@@ -21,6 +21,7 @@ import { StatsAgentByPilotAttributes } from '../../../types/cc-stats/agbypilot-a
 import { StatsAgentAttributes } from '../../../types/cc-stats/agent-attributes';
 import { DataObservationPeriod } from '../../../types/cc-stats/data/data-obs-period';
 import { Language } from '../../../types/cc-stats/language';
+import { StatsPilotAbandonedCallsAttributes } from '../../../types/cc-stats/pilot-abandoned-calls-attributes';
 import { StatsPilotAttributes } from '../../../types/cc-stats/pilot-attributes';
 import { ReportObservationPeriod } from '../../../types/cc-stats/scheduled/report-obs-period';
 import { ScheduledReport } from '../../../types/cc-stats/scheduled/scheduled-report';
@@ -54,9 +55,17 @@ export type StatsPilotFilterJson = {
 };
 
 /** @internal */
+export type StatsPilotAbandonedCallFilterJson = {
+    numbers?: string[];
+    attributes?: StatsPilotAbandonedCallsAttributes[];
+};
+
+
+/** @internal */
 export type StatsFilterJson = {
     agentFilter?: StatsAgentFilterJson;
     pilotFilter?: StatsPilotFilterJson;
+    pilotAbandonedCallFilter?: StatsPilotAbandonedCallFilterJson;
 };
 
 /** @internal */
@@ -66,6 +75,7 @@ export type StatsContextJson = {
     label?: string;
     description?: string;
     isScheduled: boolean;
+    shortHeader: boolean;
     filter: StatsFilterJson;
 };
 
@@ -452,4 +462,5 @@ export type StatsScheduleJson = {
     enable: boolean;
     lastExecDate: string;
     fileType: StatsFormat;
+    shortHeader: boolean;
 };

@@ -64,7 +64,8 @@ export class ServiceEndPoint {
             this.#logger.debug('Session opened: TimeToLive = {timeToLive}', sessionInfo.timeToLive);
             this.#serviceFactory.setServices(sessionInfo);
             return new Session(this.#serviceFactory, sessionInfo, login);
-        } else {
+        } 
+        else {
             await sessionsService.close();
             throw new Error('Unable to open session');
         }
