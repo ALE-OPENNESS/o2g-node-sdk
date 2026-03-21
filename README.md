@@ -8,6 +8,11 @@ A Node.js SDK for the ALE International O2G (OmniPCX OpenTouch Gateway) platform
 - An OmniPCX Enterprise node connected to an O2G server
 - An O2G API license appropriate for the services you intend to use
 
+## Getting Started
+
+New to TypeScript or Node.js? Follow the [Getting Started guide](GETTING_STARTED.md)
+for a complete step-by-step walkthrough from installing the tools to your first login.
+
 ## Installation
 
 ```bash
@@ -227,10 +232,10 @@ await O2G.callCenterAgent.setReady();
 This SDK follows the O2G API version it targets:
 
 - **Major**: O2G API major version (currently 2)
-- **Minor**: O2G API patch version (currently 7.4 → 4)
+- **Minor**: O2G API patch version (currently 7.5 → 5)
 - **Patch**: SDK release number
 
-For example, `2.4.0` targets O2G API version 2.7.4.
+For example, `2.5.0` targets O2G API version 2.7.5.
 
 ## License
 
