@@ -54,8 +54,12 @@ export default class RsiRest extends RestService {
         }
     }
 
-    async enableRsiPoint(rsiNumber: string): Promise<boolean> {
-        const uriPost = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber'), 'enable');
+    async enableRsiPoint(rsiNumber: string, backup: boolean): Promise<boolean> {
+        let uriPost = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber'), 'enable');
+        if (backup) {
+            uriPost = UtilUri.appendQuery(uriPost, "backup")
+        }
+
         const httpResponse = await this._httpClient.post(uriPost);
         return httpResponse.isSuccessStatusCode();
     }

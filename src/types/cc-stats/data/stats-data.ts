@@ -19,8 +19,10 @@
 
 import { SelectedPeriodJson, StatsJson } from '../../../internal/types/cc-stats/cc-stat-types';
 import { AgentStatisticsRow } from './ag-stats-row';
+import { PilotAbandonedCallsStatisticsRow } from './pil-aband-call-stat-row';
 import { PilotStatisticsRow } from './pil-stats-row';
 import { SelectedPeriod } from './selected-period';
+
 
 /**
  * Represents the statistical results for a specific observation period and time slot.
@@ -39,29 +41,16 @@ import { SelectedPeriod } from './selected-period';
  * @see CallCenterStatistics.getDayData
  * @see CallCenterStatistics.getDaysData
  */
-export class ObjectStatistics<T> {
-    #timeSlot?: string;
+export class BasicObjectStatistics<T> {
     #selectedPeriod?: SelectedPeriod;
     #rows?: T[];
 
     /**
      * @internal
      */
-    private constructor(timeSlot: string, selectedPeriod: SelectedPeriod, rows?: T[]) {
-        this.#timeSlot = timeSlot;
+    protected constructor(selectedPeriod: SelectedPeriod, rows?: T[]) {
         this.#selectedPeriod = selectedPeriod;
         this.#rows = rows;
-    }
-
-    /**
-     * The start date and time of this time slot.
-     * <p>
-     * The time slot represents the period during which the statistics were aggregated
-     * (e.g. `2025-09-02T10:00` for a 15-minute interval starting at 10:00).
-     */
-    get timeSlot(): Date | null {
-        if (!this.#timeSlot) return null;
-        return new Date(this.#timeSlot);
     }
 
     /**
@@ -77,6 +66,61 @@ export class ObjectStatistics<T> {
     get rows(): T[] | null {
         return this.#rows ?? null;
     }
+
+    /**
+     * @internal
+     */
+    static fromJson<T>(
+        json: { selectedPeriod: SelectedPeriodJson; rows?: any[] },
+        rowFactory: (json: any) => T
+    ): BasicObjectStatistics<T> {
+        const selectedPeriod = SelectedPeriod.fromJson(json.selectedPeriod);
+        const rows = json.rows?.map(rowFactory);
+        return new BasicObjectStatistics(selectedPeriod, rows);
+    }
+}
+
+
+
+/**
+ * Represents the statistical results for a specific observation period and time slot.
+ * <p>
+ * Each `ObjectStatistics<T>` instance groups the data rows collected for a given
+ * {@link SelectedPeriod} and an optional time slot (e.g. a 15-minute or hourly interval).
+ * <p>
+ * The class is generic and can represent either agent-level or pilot-level statistics:
+ * <ul>
+ * <li>`ObjectStatistics<AgentStatisticsRow>` — for agent statistics</li>
+ * <li>`ObjectStatistics<PilotStatisticsRow>` — for pilot statistics</li>
+ * </ul>
+ *
+ * @template T the type of the statistics row, either `AgentStatisticsRow` or `PilotStatisticsRow`
+ * @see StatisticsData
+ * @see CallCenterStatistics.getDayData
+ * @see CallCenterStatistics.getDaysData
+ */
+export class ObjectStatistics<T> extends BasicObjectStatistics<T> {
+    #timeSlot?: string;
+
+    /**
+     * @internal
+     */
+    private constructor(timeSlot: string, selectedPeriod: SelectedPeriod, rows?: T[]) {
+        super(selectedPeriod, rows);
+        this.#timeSlot = timeSlot;
+    }
+
+    /**
+     * The start date and time of this time slot.
+     * <p>
+     * The time slot represents the period during which the statistics were aggregated
+     * (e.g. `2025-09-02T10:00` for a 15-minute interval starting at 10:00).
+     */
+    get timeSlot(): Date | null {
+        if (!this.#timeSlot) return null;
+        return new Date(this.#timeSlot);
+    }
+
 
     /**
      * @internal
@@ -105,6 +149,7 @@ export class StatisticsData {
     #supervisor: string;
     #agentsStats?: ObjectStatistics<AgentStatisticsRow>[];
     #pilotsStats?: ObjectStatistics<PilotStatisticsRow>[];
+    #pilotAbandonedCalls?: BasicObjectStatistics<PilotAbandonedCallsStatisticsRow>;
 
     /**
      * @internal
@@ -112,11 +157,13 @@ export class StatisticsData {
     private constructor(
         supervisor: string,
         agentsStats?: ObjectStatistics<AgentStatisticsRow>[],
-        pilotsStats?: ObjectStatistics<PilotStatisticsRow>[]
+        pilotsStats?: ObjectStatistics<PilotStatisticsRow>[],
+        pilotAbandonedCalls?: ObjectStatistics<PilotAbandonedCallsStatisticsRow>
     ) {
         this.#supervisor = supervisor;
         this.#agentsStats = agentsStats;
         this.#pilotsStats = pilotsStats;
+        this.#pilotAbandonedCalls = pilotAbandonedCalls;
     }
 
     /**
@@ -141,6 +188,15 @@ export class StatisticsData {
     }
 
     /**
+     * The pilot abandoned calls.
+     */
+    get pilotAbandonedCalls(): BasicObjectStatistics<PilotAbandonedCallsStatisticsRow> | undefined {
+        return this.#pilotAbandonedCalls
+    }
+
+
+
+    /**
      * @internal
      */
     static fromJson(json: StatsJson): StatisticsData {
@@ -152,6 +208,8 @@ export class StatisticsData {
             ObjectStatistics.fromJson<PilotStatisticsRow>(statJson, PilotStatisticsRow.fromJson)
         );
 
+        const pilotAbandonedCalls = 
+            json.pilotAbandonedCalls ? BasicObjectStatistics.fromJson<PilotAbandonedCallsStatisticsRow>(json.pilotAbandonedCalls, PilotAbandonedCallsStatisticsRow.fromJson) : undefined;
         return new StatisticsData(json.supervisor, agentsStats, pilotsStats);
     }
 }

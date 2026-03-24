@@ -29,7 +29,7 @@ export class StatValue {
     /**
      * @internal
      */
-    constructor(private value: string | number | null) {}
+    constructor(private value: string | number | null) { }
 
     /**
      * Returns the value as an integer.
@@ -63,6 +63,22 @@ export class StatValue {
     asString(): string | null {
         if (this.value === null) return null;
         return this.value.toString();
+    }
+
+    /**
+     * Returns the value as a boolean.
+     * <p>
+     * The following values are interpreted as `true`: `"true"`, `"1"`, `1`.
+     * The following values are interpreted as `false`: `"false"`, `"0"`, `0`.
+     * All other values return `false`.
+     *
+     * @returns the boolean value, or `false` if the value is not set or cannot be interpreted as a boolean
+     */
+    asBoolean(): boolean {
+        if (this.value === null) return false;
+        if (this.value === 1 || this.value === 'true' || this.value === '1') return true;
+        if (this.value === 0 || this.value === 'false' || this.value === '0') return false;
+        return false;
     }
 
     /**

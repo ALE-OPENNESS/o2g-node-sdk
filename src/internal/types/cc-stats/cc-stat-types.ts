@@ -84,6 +84,7 @@ export type StatsJson = {
     supervisor: string;
     agentsStats?: AgentStatsJson[];
     pilotsStats?: PilotStatsJson[];
+    pilotAbandonedCalls?: PilotAbandonedCallsJson;
 };
 
 /** @internal */
@@ -99,6 +100,40 @@ export type PilotStatsJson = {
     selectedPeriod: SelectedPeriodJson;
     rows?: PilotStatisticsRowJson[];
 };
+
+/** @internal */
+export type PilotAbandonedCallsJson = {
+    selectedPeriod: SelectedPeriodJson;
+    rows?: PilotAbandonedCallRowJson[];
+};
+
+
+/** @internal */
+export type PilotAbandonedCallRowJson = {
+    date?: string;
+    year?: string;
+    month?: string;
+    day?: string;
+    hour?: string;
+    minute?: string;
+    queueName?: string;
+    waitingTime?: number;
+    pilotName?: string;
+    pilotNumber?: string;
+    abandonedOnGreetingVG?: number;
+    abandonedOn1stWaitingVG?: number;
+    abandonedOn2ndWaitingVG?: number;
+    abandonedOn3rdWaitingVG?: number;
+    abandonedOn4thWaitingVG?: number;
+    abandonedOn5thWaitingVG?: number;
+    abandonedOn6thWaitingVG?: number;
+    abandonedOnRinging?: number;
+    abandonedOnGeneralFwdVG?: number;
+    abandonedOnBlockedVG?: number;
+    abandonedOnDirectCallWaiting?: number;
+}
+
+
 
 /** @internal */
 export type SelectedPeriodJson = {

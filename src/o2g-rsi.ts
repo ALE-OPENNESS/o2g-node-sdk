@@ -106,10 +106,11 @@ export class Rsi extends EventEmitter {
     /**
      * Enables the specified rsi point.
      *
-     * @param rsiNumber the rsi point extension number
+     * @param rsiNumber the rsi point extension number.
+     * @param [backup=false] true to enable the RSI point in backup mode.
      */
-    async enableRsiPoint(rsiNumber: string): Promise<boolean> {
-        return this.#rsiRest.enableRsiPoint(rsiNumber);
+    async enableRsiPoint(rsiNumber: string, backup: boolean = false): Promise<boolean> {
+        return this.#rsiRest.enableRsiPoint(rsiNumber, backup);
     }
 
     /**
