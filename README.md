@@ -8,11 +8,6 @@ A Node.js SDK for the ALE International O2G (OmniPCX OpenTouch Gateway) platform
 - An OmniPCX Enterprise node connected to an O2G server
 - An O2G API license appropriate for the services you intend to use
 
-## Getting Started
-
-New to TypeScript or Node.js? Follow the [Getting Started guide](GETTING_STARTED.md)
-for a complete step-by-step walkthrough from installing the tools to your first login.
-
 ## Installation
 
 ```bash
@@ -54,6 +49,11 @@ await O2G.telephony.makeCall("1234", "5678");
 // 6. Shutdown when done
 await O2G.shutdown();
 ```
+
+## Getting Started
+
+New to TypeScript or Node.js? Follow the [Getting Started guide](GETTING_STARTED.md)
+for a complete step-by-step walkthrough from installing the tools to your first login.
 
 ## Sessions
 
@@ -171,20 +171,26 @@ await O2G.callCenterPilot.monitorStart("60141");
 ### Search the directory
 
 ```typescript
-import { O2G, Criteria, SearchResult } from 'o2g-node-sdk';
+import { O2G, Criteria, FilterItem, OperationFilter, SearchResult } from 'o2g-node-sdk';
 
-const criteria = new Criteria({ lastName: "Smith" });
+// Search users whose last name begins with "Smith"
+const criteria = Criteria.create(FilterItem.LAST_NAME, OperationFilter.BEGINS_WITH, "Smith");
 await O2G.directory.search(criteria, 10);
 
 let finished = false;
 while (!finished) {
     const result = await O2G.directory.getResults();
-    if (result?.resultCode === SearchResult.ResultCode.OK) {
-        result.items.forEach(item => console.log(item.firstName, item.lastName));
-    } else if (result?.resultCode === SearchResult.ResultCode.FINISH) {
-        finished = true;
-    } else {
+    if (result?.status === SearchResult.Status.NOK) {
+        // Search still in progress — wait before retrying
         await new Promise(resolve => setTimeout(resolve, 500));
+    } else if (result?.status === SearchResult.Status.OK) {
+        // Process available results
+        result.items?.forEach(item => {
+            item.contacts?.forEach(contact => console.log(contact.firstName, contact.lastName));
+        });
+    } else {
+        // FINISH or TIMEOUT — search is complete
+        finished = true;
     }
 }
 ```
