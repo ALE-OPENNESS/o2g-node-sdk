@@ -19,7 +19,7 @@
 
 import { injectable } from 'inversify';
 import EventEmitter from 'events';
-import { EventMap } from '../../types/events/events';
+import { EventDispatcher, EventMap } from '../../types/events/events';
 
 // Adapter functions
 /** @internal */
@@ -39,10 +39,6 @@ export interface EventRegistry {
     ): void;
 }
 
-/** @internal */
-export interface EventDispatcher {
-    dispatch(event: { eventName: keyof EventMap; [key: string]: any }): void;
-}
 
 /** @internal */
 export interface IEventSink extends EventDispatcher, EventRegistry {}

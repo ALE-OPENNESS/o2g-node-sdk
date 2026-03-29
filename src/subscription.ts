@@ -17,7 +17,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { EventDispatcher } from './internal/events/event-dispatcher';
 import { EventPackage } from './internal/events/event-packages';
 
 class Selector {

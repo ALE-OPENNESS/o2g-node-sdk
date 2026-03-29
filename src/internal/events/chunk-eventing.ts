@@ -17,8 +17,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import { EventDispatcher } from '../../types/events/events';
 import { Logger, LogLevel } from '../util/logger';
-import { EventDispatcher } from './event-dispatcher';
 
 /** @internal */
 export default class ChunkEventing {

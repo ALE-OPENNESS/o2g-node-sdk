@@ -33,7 +33,7 @@ import { PbxManagement } from '../o2g-pbx-mngt';
 import { PhoneSetProgramming } from '../o2g-phone-set-prog';
 import { Messaging } from '../o2g-messaging';
 import { Subscription, WebHook } from '../subscription';
-import { EventDispatcher, IEventSink } from './events/event-dispatcher';
+import { IEventSink } from './events/event-dispatcher';
 import { UsersManagement } from '../o2g-users-mngt';
 import { Logger } from './util/logger';
 import { AssertUtil } from './util/assert';
@@ -43,6 +43,7 @@ import { CallCenterRealtime } from '../o2g-cc-rt';
 import { ServiceFactory } from './service-factory';
 import { CallCenterStatistics } from '../o2g-cc-stat';
 import { ObjectsContainer, TYPES } from './util/injection-container';
+import { EventDispatcher } from '../types/events/events';
 
 /** @internal */
 export class Session {

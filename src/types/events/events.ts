@@ -184,3 +184,49 @@ export interface EventMap {
     OnRouteRequest: OnRouteRequest;
     OnRouteEnd: OnRouteEnd;
 }
+
+
+/**
+ * Dispatches O2G events received on a Webhook endpoint to the SDK event system.
+ * <p>
+ * When a subscription is created with a Webhook URL, the SDK initialises an
+ * `EventDispatcher` instance that the application must use to forward incoming
+ * HTTP event payloads into the SDK.
+ * <p>
+ * The dispatcher is provided by the SDK after a successful
+ * {@link O2G.subscribe} call with a Webhook-based subscription. The application
+ * is responsible for exposing the Webhook endpoint and calling
+ * {@link dispatch} for each received request body.
+ *
+ * @example
+ * ```typescript
+ * // Set up the Webhook endpoint in your Express application
+ * app.post('/events', (req: Request, res: Response) => {
+ *     if (!dispatcher) {
+ *         res.status(404).send();
+ *     } else {
+ *         dispatcher.dispatch(req.body);
+ *         res.status(200).send();
+ *     }
+ * });
+ * ```
+ *
+ * @see O2G.subscribe
+ */
+export interface EventDispatcher {
+
+    /**
+     * Dispatches an event payload received on the Webhook endpoint into the SDK.
+     * <p>
+     * The payload must be the raw JSON body of the HTTP POST request sent by
+     * the O2G server to the Webhook URL. The SDK will parse the event name and
+     * route it to the appropriate registered listeners.
+     * <p>
+     * If the dispatcher has not been initialised — for example because no
+     * subscription is active — the application should return an HTTP `404`
+     * response and not call this method.
+     *
+     * @param event the raw event payload from the Webhook HTTP request body
+     */
+    dispatch(event: { eventName: keyof EventMap; [key: string]: any }): void;
+}
