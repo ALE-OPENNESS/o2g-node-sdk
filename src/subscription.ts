@@ -18,6 +18,7 @@
  */
 
 import { EventPackage } from './internal/events/event-packages';
+import { EventDispatcher } from './o2g-node-sdk';
 
 class Selector {
     private names: string[];
@@ -64,7 +65,7 @@ export interface WebHook {
      *
      * @param dispatcher the event dispatcher to connect to
      */
-    connectDispatcher: (dispatcher: Object) => void;
+    connectDispatcher: (dispatcher: EventDispatcher) => void;
 }
 
 /**
