@@ -210,35 +210,38 @@ export * from './types/users/voicemail';
 export * from './types/users/voicemail-type';
 
 export * from './ErrorInfo';
-export * from './host';
+export * from './o2g-servers';
 export * from './subscription';
 export * from './supervised-account';
+export * from './session-monitoring-policy'
+export * from './log-level';
 
-import Application from './internal/o2g-application';
-import { Routing } from './o2g-routing';
-import { EventSummary } from './o2g-eventSummary';
-import { Directory } from './o2g-directory';
-import { Users } from './o2g-users';
-import { Telephony } from './o2g-telephony';
-import { CommunicationLog } from './o2g-comlog';
-import { Analytics } from './o2g-analytics';
-import { CallCenterAgent } from './o2g-cc-agent';
-import { CallCenterPilot } from './o2g-cc-pilot';
-import { Maintenance } from './o2g-maint';
-import { PbxManagement } from './o2g-pbx-mngt';
-import { PhoneSetProgramming } from './o2g-phone-set-prog';
-import { Messaging } from './o2g-messaging';
+import Application, { O2G_RECONNECTED, O2G_SESSION_LOST } from './internal/o2g-application';
+import { Routing } from './services/o2g-routing';
+import { EventSummary } from './services/o2g-eventSummary';
+import { Directory } from './services/o2g-directory';
+import { Users } from './services/o2g-users';
+import { Telephony } from './services/o2g-telephony';
+import { CommunicationLog } from './services/o2g-comlog';
+import { Analytics } from './services/o2g-analytics';
+import { CallCenterAgent } from './services/o2g-cc-agent';
+import { CallCenterPilot } from './services/o2g-cc-pilot';
+import { Maintenance } from './services/o2g-maint';
+import { PbxManagement } from './services/o2g-pbx-mngt';
+import { PhoneSetProgramming } from './services/o2g-phone-set-prog';
+import { Messaging } from './services/o2g-messaging';
 import { containerInit } from './internal/util/injection-container';
 import { Subscription } from './subscription';
 import { Logger } from './internal/util/logger';
-import { UsersManagement } from './o2g-users-mngt';
-import { CallCenterManagement } from './o2g-cc-mngt';
-import { CallCenterRealtime } from './o2g-cc-rt';
-import { CallCenterStatistics } from './o2g-cc-stat';
+import { UsersManagement } from './services/o2g-users-mngt';
+import { CallCenterManagement } from './services/o2g-cc-mngt';
+import { CallCenterRealtime } from './services/o2g-cc-rt';
+import { CallCenterStatistics } from './services/o2g-cc-stat';
 import { SupervisedAccount } from './supervised-account';
-import { Host } from './host';
+import { Host, O2GServers } from './o2g-servers';
+import { DefaultSessionMonitoringPolicy, SessionMonitoringPolicy } from './session-monitoring-policy';
+import { LogLevel } from './log-level';
 
-// o2g.ts
 /**
  * Main entry point for the O2G SDK.
  * <p>
@@ -252,7 +255,17 @@ import { Host } from './host';
  *
  * @example
  * ```typescript
- * O2G.initialize("MyApp", { privateAddress: "192.168.1.1" });
+ * // Single server
+ * O2G.initialize("MyApp", O2GServers.Builder
+ *     .primaryPrivateAddress("192.168.1.1")
+ *     .build());
+ *
+ * // Geographic redundancy
+ * O2G.initialize("MyApp", O2GServers.Builder
+ *     .primaryPrivateAddress("10.0.0.1")
+ *     .secondaryPrivateAddress("10.0.0.2")
+ *     .build());
+ *
  * const success = await O2G.login("user", "password");
  * if (success) {
  *     await O2G.subscribe(subscription);
@@ -261,6 +274,39 @@ import { Host } from './host';
  * ```
  */
 export class O2G {
+
+    /**
+     * The event name fired when the session is lost due to a server crash
+     * or network failure. The SDK will automatically attempt to recover.
+     * Use with {@link O2G.on} to show a "reconnecting" indicator in your UI.
+     *
+     * @example
+     * ```ts
+     * O2G.on(O2G.O2G_SESSION_LOST, ({ reason }) => {
+     *     console.warn('Session lost:', reason);
+     * });
+     * ```
+     */
+    static get O2G_SESSION_LOST(): string {
+        return O2G_SESSION_LOST;
+    }
+
+    /**
+     * The event name fired when the session has been successfully recovered
+     * after a loss. All services are available again.
+     * Use with {@link O2G.on} to resume application activity or re-sync state.
+     *
+     * @example
+     * ```ts
+     * O2G.on(O2G.O2G_RECONNECTED, () => {
+     *     console.info('Session recovered — re-syncing state...');
+     *     const calls = await O2G.telephony.getCalls();
+     * });
+     * ```
+     */
+    static get O2G_RECONNECTED(): string {
+        return O2G_RECONNECTED;
+    }
     /**
      * The event name fired when O2G channel information is received.
      * Use with {@link O2G.on} to listen for channel information events.
@@ -290,23 +336,38 @@ export class O2G {
     private static _phoneSetProgramming: PhoneSetProgramming | null = null;
     private static _messaging: Messaging | null = null;
 
+
     /**
-     * Initializes the O2G application with the given name, host, and optional API version.
+     * Initializes the O2G application with the given name, server configuration,
+     * and optional API version.
      * <p>
      * This method must be called before any other method. It can only be called once;
      * subsequent calls will throw an error.
      *
      * @param appName    the application name, used to identify this client on the O2G server
-     * @param host       the O2G server host configuration
+     * @param servers    the O2G server configuration, built with {@link O2GServers.Builder}
      * @param apiVersion the API version to use. Defaults to `"1.0"`
      * @throws {Error} if the application has already been initialized
      */
-    static initialize(appName: string, host: Host, apiVersion: string = '1.0'): void {
+    static initialize(appName: string, servers: O2GServers, apiVersion: string = '1.0'): void {
         containerInit();
         if (this._application) {
             throw new Error('O2G has already been initialized.');
         }
-        this._application = new Application(appName, host, apiVersion);
+        this._application = new Application(appName, servers, apiVersion);
+    }
+
+    /**
+     * Sets a custom {@link SessionMonitoringPolicy} to control how the SDK
+     * reacts to session failures.
+     * Must be called after {@link O2G.initialize} and before {@link O2G.login}.
+     * If not called, the {@link DefaultSessionMonitoringPolicy} is used.
+     *
+     * @param policy - the monitoring policy to apply
+     */
+    static setMonitoringPolicy(policy: SessionMonitoringPolicy): void {
+        if (!this._application) throw new Error('Application not initialized.');
+        this._application.setMonitoringPolicy(policy);
     }
 
     /**
@@ -330,25 +391,6 @@ export class O2G {
 
         try {
             await this._application.login(loginName, password, supervisedAccount);
-
-            this._routing = this._application.getRoutingService();
-            this._eventSummary = this._application.getEventSummaryService();
-            this._users = this._application.getUsersService();
-            this._usersManagement = this._application.getUserManagementService();
-            this._telephony = this._application.getTelephonyService();
-            this._directory = this._application.getDirectoryService();
-            this._comlog = this._application.getCommunicationLogService();
-            this._analytics = this._application.getAnalyticsService();
-            this._callCenterAgent = this._application.getCallCenterAgentService();
-            this._callCenterPilot = this._application.getCallCenterPilotService();
-            this._callCenterRealtime = this._application.getCallCenterRealtimeService();
-            this._callCenterStatistics = this._application.getCallCenterStatisticsService();
-            this._callCenterManagement = this._application.getCallCenterManagementService();
-            this._maintenance = this._application.getMaintenanceService();
-            this._pbxManagement = this._application.getPbxManagementService();
-            this._phoneSetProgramming = this._application.getPhoneSetProgrammingService();
-            this._messaging = this._application.getMessagingService();
-
             return true;
         } catch (e) {
             this._logger.error('Unable to login', e);
@@ -382,6 +424,27 @@ export class O2G {
     }
 
     /**
+     * Returns the host the SDK is currently connected to.
+     */
+    static get currentHost(): Host {
+        if (!this._application) throw new Error('Application not initialized.');
+        return this._application.currentHost;
+    }
+
+    /**
+     * Sets the global log level for all SDK internal loggers.
+     *
+     * @param level - the minimum log level to output
+     * @example
+     * ```ts
+     * O2G.setLogLevel(LogLevel.DEBUG);
+     * ```
+     */
+    static setLogLevel(level: LogLevel): void {
+        Logger.setGlobalLevel(level);
+    }
+
+    /**
      * Registers an event listener for the specified O2G event.
      *
      * @param event    the event name to listen for
@@ -389,11 +452,8 @@ export class O2G {
      * @throws {Error} if the application has not been initialized
      */
     static on(event: string, listener: (...args: any[]) => void) {
-        if (this._application) {
-            this._application.on(event, listener);
-        } else {
-            throw new Error('Application not initialized.');
-        }
+        if (!this._application) throw new Error('Application not initialized.');
+        this._application.on(event, listener);
     }
 
     /**
@@ -404,181 +464,180 @@ export class O2G {
      * @throws {Error} if the application has not been initialized
      */
     static off(event: string, listener: (...args: any[]) => void) {
-        if (this._application) {
-            this._application.off(event, listener);
-        } else {
-            throw new Error('Application not initialized.');
-        }
+        if (!this._application) throw new Error('Application not initialized.');
+        this._application.off(event, listener);
     }
 
     /**
-     * Returns the {@link Routing} service, which provides call routing and forwarding management.
-     * @throws {Error} if the service is not available (login not completed)
-     */
+         * Returns the {@link Routing} service, which provides call routing and forwarding management.
+         * @throws {Error} if the application has not been initialized or login has not completed
+         */
     static get routing(): Routing {
-        if (!this._routing) throw new Error('Routing service not available.');
-        return this._routing;
+        if (!this._application) throw new Error('Routing service not available.');
+        return this._application.getRoutingService();
     }
 
     /**
      * Returns the {@link EventSummary} service, which provides access to event summary counters.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get eventSummary(): EventSummary {
-        if (!this._eventSummary) throw new Error('EventSummary service not available.');
-        return this._eventSummary;
+        if (!this._application) throw new Error('EventSummary service not available.');
+        return this._application.getEventSummaryService();
     }
 
     /**
      * Returns the {@link Users} service, which provides user profile and preference management.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get users(): Users {
-        if (!this._users) throw new Error('Users service not available.');
-        return this._users;
+        if (!this._application) throw new Error('Users service not available.');
+        return this._application.getUsersService();
     }
 
     /**
      * Returns the {@link UsersManagement} service, which provides administrator-level user management.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get usersManagement(): UsersManagement {
-        if (!this._usersManagement) throw new Error('UsersManagement service not available.');
-        return this._usersManagement;
+        if (!this._application) throw new Error('UsersManagement service not available.');
+        return this._application.getUserManagementService();
     }
 
     /**
      * Returns the {@link Telephony} service, which provides call control and telephony operations.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get telephony(): Telephony {
-        if (!this._telephony) throw new Error('Telephony service not available.');
-        return this._telephony;
+        if (!this._application) throw new Error('Telephony service not available.');
+        return this._application.getTelephonyService();
     }
 
     /**
      * Returns the {@link Directory} service, which provides enterprise directory search.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get directory(): Directory {
-        if (!this._directory) throw new Error('Directory service not available.');
-        return this._directory;
+        if (!this._application) throw new Error('Directory service not available.');
+        return this._application.getDirectoryService();
     }
 
     /**
      * Returns the {@link CommunicationLog} service, which provides access to communication history records.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get comlog(): CommunicationLog {
-        if (!this._comlog) throw new Error('CommunicationLog service not available.');
-        return this._comlog;
+        if (!this._application) throw new Error('CommunicationLog service not available.');
+        return this._application.getCommunicationLogService();
     }
 
     /**
      * Returns the {@link Analytics} service, which provides access to charging and incident data.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get analytics(): Analytics {
-        if (!this._analytics) throw new Error('Analytics service not available.');
-        return this._analytics;
+        if (!this._application) throw new Error('Analytics service not available.');
+        return this._application.getAnalyticsService();
     }
 
     /**
      * Returns the {@link CallCenterAgent} service, which provides ACD agent state and skill management.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get callCenterAgent(): CallCenterAgent {
-        if (!this._callCenterAgent) throw new Error('CallCenterAgent service not available.');
-        return this._callCenterAgent;
+        if (!this._application) throw new Error('CallCenterAgent service not available.');
+        return this._application.getCallCenterAgentService();
     }
 
     /**
      * Returns the {@link CallCenterPilot} service, which provides CCD pilot monitoring.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get callCenterPilot(): CallCenterPilot {
-        if (!this._callCenterPilot) throw new Error('CallCenterPilot service not available.');
-        return this._callCenterPilot;
+        if (!this._application) throw new Error('CallCenterPilot service not available.');
+        return this._application.getCallCenterPilotService();
     }
 
     /**
      * Returns the {@link CallCenterRealtime} service, which provides real-time ACD statistics and RTI data.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get callCenterRealtime(): CallCenterRealtime {
-        if (!this._callCenterRealtime) throw new Error('CallCenterRealtime service not available.');
-        return this._callCenterRealtime;
+        if (!this._application) throw new Error('CallCenterRealtime service not available.');
+        return this._application.getCallCenterRealtimeService();
     }
 
     /**
      * Returns the {@link CallCenterStatistics} service, which provides historical ACD statistics and reporting.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get callCenterStatistics(): CallCenterStatistics {
-        if (!this._callCenterStatistics) throw new Error('CallCenterStatistics service not available.');
-        return this._callCenterStatistics;
+        if (!this._application) throw new Error('CallCenterStatistics service not available.');
+        return this._application.getCallCenterStatisticsService();
     }
 
     /**
      * Returns the {@link CallCenterManagement} service, which provides CCD pilot and calendar management.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get callCenterManagement(): CallCenterManagement {
-        if (!this._callCenterManagement) throw new Error('CallCenterManagement service not available.');
-        return this._callCenterManagement;
+        if (!this._application) throw new Error('CallCenterManagement service not available.');
+        return this._application.getCallCenterManagementService();
     }
 
     /**
      * Returns the {@link Maintenance} service, which provides system status and PBX health information.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get maintenance(): Maintenance {
-        if (!this._maintenance) throw new Error('Maintenance service not available.');
-        return this._maintenance;
+        if (!this._application) throw new Error('Maintenance service not available.');
+        return this._application.getMaintenanceService();
     }
 
     /**
      * Returns the {@link PbxManagement} service, which provides PBX object model access and configuration.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get pbxManagement(): PbxManagement {
-        if (!this._pbxManagement) throw new Error('PbxManagement service not available.');
-        return this._pbxManagement;
+        if (!this._application) throw new Error('PbxManagement service not available.');
+        return this._application.getPbxManagementService();
     }
 
     /**
      * Returns the {@link PhoneSetProgramming} service, which provides phone device key and pin management.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get phoneSetProgramming(): PhoneSetProgramming {
-        if (!this._phoneSetProgramming) throw new Error('PhoneSetProgramming service not available.');
-        return this._phoneSetProgramming;
+        if (!this._application) throw new Error('PhoneSetProgramming service not available.');
+        return this._application.getPhoneSetProgrammingService();
     }
 
     /**
      * Returns the {@link Messaging} service, which provides voicemail and mailbox management.
-     * @throws {Error} if the service is not available (login not completed)
+     * @throws {Error} if the application has not been initialized or login has not completed
      */
     static get messaging(): Messaging {
-        if (!this._messaging) throw new Error('Messaging service not available.');
-        return this._messaging;
+        if (!this._application) throw new Error('Messaging service not available.');
+        return this._application.getMessagingService();
     }
 }
 
-export { Routing } from './o2g-routing';
-export { EventSummary } from './o2g-eventSummary';
-export { Directory } from './o2g-directory';
-export { Users } from './o2g-users';
-export { Telephony } from './o2g-telephony';
-export { CommunicationLog } from './o2g-comlog';
-export { Analytics } from './o2g-analytics';
-export { CallCenterAgent } from './o2g-cc-agent';
-export { CallCenterPilot } from './o2g-cc-pilot';
-export { Maintenance } from './o2g-maint';
-export { PbxManagement } from './o2g-pbx-mngt';
-export { PhoneSetProgramming } from './o2g-phone-set-prog';
-export { Messaging } from './o2g-messaging';
-export { UsersManagement } from './o2g-users-mngt';
-export { CallCenterManagement } from './o2g-cc-mngt';
-export { CallCenterRealtime } from './o2g-cc-rt';
-export { CallCenterStatistics } from './o2g-cc-stat';
+export { Routing } from './services/o2g-routing';
+export { EventSummary } from './services/o2g-eventSummary';
+export { Directory } from './services/o2g-directory';
+export { Users } from './services/o2g-users';
+export { Telephony } from './services/o2g-telephony';
+export { CommunicationLog } from './services/o2g-comlog';
+export { Analytics } from './services/o2g-analytics';
+export { CallCenterAgent } from './services/o2g-cc-agent';
+export { CallCenterPilot } from './services/o2g-cc-pilot';
+export { Maintenance } from './services/o2g-maint';
+export { PbxManagement } from './services/o2g-pbx-mngt';
+export { PhoneSetProgramming } from './services/o2g-phone-set-prog';
+export { Messaging } from './services/o2g-messaging';
+export { UsersManagement } from './services/o2g-users-mngt';
+export { CallCenterManagement } from './services/o2g-cc-mngt';
+export { CallCenterRealtime } from './services/o2g-cc-rt';
+export { CallCenterStatistics } from './services/o2g-cc-stat';
+export { SessionMonitoringPolicy, DefaultSessionMonitoringPolicy, Behavior, BehaviorAction } from './session-monitoring-policy';
+export { O2GServers } from './o2g-servers';

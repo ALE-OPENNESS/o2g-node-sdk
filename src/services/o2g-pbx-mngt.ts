@@ -17,19 +17,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import PbxManagementRest from './internal/rest/pbx-mngt-rest';
-import { Model } from './types/pbxmngt/model';
-import { PbxAttribute } from './types/pbxmngt/pbx-attribute';
-import { PbxObject } from './types/pbxmngt/pbx-object';
-import { InstanceFilter } from './types/pbxmngt/instance-filter';
+import PbxManagementRest from '../internal/rest/pbx-mngt-rest';
+import { Model } from '../types/pbxmngt/model';
+import { PbxAttribute } from '../types/pbxmngt/pbx-attribute';
+import { PbxObject } from '../types/pbxmngt/pbx-object';
+import { InstanceFilter } from '../types/pbxmngt/instance-filter';
 import EventEmitter from 'events';
-import { EventRegistry } from './internal/events/event-dispatcher';
+import { EventRegistry } from '../events/event-dispatcher';
 import {
     OnPbxObjectInstanceCreated,
     OnPbxObjectInstanceDeleted,
     OnPbxObjectInstanceModified,
-} from './types/pbxmngt/pbxmngt-events';
-import { Pbx } from './types/pbxmngt/pbx';
+} from '../types/pbxmngt/pbxmngt-events';
+import { Pbx } from '../types/pbxmngt/pbx';
 
 /**
  * PbxManagement service allows an administrator to manage an OmniPCX

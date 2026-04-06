@@ -35,7 +35,8 @@ import { Overflow } from '../../types/routing/overflow';
 import { RoutingCapabilities } from '../../types/routing/routing-capabilities';
 import { RoutingState } from '../../types/routing/routing-state';
 import { IHttpClient } from '../util/IHttpClient';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 export default class RoutingRest extends RestService {

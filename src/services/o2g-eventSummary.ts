@@ -17,11 +17,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { EventRegistry } from './internal/events/event-dispatcher';
-import EventSumaryRest from './internal/rest/eventSummary-rest';
+import { EventRegistry } from '../events/event-dispatcher';
+import EventSumaryRest from '../internal/rest/eventSummary-rest';
 import { EventEmitter } from 'events';
-import { OnEventSummaryUpdated } from './types/eventsummary/event-summary-events';
-import { EventSummaryCounters } from './types/eventsummary/event-summary-counter';
+import { OnEventSummaryUpdated } from '../types/eventsummary/event-summary-events';
+import { EventSummaryCounters } from '../types/eventsummary/event-summary-counter';
 
 /**
  * The Event summary service allows a user to get its new message

@@ -26,7 +26,8 @@ import { RtiObjectIdentifier } from '../../types/cc-rt/rti-object-identifier';
 import { RtiContext } from '../../types/cc-rt/rti-context';
 import { HttpContent } from '../util/http-content';
 import { IHttpClient } from '../util/IHttpClient';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 export default class CallCenterRealtimeRest extends RestService {

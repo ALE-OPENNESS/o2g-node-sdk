@@ -22,7 +22,8 @@ import { HttpContent } from '../util/http-content';
 import { Subscription } from '../../subscription';
 import { SubscriptionResult } from '../types/common/common-types';
 import { IHttpClient } from '../util/IHttpClient';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 export default class SubscriptionsRest extends RestService {

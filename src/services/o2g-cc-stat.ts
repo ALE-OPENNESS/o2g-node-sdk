@@ -17,19 +17,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import CallCenterStatisticsRest from './internal/rest/ccStatistics-rest';
-import { StatisticsData } from './types/cc-stats/data/stats-data';
-import { ProgressCallback } from './types/cc-stats/events/progress-callback';
-import { Language } from './types/cc-stats/language';
-import { Requester } from './types/cc-stats/requester';
-import { ScheduledReport } from './types/cc-stats/scheduled/scheduled-report';
-import { StatsFormat } from './types/cc-stats/stats-format';
-import { StatsContext } from './types/cc-stats/stats-context';
-import { StatsFilter } from './types/cc-stats/stats-filter';
-import { TimeInterval } from './types/cc-stats/time-interval';
-import { DateRange } from './types/common/date-range';
-import { Recurrence } from './types/cc-stats/scheduled/recurrence';
-import { ReportObservationPeriod } from './types/cc-stats/scheduled/report-obs-period';
+import CallCenterStatisticsRest from '../internal/rest/ccStatistics-rest';
+import { StatisticsData } from '../types/cc-stats/data/stats-data';
+import { ProgressCallback } from '../types/cc-stats/events/progress-callback';
+import { Language } from '../types/cc-stats/language';
+import { Requester } from '../types/cc-stats/requester';
+import { ScheduledReport } from '../types/cc-stats/scheduled/scheduled-report';
+import { StatsFormat } from '../types/cc-stats/stats-format';
+import { StatsContext } from '../types/cc-stats/stats-context';
+import { StatsFilter } from '../types/cc-stats/stats-filter';
+import { TimeInterval } from '../types/cc-stats/time-interval';
+import { DateRange } from '../types/common/date-range';
+import { Recurrence } from '../types/cc-stats/scheduled/recurrence';
+import { ReportObservationPeriod } from '../types/cc-stats/scheduled/report-obs-period';
 
 /**
  * CallCenterStatistics provides access to historical ACD statistics and reporting.

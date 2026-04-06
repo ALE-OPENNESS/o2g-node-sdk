@@ -17,7 +17,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { EventPackage } from './internal/events/event-packages';
+import { EventPackage } from './events/event-packages';
 import { EventDispatcher } from './o2g-node-sdk';
 
 class Selector {

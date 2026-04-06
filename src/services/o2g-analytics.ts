@@ -17,11 +17,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import AnalyticsRest from './internal/rest/analytics-rest';
-import { Incident } from './types/analytics/incident';
-import { ChargingFile } from './types/analytics/charging-file';
-import { ChargingResult } from './types/analytics/charging-result';
-import { DateRange } from './types/common/date-range';
+import AnalyticsRest from '../internal/rest/analytics-rest';
+import { Incident } from '../types/analytics/incident';
+import { ChargingFile } from '../types/analytics/charging-file';
+import { ChargingResult } from '../types/analytics/charging-result';
+import { DateRange } from '../types/common/date-range';
 
 /**
  * The Analytics service allows to retrieve OmniPCX entreprise charging information and incidents.

@@ -18,19 +18,19 @@
  */
 
 import EventEmitter from 'events';
-import RsiRest from './internal/rest/rsi-rest';
-import { AdditionalDigitCollectionCriteria } from './types/rsi/add-digit-coll-criteria';
-import { Tones } from './types/rsi/tones';
-import { EventRegistry } from './internal/events/event-dispatcher';
+import RsiRest from '../internal/rest/rsi-rest';
+import { AdditionalDigitCollectionCriteria } from '../types/rsi/add-digit-coll-criteria';
+import { Tones } from '../types/rsi/tones';
+import { EventRegistry } from '../events/event-dispatcher';
 import {
     OnDigitCollected,
     OnRouteEnd,
     OnRouteRequest,
     OnToneGeneratedStart,
     OnToneGeneratedStop,
-} from './types/rsi/rsi-events';
-import { RsiPoint } from './types/rsi/rsi-point';
-import { RouteSession } from './types/rsi/route-session';
+} from '../types/rsi/rsi-events';
+import { RsiPoint } from '../types/rsi/rsi-point';
+import { RouteSession } from '../types/rsi/route-session';
 
 /**
  * RsiService provides access to th RSI (Routing Service Intelligence)

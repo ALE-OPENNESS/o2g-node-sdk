@@ -17,8 +17,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import UsersManagementRest from './internal/rest/users-mngt-rest';
-import { User } from './types/users/user';
+import UsersManagementRest from '../internal/rest/users-mngt-rest';
+import { User } from '../types/users/user';
 
 /**
  * The Users Management service allows an administrator to create, delete and retrieve O2G users.

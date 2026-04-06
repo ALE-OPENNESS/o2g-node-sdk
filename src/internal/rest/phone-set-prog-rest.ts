@@ -29,7 +29,8 @@ import { Pin } from '../../types/phoneset/pin';
 import { DynamicState } from '../../types/phoneset/dynamic-state';
 import { DeviceJson } from '../types/common/common-types';
 import { IHttpClient } from '../util/IHttpClient';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 type DeviceListJson = {

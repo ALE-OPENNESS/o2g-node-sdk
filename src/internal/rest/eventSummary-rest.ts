@@ -22,7 +22,8 @@ import UtilUri from '../util/util-uri';
 import { EventSummaryCounters } from '../../types/eventsummary/event-summary-counter';
 import { EventSummaryJson } from '../types/eventsummary/eventsummary-types';
 import { IHttpClient } from '../util/IHttpClient';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 export default class EventSumaryRest extends RestService {

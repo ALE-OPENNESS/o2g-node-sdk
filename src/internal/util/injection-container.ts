@@ -19,7 +19,7 @@
 
 import 'reflect-metadata';
 import { Container } from 'inversify';
-import { EventSink, IEventSink } from '../events/event-dispatcher';
+import { EventSink, IEventSink } from '../../events/event-dispatcher';
 
 /** @internal */
 export const TYPES = {

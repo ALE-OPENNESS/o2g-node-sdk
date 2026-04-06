@@ -21,12 +21,13 @@ import { RestService } from './rest-service';
 import UtilUri from '../util/util-uri';
 import { AssertUtil } from '../util/assert';
 import { HttpContent } from '../util/http-content';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
 import { MailBox } from '../../types/messaging/mailbox';
 import { MailBoxInfoJson, MailBoxJson, VoiceMessageJson } from '../types/messaging/messaging-types';
 import { MailBoxInfo } from '../../types/messaging/mailbox-info';
 import { VoiceMessage } from '../../types/messaging/voice-message';
 import { IHttpClient } from '../util/IHttpClient';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 type MailBoxesJson = {

@@ -24,7 +24,8 @@ import { User } from '../../types/users/user';
 import { UserJson } from '../types/users/users-types';
 import { IHttpClient } from '../util/IHttpClient';
 import { HttpContent } from '../util/http-content';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 type LoginsResponse = {

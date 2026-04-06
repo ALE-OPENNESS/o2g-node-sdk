@@ -18,16 +18,16 @@
  */
 
 import EventEmitter from 'events';
-import RoutingRest from './internal/rest/routing-rest';
-import { EventRegistry } from './internal/events/event-dispatcher';
-import { OnRoutingStateChanged } from './types/routing/routing-events';
-import { ForwardCondition } from './types/routing/forward-condition';
-import { OverflowCondition } from './types/routing/overflow-condition';
-import { DndState } from './types/routing/dnd-state';
-import { Forward } from './types/routing/forward';
-import { Overflow } from './types/routing/overflow';
-import { RoutingCapabilities } from './types/routing/routing-capabilities';
-import { RoutingState } from './types/routing/routing-state';
+import RoutingRest from '../internal/rest/routing-rest';
+import { EventRegistry } from '../events/event-dispatcher';
+import { OnRoutingStateChanged } from '../types/routing/routing-events';
+import { ForwardCondition } from '../types/routing/forward-condition';
+import { OverflowCondition } from '../types/routing/overflow-condition';
+import { DndState } from '../types/routing/dnd-state';
+import { Forward } from '../types/routing/forward';
+import { Overflow } from '../types/routing/overflow';
+import { RoutingCapabilities } from '../types/routing/routing-capabilities';
+import { RoutingState } from '../types/routing/routing-state';
 
 /**
  * The Routing service allows a user to manage forward, overflow, DoNotDisturb

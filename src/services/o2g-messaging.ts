@@ -17,10 +17,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import MessagingRest from './internal/rest/messaging-rest';
-import { MailBox } from './types/messaging/mailbox';
-import { MailBoxInfo } from './types/messaging/mailbox-info';
-import { VoiceMessage } from './types/messaging/voice-message';
+import MessagingRest from '../internal/rest/messaging-rest';
+import { MailBox } from '../types/messaging/mailbox';
+import { MailBoxInfo } from '../types/messaging/mailbox-info';
+import { VoiceMessage } from '../types/messaging/voice-message';
 
 /**
  * Messaging service provides access to the user's voice mail box.

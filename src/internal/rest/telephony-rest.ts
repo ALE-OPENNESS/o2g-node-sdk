@@ -49,7 +49,7 @@ import { IHttpClient } from '../util/IHttpClient';
 import { HttpContent } from '../util/http-content';
 import { PilotTransferQueryParameters } from '../../types/telephony/call/ccd/pilot-transfer-query-param';
 import { CallProfile } from '../../types/telephony/call/ccd/call-profile';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
 
 /** @internal */
 type CallListJson = {

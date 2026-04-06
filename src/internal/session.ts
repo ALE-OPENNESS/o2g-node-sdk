@@ -16,56 +16,80 @@
  * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-import { Routing } from '../o2g-routing';
-import { EventSummary } from '../o2g-eventSummary';
-import { Directory } from '../o2g-directory';
-import { Users } from '../o2g-users';
-import { Telephony } from '../o2g-telephony';
-import { Analytics } from '../o2g-analytics';
-import { Maintenance } from '../o2g-maint';
+import { Routing } from '../services/o2g-routing';
+import { EventSummary } from '../services/o2g-eventSummary';
+import { Directory } from '../services/o2g-directory';
+import { Users } from '../services/o2g-users';
+import { Telephony } from '../services/o2g-telephony';
+import { Analytics } from '../services/o2g-analytics';
+import { Maintenance } from '../services/o2g-maint';
 import { AccessMode } from './access-mode';
-import ChunkEventing from './events/chunk-eventing';
-import { CommunicationLog } from '../o2g-comlog';
-import { CallCenterAgent } from '../o2g-cc-agent';
-import { CallCenterPilot } from '../o2g-cc-pilot';
-import { Rsi } from '../o2g-rsi';
-import { PbxManagement } from '../o2g-pbx-mngt';
-import { PhoneSetProgramming } from '../o2g-phone-set-prog';
-import { Messaging } from '../o2g-messaging';
+import ChunkEventing from '../events/chunk-eventing';
+import { CommunicationLog } from '../services/o2g-comlog';
+import { CallCenterAgent } from '../services/o2g-cc-agent';
+import { CallCenterPilot } from '../services/o2g-cc-pilot';
+import { Rsi } from '../services/o2g-rsi';
+import { PbxManagement } from '../services/o2g-pbx-mngt';
+import { PhoneSetProgramming } from '../services/o2g-phone-set-prog';
+import { Messaging } from '../services/o2g-messaging';
 import { Subscription, WebHook } from '../subscription';
-import { IEventSink } from './events/event-dispatcher';
-import { UsersManagement } from '../o2g-users-mngt';
+import { IEventSink } from '../events/event-dispatcher';
+import { UsersManagement } from '../services/o2g-users-mngt';
 import { Logger } from './util/logger';
 import { AssertUtil } from './util/assert';
-import { CallCenterManagement } from '../o2g-cc-mngt';
+import { CallCenterManagement } from '../services/o2g-cc-mngt';
 import { SessionInfo, SubscriptionResult } from './types/common/common-types';
-import { CallCenterRealtime } from '../o2g-cc-rt';
+import { CallCenterRealtime } from '../services/o2g-cc-rt';
 import { ServiceFactory } from './service-factory';
-import { CallCenterStatistics } from '../o2g-cc-stat';
+import { CallCenterStatistics } from '../services/o2g-cc-stat';
 import { ObjectsContainer, TYPES } from './util/injection-container';
 import { EventDispatcher } from '../types/events/events';
+import { BehaviorAction, SessionMonitoringPolicy } from '../session-monitoring-policy';
+
 
 /** @internal */
 export class Session {
     #serviceFactory: ServiceFactory;
     #sessionInfo: SessionInfo;
     #loginName!: string;
-    #keepAliveID!: ReturnType<typeof setTimeout>;
+    #keepAliveID: ReturnType<typeof setTimeout> | undefined;
     #subscriptionId!: string;
     #chunkEventing!: ChunkEventing;
+    #monitoringPolicy: SessionMonitoringPolicy;
+    #onSessionLostCallback: ((reason: string) => void) | undefined;
 
     #logger = Logger.create('Session');
 
-    constructor(serviceFactory: ServiceFactory, sessionInfo: SessionInfo, login: string) {
+    constructor(
+        serviceFactory: ServiceFactory,
+        sessionInfo: SessionInfo,
+        login: string,
+        monitoringPolicy: SessionMonitoringPolicy
+    ) {
         this.#serviceFactory = serviceFactory;
         this.#sessionInfo = sessionInfo;
         this.#loginName = login;
+        this.#monitoringPolicy = monitoringPolicy;
 
         this.startKeepAlive();
     }
 
+    /**
+     * Registers the callback invoked when the session is lost.
+     * Called by Application after creating the Session so that
+     * recovery can be coordinated at the Application level.
+     */
+    setOnSessionLost(callback: (reason: string) => void): void {
+        this.#onSessionLostCallback = callback;
+    }
+
+    // ── Service getters ───────────────────────────────────────────────────
+
     getRoutingService(): Routing {
-        return new Routing(this.#serviceFactory.getRoutingService(), ObjectsContainer.get<IEventSink>(TYPES.EventSink));
+        return new Routing(
+            this.#serviceFactory.getRoutingService(),
+            ObjectsContainer.get<IEventSink>(TYPES.EventSink)
+        );
     }
 
     getEventSummaryService(): EventSummary {
@@ -76,7 +100,10 @@ export class Session {
     }
 
     getUsersService(): Users {
-        return new Users(this.#serviceFactory.getUsersService(), ObjectsContainer.get<IEventSink>(TYPES.EventSink));
+        return new Users(
+            this.#serviceFactory.getUsersService(),
+            ObjectsContainer.get<IEventSink>(TYPES.EventSink)
+        );
     }
 
     getUsersManagementService(): UsersManagement {
@@ -142,7 +169,10 @@ export class Session {
     }
 
     getRsiService(): Rsi {
-        return new Rsi(this.#serviceFactory.getRsiService(), ObjectsContainer.get<IEventSink>(TYPES.EventSink));
+        return new Rsi(
+            this.#serviceFactory.getRsiService(),
+            ObjectsContainer.get<IEventSink>(TYPES.EventSink)
+        );
     }
 
     getPbxManagementService(): PbxManagement {
@@ -160,39 +190,105 @@ export class Session {
         return new Messaging(this.#serviceFactory.getMessagingService());
     }
 
-    private startKeepAlive() {
-        const keepAlive_ms = this.#sessionInfo.timeToLive * 900;
-        this.#logger.debug(`Keep Alive: ${keepAlive_ms}`);
+    // ── Keep-alive ────────────────────────────────────────────────────────
 
-        this.#keepAliveID = setInterval(() => {
-            this.#logger.debug('Send Keep Alive');
-            var sessionService = this.#serviceFactory.getSessionsService();
-            sessionService.keepAlive();
-        }, keepAlive_ms);
+    private startKeepAlive(): void {
+        const keepAlive_ms = this.#sessionInfo.timeToLive * 900;
+        this.#logger.debug(`Keep-alive period: ${keepAlive_ms}ms`);
+        this.#scheduleKeepAlive(keepAlive_ms);
     }
 
-    async close() {
+    #scheduleKeepAlive(delayMs: number): void {
+        this.#keepAliveID = setTimeout(() => {
+            this.#sendKeepAlive();
+        }, delayMs);
+    }
+
+    async #sendKeepAlive(): Promise<void> {
+        this.#logger.debug('Send keep-alive');
+
+        try {
+            const sessionService = this.#serviceFactory.getSessionsService();
+            const ok = await sessionService.keepAlive();
+
+            if (ok) {
+                this.#logger.debug('Keep-alive acknowledged.');
+                this.#monitoringPolicy.onKeepAliveDone();
+                this.#scheduleKeepAlive(this.#sessionInfo.timeToLive * 900);
+            } else {
+                // Server returned HTTP error — session is definitively gone
+                this.#logger.error('Keep-alive rejected by server — session is gone.');
+                this.#monitoringPolicy.onKeepAliveFatalError();
+                this.#onSessionLost('keepalive-rejected');
+            }
+        } catch (e) {
+            // Network-level failure — consult policy
+            this.#logger.error('Keep-alive network error:', e);
+            const behavior = this.#monitoringPolicy.onKeepAliveError(e as Error);
+
+            if (behavior.action === BehaviorAction.Abort) {
+                this.#logger.debug('Keep-alive aborted by policy.');
+                this.#onSessionLost('keepalive-error');
+            } else {
+                const retryDelay = behavior.delayMs > 0
+                    ? behavior.delayMs
+                    : this.#sessionInfo.timeToLive * 900;
+                this.#logger.debug(`Keep-alive retry in ${retryDelay}ms`);
+                this.#scheduleKeepAlive(retryDelay);
+            }
+        }
+    }
+
+    // ── Session lost ──────────────────────────────────────────────────────
+
+    #onSessionLost(reason: string): void {
+        this.#logger.error(`Session lost: ${reason}`);
+
+        // Stop keep-alive to prevent further attempts
         if (this.#keepAliveID) {
             clearTimeout(this.#keepAliveID);
+            this.#keepAliveID = undefined;
         }
 
-        let sessionService = this.#serviceFactory.getSessionsService();
+        // Stop chunk eventing to prevent reconnect loops on a dead session
+        if (this.#chunkEventing) {
+            this.#chunkEventing.stop();
+        }
+
+        // Notify Application so it can drive recovery
+        this.#onSessionLostCallback?.(reason);
+    }
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────
+
+    async close(): Promise<void> {
+        if (this.#keepAliveID) {
+            clearTimeout(this.#keepAliveID);
+            this.#keepAliveID = undefined;
+        }
+
+        if (this.#chunkEventing) {
+            this.#chunkEventing.stop();
+        }
+
+        const sessionService = this.#serviceFactory.getSessionsService();
         await sessionService.close();
 
         this.#logger.info('Session is closed.');
     }
 
-    async listenEvents(subscription: Subscription) {
-        await this._startEventing(AssertUtil.notNull(subscription, 'subscription'));
+    async listenEvents(subscription: Subscription): Promise<void> {
+        await this.#startEventing(AssertUtil.notNull(subscription, 'subscription'));
     }
 
-    private async _startEventing(subscription: Subscription): Promise<void> {
+    // ── Eventing ──────────────────────────────────────────────────────────
+
+    async #startEventing(subscription: Subscription): Promise<void> {
         const subscriptionsService = this.#serviceFactory.getSubscriptionService();
-        const subscriptionResult: SubscriptionResult = await subscriptionsService.create(subscription);
+        const subscriptionResult: SubscriptionResult =
+            await subscriptionsService.create(subscription);
 
-        const eventSink = ObjectsContainer.get<IEventSink>(TYPES.EventSink);
-
-        if (!subscriptionResult || subscriptionResult.status != 'ACCEPTED') {
+        if (!subscriptionResult || subscriptionResult.status !== 'ACCEPTED') {
             const reason = subscriptionResult ? subscriptionResult.status : 'Unknown';
             this.#logger.error('Subscription has been refused. Fix the subscription request.');
             throw new Error(`Subscription has been refused: ${reason}`);
@@ -201,15 +297,13 @@ export class Session {
         this.#subscriptionId = subscriptionResult.subscriptionId;
         this.#logger.debug('Subscription has been accepted.');
 
-        // check the eventing:
         const webHook: WebHook | null = subscription.webHook;
         if (webHook) {
-            this.#logger.info(`Start eventing on webhook mode on : ${webHook.url}`);
-
-            const eventDispatcher: EventDispatcher = ObjectsContainer.get<IEventSink>(TYPES.EventSink);
+            this.#logger.info(`Start eventing on webhook mode on: ${webHook.url}`);
+            const eventDispatcher: EventDispatcher =
+                ObjectsContainer.get<IEventSink>(TYPES.EventSink);
             webHook.connectDispatcher(eventDispatcher);
-        } 
-        else {
+        } else {
             this.#logger.info('Start eventing on chunk mode.');
 
             const pollingUrl =
@@ -217,7 +311,16 @@ export class Session {
                     ? subscriptionResult.privatePollingUrl
                     : subscriptionResult.publicPollingUrl;
 
-            this.#chunkEventing = new ChunkEventing(pollingUrl, eventSink);
+            const eventSink = ObjectsContainer.get<IEventSink>(TYPES.EventSink);
+
+            // Pass policy and #onSessionLost so ChunkEventing can signal
+            // session loss and respect retry behavior
+            this.#chunkEventing = new ChunkEventing(
+                pollingUrl,
+                eventSink,
+                this.#monitoringPolicy,
+                (reason) => this.#onSessionLost(reason)
+            );
             this.#chunkEventing.start();
 
             this.#logger.info('Eventing is started.');

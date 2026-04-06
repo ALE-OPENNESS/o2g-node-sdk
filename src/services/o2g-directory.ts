@@ -17,9 +17,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import DirectoryRest from './internal/rest/directory-rest';
-import { Criteria } from './types/directory/criteria';
-import { SearchResult } from './types/directory/search-result';
+import DirectoryRest from '../internal/rest/directory-rest';
+import { Criteria } from '../types/directory/criteria';
+import { SearchResult } from '../types/directory/search-result';
 
 /**
  * The DirectoryService is used to search contacts in the OmniPCX

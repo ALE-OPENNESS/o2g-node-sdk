@@ -18,10 +18,10 @@
  */
 
 import EventEmitter from 'events';
-import TelephonyRest from './internal/rest/telephony-rest';
-import { RecordingAction } from './types/telephony/RecordingAction';
-import { EventRegistry } from './internal/events/event-dispatcher';
-import { CorrelatorData } from './types/telephony/call/correlator-data';
+import TelephonyRest from '../internal/rest/telephony-rest';
+import { RecordingAction } from '../types/telephony/RecordingAction';
+import { EventRegistry } from '../events/event-dispatcher';
+import { CorrelatorData } from '../types/telephony/call/correlator-data';
 import {
     OnCallCreated,
     OnCallModified,
@@ -30,19 +30,19 @@ import {
     OnDynamicStateChanged,
     OnTelephonyState,
     OnUserStateModified,
-} from './types/telephony/telephony-events';
-import { Call } from './types/telephony/call';
-import { HuntingGroupStatus } from './types/telephony/hunting-group-status';
-import { HuntingGroups } from './types/telephony/hunting-groups';
-import { MiniMessage } from './types/telephony/mini-message';
-import { TelephonicState } from './types/telephony/telephonic-state';
-import { Callback } from './types/telephony/callback';
-import { PilotInfo } from './types/telephony/call/ccd/pilot-info';
-import { Leg } from './types/telephony/call/leg';
-import { Participant } from './types/telephony/call/participant';
-import { DeviceState } from './types/telephony/device/device-state';
-import { PilotTransferQueryParameters } from './types/telephony/call/ccd/pilot-transfer-query-param';
-import { CallProfile } from './types/telephony/call/ccd/call-profile';
+} from '../types/telephony/telephony-events';
+import { Call } from '../types/telephony/call';
+import { HuntingGroupStatus } from '../types/telephony/hunting-group-status';
+import { HuntingGroups } from '../types/telephony/hunting-groups';
+import { MiniMessage } from '../types/telephony/mini-message';
+import { TelephonicState } from '../types/telephony/telephonic-state';
+import { Callback } from '../types/telephony/callback';
+import { PilotInfo } from '../types/telephony/call/ccd/pilot-info';
+import { Leg } from '../types/telephony/call/leg';
+import { Participant } from '../types/telephony/call/participant';
+import { DeviceState } from '../types/telephony/device/device-state';
+import { PilotTransferQueryParameters } from '../types/telephony/call/ccd/pilot-transfer-query-param';
+import { CallProfile } from '../types/telephony/call/ccd/call-profile';
 
 /**
  * The TelephonyService allows a user to initiate a call and to activate

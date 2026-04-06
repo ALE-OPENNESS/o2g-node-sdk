@@ -17,13 +17,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-export enum LogLevel {
-    DEBUG = 'DEBUG',
-    INFO = 'INFO',
-    WARN = 'WARN',
-    ERROR = 'ERROR',
-    NONE = 'NONE',
-}
+import { LogLevel } from "../../log-level";
+
 
 const LogLevelPriority: Record<LogLevel, number> = {
     [LogLevel.DEBUG]: 0,
@@ -62,6 +57,8 @@ export class Logger {
     private options: Required<LoggerOptions>;
     private transport: Transport;
 
+    private static _globalLevel: LogLevel | null = null;
+
     constructor(category: string, options?: LoggerOptions, transport: Transport = defaultTransport) {
         this.category = category;
         this.options = { ...defaultOptions, ...options };
@@ -72,11 +69,19 @@ export class Logger {
         return new Logger(category, options);
     }
 
+    static setGlobalLevel(level: LogLevel): void {
+        Logger._globalLevel = level;
+    }
+
+
     /**
      * Check if the given log level is currently enabled.
      */
     isLevelEnabled(level: LogLevel): boolean {
-        return LogLevelPriority[level] >= LogLevelPriority[this.options.level];
+        const effectiveLevel =
+            Logger._globalLevel ??
+            this.options.level;
+        return LogLevelPriority[level] >= LogLevelPriority[effectiveLevel];
     }
 
     private shouldLog(level: LogLevel): boolean {
@@ -153,19 +158,19 @@ export class Logger {
     }
 
     debug(format: string, ...args: unknown[]) {
-        this.write(LogLevel.DEBUG, this.interpolate(format, args), args);
+        this.write(LogLevel.DEBUG, this.interpolate(format, args));
     }
 
     info(format: string, ...args: unknown[]) {
-        this.write(LogLevel.INFO, this.interpolate(format, args), args);
+        this.write(LogLevel.INFO, this.interpolate(format, args));
     }
 
     warn(format: string, ...args: unknown[]) {
-        this.write(LogLevel.WARN, this.interpolate(format, args), args);
+        this.write(LogLevel.WARN, this.interpolate(format, args));
     }
 
     error(format: string, ...args: unknown[]) {
-        this.write(LogLevel.ERROR, this.interpolate(format, args), args);
+        this.write(LogLevel.ERROR, this.interpolate(format, args));
     }
 
     child(sub: string): Logger {
@@ -182,5 +187,5 @@ export const httpTransport: Transport = (level, message, meta) => {
         method: 'POST',
         body: JSON.stringify({ level, message, meta }),
         headers: { 'Content-Type': 'application/json' },
-    }).catch(() => {});
+    }).catch(() => { });
 };

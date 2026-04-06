@@ -24,7 +24,8 @@ import { Criteria } from '../../types/directory/criteria';
 import { SearchResultJson } from '../types/directory/directory-types';
 import { SearchResult } from '../../types/directory/search-result';
 import { IHttpClient } from '../util/IHttpClient';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 export default class DirectoryRest extends RestService {

@@ -17,12 +17,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import PhoneSetProgrammingRest from './internal/rest/phone-set-prog-rest';
-import { DynamicState } from './types/phoneset/dynamic-state';
-import { Pin } from './types/phoneset/pin';
-import { ProgrammeableKey } from './types/phoneset/prog-key';
-import { SoftKey } from './types/phoneset/soft-key';
-import { Device } from './types/common/device';
+import PhoneSetProgrammingRest from '../internal/rest/phone-set-prog-rest';
+import { DynamicState } from '../types/phoneset/dynamic-state';
+import { Pin } from '../types/phoneset/pin';
+import { ProgrammeableKey } from '../types/phoneset/prog-key';
+import { SoftKey } from '../types/phoneset/soft-key';
+import { Device } from '../types/common/device';
 
 /**
  * This service allows managing the programmable keys, soft keys, and device settings

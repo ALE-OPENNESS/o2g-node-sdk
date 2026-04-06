@@ -18,7 +18,7 @@
  */
 
 import EventEmitter from 'events';
-import MaintenanceRest from './internal/rest/maint-rest';
+import MaintenanceRest from '../internal/rest/maint-rest';
 import {
     OnCtiLinkDown,
     OnCtiLinkUp,
@@ -29,9 +29,9 @@ import {
     OnRemoteServerLinkDown,
     OnRemoteServerLinkUp,
     OnServerStart,
-} from './types/maint/maint-events';
-import { EventRegistry } from './internal/events/event-dispatcher';
-import { SystemStatus } from './types/maint/sys-status';
+} from '../types/maint/maint-events';
+import { EventRegistry } from '../events/event-dispatcher';
+import { SystemStatus } from '../types/maint/sys-status';
 
 /**
  * The MaintenanceService allows retrieving information about the system state,

@@ -30,7 +30,8 @@ import { HttpContent } from '../util/http-content';
 import UtilUri from '../util/util-uri';
 import { RestService } from './rest-service';
 import { PilotTransferQueryParameters } from '../../types/telephony/call/ccd/pilot-transfer-query-param';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 type PilotListJson = {

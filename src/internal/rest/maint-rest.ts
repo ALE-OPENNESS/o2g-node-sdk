@@ -22,7 +22,8 @@ import UtilUri from '../util/util-uri';
 import { SystemStatus } from '../../types/maint/sys-status';
 import { SystemStatusJson } from '../types/maint/maint-types';
 import { IHttpClient } from '../util/IHttpClient';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 export default class MaintenanceRest extends RestService {

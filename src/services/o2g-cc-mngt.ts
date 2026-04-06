@@ -17,14 +17,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import CallCenterManagementRest from './internal/rest/ccMngt-rest';
-import { Calendar } from './types/cc-mngt/calendar/calendar';
-import { DayOfWeek } from './types/common/day-of-week';
-import { ExceptionCalendar } from './types/cc-mngt/calendar/exception-calendar';
-import { NormalCalendar } from './types/cc-mngt/calendar/normal-calendar';
-import { Transition } from './types/cc-mngt/calendar/transition';
-import { Pilot } from './types/cc-mngt/pilot';
-import { PilotTransferQueryParameters } from './types/telephony/call/ccd/pilot-transfer-query-param';
+import CallCenterManagementRest from '../internal/rest/ccMngt-rest';
+import { Calendar } from '../types/cc-mngt/calendar/calendar';
+import { DayOfWeek } from '../types/common/day-of-week';
+import { ExceptionCalendar } from '../types/cc-mngt/calendar/exception-calendar';
+import { NormalCalendar } from '../types/cc-mngt/calendar/normal-calendar';
+import { Transition } from '../types/cc-mngt/calendar/transition';
+import { Pilot } from '../types/cc-mngt/pilot';
+import { PilotTransferQueryParameters } from '../types/telephony/call/ccd/pilot-transfer-query-param';
 
 /**
  * This service allows an administrator session to manage CCD pilot objects.

@@ -19,7 +19,7 @@
 
 import { injectable } from 'inversify';
 import EventEmitter from 'events';
-import { EventDispatcher, EventMap } from '../../types/events/events';
+import { EventDispatcher, EventMap } from '../types/events/events';
 
 // Adapter functions
 /** @internal */

@@ -18,9 +18,9 @@
  */
 
 import EventEmitter from 'events';
-import CallCenterPilotRest from './internal/rest/ccPilot-rest';
-import { EventRegistry } from './internal/events/event-dispatcher';
-import { OnPilotCallCreated, OnPilotCallQueued, OnPilotCallRemoved } from './types/cc-pilot/cc-pilot-events';
+import CallCenterPilotRest from '../internal/rest/ccPilot-rest';
+import { EventRegistry } from '../events/event-dispatcher';
+import { OnPilotCallCreated, OnPilotCallQueued, OnPilotCallRemoved } from '../types/cc-pilot/cc-pilot-events';
 
 /**
  * CallCenterPilot allows an administrator to monitor the CCD pilots. Using this

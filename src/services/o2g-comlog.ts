@@ -18,19 +18,19 @@
  */
 
 import EventEmitter from 'events';
-import CommunicationLogRest from './internal/rest/comlog-rest';
-import { Page } from './types/comlog/page';
-import { QueryFilter } from './types/comlog/query-filter';
-import { QueryResult } from './types/comlog/query-result';
-import { EventRegistry } from './internal/events/event-dispatcher';
+import CommunicationLogRest from '../internal/rest/comlog-rest';
+import { Page } from '../types/comlog/page';
+import { QueryFilter } from '../types/comlog/query-filter';
+import { QueryResult } from '../types/comlog/query-result';
+import { EventRegistry } from '../events/event-dispatcher';
 import {
     OnComRecordCreated,
     OnComRecordModified,
     OnComRecordsAck,
     OnComRecordsDeleted,
     OnComRecordsUnAck,
-} from './types/comlog/comlog-events';
-import { ComRecord } from './types/comlog/com-record';
+} from '../types/comlog/comlog-events';
+import { ComRecord } from '../types/comlog/com-record';
 
 /**
  * The CommunicationLog service allows a user to retrieve their last communication

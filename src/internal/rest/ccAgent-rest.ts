@@ -27,7 +27,8 @@ import { OperatorConfig } from '../../types/cc-agent/operator-config';
 import { OperatorState } from '../../types/cc-agent/operator-state';
 import { WithdrawReason } from '../../types/cc-agent/withdraw-reason';
 import { IHttpClient } from '../util/IHttpClient';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 type WithdrawReasonsJson = {

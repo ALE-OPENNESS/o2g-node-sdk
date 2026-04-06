@@ -18,12 +18,12 @@
  */
 
 import EventEmitter from 'events';
-import UsersRest from './internal/rest/users-rest';
-import { EventRegistry } from './internal/events/event-dispatcher';
-import { OnUserCreated, OnUserDeleted, OnUserInfoChanged } from './types/users/users-events';
-import { User } from './types/users/user';
-import { SupportedLanguages } from './types/users/supported-languages';
-import { Preferences } from './types/users/preferences';
+import UsersRest from '../internal/rest/users-rest';
+import { EventRegistry } from '../events/event-dispatcher';
+import { OnUserCreated, OnUserDeleted, OnUserInfoChanged } from '../types/users/users-events';
+import { User } from '../types/users/user';
+import { SupportedLanguages } from '../types/users/supported-languages';
+import { Preferences } from '../types/users/preferences';
 
 /**
  * The User service allows:

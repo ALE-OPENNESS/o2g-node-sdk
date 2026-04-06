@@ -17,19 +17,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { IntrusionMode } from './types/cc-agent/intrusion-mode';
-import CallCenterAgentRest from './internal/rest/ccAgent-rest';
+import { IntrusionMode } from '../types/cc-agent/intrusion-mode';
+import CallCenterAgentRest from '../internal/rest/ccAgent-rest';
 import EventEmitter from 'events';
-import { EventRegistry } from './internal/events/event-dispatcher';
+import { EventRegistry } from '../events/event-dispatcher';
 import {
     OnAgentSkillChanged,
     OnAgentStateChanged,
     OnSupervisorHelpCancelled,
     OnSupervisorHelpRequested,
-} from './types/cc-agent/cc-agent-events';
-import { OperatorConfig } from './types/cc-agent/operator-config';
-import { OperatorState } from './types/cc-agent/operator-state';
-import { WithdrawReason } from './types/cc-agent/withdraw-reason';
+} from '../types/cc-agent/cc-agent-events';
+import { OperatorConfig } from '../types/cc-agent/operator-config';
+import { OperatorState } from '../types/cc-agent/operator-state';
+import { WithdrawReason } from '../types/cc-agent/withdraw-reason';
 
 /**
  * CallCenterAgent provides services for CCD operators. Using this

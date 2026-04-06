@@ -18,18 +18,18 @@
  */
 
 import EventEmitter from 'events';
-import { EventRegistry } from './internal/events/event-dispatcher';
-import { RtiObjects } from './types/cc-rt/rti-objects';
-import CallCenterRealtimeRest from './internal/rest/ccRealtime-rest';
-import { RtiObjectIdentifier } from './types/cc-rt/rti-object-identifier';
-import { RtiContext } from './types/cc-rt/rti-context';
+import { EventRegistry } from '../events/event-dispatcher';
+import { RtiObjects } from '../types/cc-rt/rti-objects';
+import CallCenterRealtimeRest from '../internal/rest/ccRealtime-rest';
+import { RtiObjectIdentifier } from '../types/cc-rt/rti-object-identifier';
+import { RtiContext } from '../types/cc-rt/rti-context';
 import {
     OnAgentProcessingGroupRtiChanged,
     OnAgentRtiChanged,
     OnOtherProcessingGroupRtiChanged,
     OnPilotRtiChanged,
     OnQueueRtiChanged,
-} from './types/cc-rt/cc-rt-events';
+} from '../types/cc-rt/cc-rt-events';
 
 /**
  * Provides real-time information about CCD objects from an OXE system

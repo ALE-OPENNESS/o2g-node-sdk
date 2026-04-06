@@ -46,8 +46,8 @@ import CallCenterRealtimeRest from './rest/ccRealtime-rest';
 import CallCenterStatisticsRest from './rest/ccStatistics-rest';
 import HttpClient from './util/http-client';
 import { ObjectsContainer, TYPES } from './util/injection-container';
-import { IEventSink } from './events/event-dispatcher';
-import { Host } from '../host';
+import { IEventSink } from '../events/event-dispatcher';
+import { Host } from '../o2g-servers';
 
 /** @internal */
 class O2GService {
@@ -119,7 +119,7 @@ export class ServiceFactory {
         return this.#accessMode;
     }
 
-    private throwUnableToConnect(host: Host): never | void {
+    private throwUnableToConnect(host: { privateAddress?: string; publicAddress?: string }): never | void {
         if (host.privateAddress && host.publicAddress) {
             throw new Error(`[${host.privateAddress}, ${host.publicAddress}]`);
         } else if (host.privateAddress) {
@@ -363,7 +363,7 @@ export class ServiceFactory {
 
                     this.#servicesUri.set(serviceName, baseUrl + '/telephony');
                 } else {
-                    this.#logger.debug('Register service: {service}', service.serviceName);
+                    this.#logger.debug(`Register service: {}`, service.serviceName);
                     this.#servicesUri.set(serviceName, baseUrl + service.relativeUrl);
                 }
             }

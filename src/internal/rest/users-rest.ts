@@ -25,7 +25,8 @@ import { Preferences } from '../../types/users/preferences';
 import { SupportedLanguages } from '../../types/users/supported-languages';
 import { IHttpClient } from '../util/IHttpClient';
 import { HttpContent } from '../util/http-content';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 type LoginsResponse = {

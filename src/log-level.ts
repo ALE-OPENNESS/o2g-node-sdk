@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 ALE International
+ * Copyright 2026 ALE International
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal in the Software
@@ -18,20 +18,18 @@
  */
 
 /**
- * Represents an O2G host.
- * <p>
- * An O2G host can be reacheable from the local network, or from a wide area
- * network. In this case, enterprise access can be secured by a reverse proxy
- * border element.
+ * Log levels available for the O2G SDK logger.
+ * Use with {@link O2G.setLogLevel} to control SDK verbosity.
+ *
+ * @example
+ * ```ts
+ * O2G.setLogLevel(LogLevel.DEBUG);
+ * ```
  */
-export type Host = {
-    /**
-     * The private address for this host.
-     */
-    privateAddress: string;
-
-    /**
-     * The public address for this host.
-     */
-    publicAddress?: string;
-};
+export enum LogLevel {
+    DEBUG = 'DEBUG',
+    INFO  = 'INFO',
+    WARN  = 'WARN',
+    ERROR = 'ERROR',
+    NONE  = 'NONE',
+}

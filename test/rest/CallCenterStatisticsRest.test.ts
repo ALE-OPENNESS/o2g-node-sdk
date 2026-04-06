@@ -17,7 +17,7 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-import { EventRegistry } from "../../src/internal/events/event-dispatcher";
+import { EventRegistry } from "../../src/events/event-dispatcher";
 import CallCenterStatisticsRest from "../../src/internal/rest/ccStatistics-rest";
 import { AgentFilterImpl } from "../../src/internal/types/cc-stats/ag-filter-impl";
 import { ContextImpl } from "../../src/internal/types/cc-stats/context-impl";

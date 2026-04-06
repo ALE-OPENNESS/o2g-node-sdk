@@ -23,7 +23,8 @@ import UtilUri from '../util/util-uri';
 import { SessionInfo } from '../types/common/common-types';
 import { IHttpClient } from '../util/IHttpClient';
 import { SupervisedAccount } from '../../supervised-account';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 export default class SessionsRest extends RestService {

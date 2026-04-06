@@ -34,7 +34,8 @@ import {
 } from '../types/pbxmngt/pbxmngt-types';
 import { Pbx } from '../../types/pbxmngt/pbx';
 import { IHttpClient } from '../util/IHttpClient';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 type PbxsJson = {

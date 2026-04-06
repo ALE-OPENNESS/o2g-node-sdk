@@ -24,6 +24,7 @@ import { ServiceFactory } from './service-factory';
 import { Session } from './session';
 import { SupervisedAccount } from '../supervised-account';
 import SessionsRest from './rest/sessions-rest';
+import { SessionMonitoringPolicy } from '../session-monitoring-policy';
 
 /** @internal */
 export class ServiceEndPoint {
@@ -41,7 +42,8 @@ export class ServiceEndPoint {
         login: string,
         password: string,
         applicationName: string,
-        supervisedAccount: SupervisedAccount | null
+        supervisedAccount: SupervisedAccount | null,
+        monitoringPolicy: SessionMonitoringPolicy
     ): Promise<Session> {
         AssertUtil.notNullOrEmpty(login, 'login');
         AssertUtil.notNullOrEmpty(password, 'password');
@@ -56,14 +58,14 @@ export class ServiceEndPoint {
 
         this.#serviceFactory.setSessionUris(authenticationResult.internalUrl, authenticationResult.publicUrl);
 
-        this.#logger.debug('OpenSession -> OpenSession {application}', applicationName);
+        this.#logger.debug('OpenSession -> OpenSession {}', applicationName);
 
         const sessionsService: SessionsRest = this.#serviceFactory.getSessionsService();
         const sessionInfo: SessionInfo | null = await sessionsService.open(applicationName, supervisedAccount);
         if (sessionInfo) {
-            this.#logger.debug('Session opened: TimeToLive = {timeToLive}', sessionInfo.timeToLive);
+            this.#logger.debug('Session opened: TimeToLive = {}', sessionInfo.timeToLive);
             this.#serviceFactory.setServices(sessionInfo);
-            return new Session(this.#serviceFactory, sessionInfo, login);
+            return new Session(this.#serviceFactory, sessionInfo, login, monitoringPolicy);
         } 
         else {
             await sessionsService.close();

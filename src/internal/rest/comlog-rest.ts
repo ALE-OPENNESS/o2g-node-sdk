@@ -29,7 +29,8 @@ import { ComHistoryRecordJson, ComHistoryRecordsJson } from '../types/comlog/com
 import { IHttpClient } from '../util/IHttpClient';
 import { FilterOption } from '../../types/comlog/filter-option';
 import { ComRecord } from '../../types/comlog/com-record';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 export default class CommunicationLogRest extends RestService {

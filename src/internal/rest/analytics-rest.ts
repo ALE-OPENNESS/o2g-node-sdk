@@ -26,7 +26,8 @@ import { ChargingResult } from '../../types/analytics/charging-result';
 import { DateRange } from '../../types/common/date-range';
 import { ChargingFileJson, ChargingResultJson, IncidentJson } from '../types/analytics/analytics-types';
 import { IHttpClient } from '../util/IHttpClient';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 type ChargingFileResultJson = {

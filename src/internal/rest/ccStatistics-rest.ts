@@ -17,7 +17,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import _default from 'uuid/dist/cjs/nil';
 import { Language } from '../../types/cc-stats/language';
 import { Requester } from '../../types/cc-stats/requester';
 import { StatsContext } from '../../types/cc-stats/stats-context';
@@ -43,7 +42,7 @@ import { StatisticsData } from '../../types/cc-stats/data/stats-data';
 import { TimeInterval } from '../../types/cc-stats/time-interval';
 import { ProgressCallback } from '../../types/cc-stats/events/progress-callback';
 import { StatsFormat } from '../../types/cc-stats/stats-format';
-import { EventRegistry, IEventSink } from '../events/event-dispatcher';
+import { EventRegistry, IEventSink } from '../../events/event-dispatcher';
 import { EventEmitter } from 'events';
 import { OnAcdStatsProgress } from '../types/cc-stats/on-stats-progress';
 import { ProgressStep } from '../../types/cc-stats/events/progress-step';
@@ -56,7 +55,8 @@ import { Recurrence } from '../../types/cc-stats/scheduled/recurrence';
 import { ReportObservationPeriod } from '../../types/cc-stats/scheduled/report-obs-period';
 import { ScheduledReport } from '../../types/cc-stats/scheduled/scheduled-report';
 import { ScheduledReportImpl } from '../types/cc-stats/scheduled-rep-impl';
-import { Logger, LogLevel } from '../util/logger';
+import { Logger } from '../util/logger';
+import { LogLevel } from '../../log-level';
 
 /** @internal */
 type SupervisedJson = {
