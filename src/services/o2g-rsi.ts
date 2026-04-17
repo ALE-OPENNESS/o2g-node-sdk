@@ -33,8 +33,7 @@ import { RsiPoint } from '../types/rsi/rsi-point';
 import { RouteSession } from '../types/rsi/route-session';
 
 /**
- * RsiService provides access to th RSI (Routing Service Intelligence)
- * points features:
+ * `Rsi` provides access to the RSI (Routing Service Intelligence) point features:
  * <ul>
  * <li>Makes route selection.</li>
  * <li>Makes digits collection.</li>
@@ -42,9 +41,8 @@ import { RouteSession } from '../types/rsi/route-session';
  * <li>Plays announcements (prompts and/or digits).</li>
  * </ul>
  * <p>
- * To be able to receive the RouteRequest from the OmniPCX Enterprise, the first
- * action is subscribe to rsi events and the second action is to enable the RSI
- * point.
+ * To be able to receive route requests from the OmniPCX Enterprise, the application
+ * must first subscribe to RSI events and then enable the RSI point.
  * <p>
  * Using this service requires having a <b>CONTACTCENTER_RSI</b> license.
  */
@@ -52,31 +50,31 @@ export class Rsi extends EventEmitter {
     #rsiRest: RsiRest;
 
     /**
-     * Occurs when a data collection has ended.
+     * Raised when a digit collection session has ended.
      * @event
      */
     static readonly ON_DIGIT_COLLECTED = 'OnDigitCollected';
 
     /**
-     * Raised from a RSI point when a tone generation is started.
+     * Raised from an RSI point when a tone generation starts.
      * @event
      */
     static readonly ON_TONE_GENERATED_START = 'OnToneGeneratedStart';
 
     /**
-     * Raised from a RSI point when a tone generation is stopped.
+     * Raised from an RSI point when a tone generation stops.
      * @event
      */
     static readonly ON_TONE_GENERATED_STOP = 'OnToneGeneratedStop';
 
     /**
-     * Raised from a Routing point to close a route session (routing crid is no longer valid).
+     * Raised from a routing point to close a route session (the routing Crid is no longer valid).
      * @event
      */
     static readonly ON_ROUTE_END = 'OnRouteEnd';
 
     /**
-     * Raised from a Routing point to request a route.
+     * Raised from a routing point to request a route selection.
      * @event
      */
     static readonly ON_ROUTE_REQUEST = 'OnRouteRequest';
@@ -97,44 +95,45 @@ export class Rsi extends EventEmitter {
     }
 
     /**
-     * Gets the configured Rsi points.
+     * Gets the configured RSI points.
+     *
+     * @returns the list of {@link RsiPoint} objects representing all declared RSI points, or `null` in case of error.
      */
     async getRsiPoints(): Promise<RsiPoint[] | null> {
         return this.#rsiRest.getRsiPoints();
     }
 
     /**
-     * Enables the specified rsi point.
+     * Enables the specified RSI point.
      *
-     * @param rsiNumber the rsi point extension number.
-     * @param [backup=false] true to enable the RSI point in backup mode.
+     * @param rsiNumber the RSI point extension number
+     * @param backup `true` to enable the RSI point in backup mode
+     * @returns `true` in case of success; `false` otherwise.
      */
     async enableRsiPoint(rsiNumber: string, backup: boolean = false): Promise<boolean> {
         return this.#rsiRest.enableRsiPoint(rsiNumber, backup);
     }
 
     /**
-     * Disables the specified rsi point.
+     * Disables the specified RSI point.
      *
-     * @param rsiNumber the rsi point extension number.
+     * @param rsiNumber the RSI point extension number
+     * @returns `true` in case of success; `false` otherwise.
      */
     async disableRsiPoint(rsiNumber: string): Promise<boolean> {
         return this.#rsiRest.disableRsiPoint(rsiNumber);
     }
 
     /**
-     * Starts a digits collection for the specified rsi, on the specified call.
+     * Starts a digits collection on the specified RSI point, for the specified call.
      *
-     * @param rsiNumber          the rsi point extension number
+     * @param rsiNumber          the RSI point extension number
      * @param callRef            the call reference
-     * @param numChars           the optionnal number of digits to collect. The
-     *                           digit collection is stopped when this number is
-     *                           reached
-     * @param flushChar          the optional character used to stop the digit
-     *                           collection when pressed.
-     * @param timeout            optional timeout in second. Stop the digit
-     *                           collection after this time elapses.
+     * @param numChars           the optional number of digits to collect; the digit collection stops when this number is reached
+     * @param flushChar          the optional character that stops the digit collection when pressed
+     * @param timeout            the optional timeout in seconds; the digit collection stops when this delay elapses
      * @param additionalCriteria extension criteria used to collect digits
+     * @returns a unique identifier (Crid) for this digit collection session, or `null` in case of error.
      * @see {@link ON_DIGIT_COLLECTED} event
      * @see {@link stopCollectDigits}
      */
@@ -150,11 +149,12 @@ export class Rsi extends EventEmitter {
     }
 
     /**
-     * Stops the specified digits collection.
+     * Stops the specified digits collection on the specified RSI point.
      *
-     * @param rsiNumber the rsi point extension number
-     * @param callCrid  the digit collection identifier
-     * @see {@link startCollectDigits}.
+     * @param rsiNumber the RSI point extension number
+     * @param collCrid  the digit collection identifier returned by {@link startCollectDigits}
+     * @returns `true` in case of success; `false` otherwise.
+     * @see {@link startCollectDigits}
      */
     async stopCollectDigits(rsiNumber: string, collCrid: string): Promise<boolean> {
         return this.#rsiRest.stopCollectDigits(rsiNumber, collCrid);
@@ -163,23 +163,25 @@ export class Rsi extends EventEmitter {
     /**
      * Plays the specified tone on the specified call.
      *
-     * @param rsiNumber the rsi point extension number
+     * @param rsiNumber the RSI point extension number
      * @param callRef   the call reference
      * @param tone      the tone to play
-     * @param duration  the duration the tone is played (in second)
-     * @see {@link ON_TONE_GENERATED_START} event.
-     * @see {@link cancelTone}.
+     * @param duration  the duration the tone is played, in seconds
+     * @returns `true` in case of success; `false` otherwise.
+     * @see {@link ON_TONE_GENERATED_START} event
+     * @see {@link cancelTone}
      */
     async playTone(rsiNumber: string, callRef: string, tone: Tones, duration: number): Promise<boolean> {
         return this.#rsiRest.playTone(rsiNumber, callRef, tone, duration);
     }
 
     /**
-     * Cancels playing a tone on the specified call.
+     * Cancels the tone currently playing on the specified call.
      *
-     * @param rsiNumber the rsi point extension number
+     * @param rsiNumber the RSI point extension number
      * @param callRef   the call reference
-     * @see {@link ON_TONE_GENERATED_STOP} event.
+     * @returns `true` in case of success; `false` otherwise.
+     * @see {@link ON_TONE_GENERATED_STOP} event
      * @see {@link playTone}
      */
     async cancelTone(rsiNumber: string, callRef: string): Promise<boolean> {
@@ -189,11 +191,11 @@ export class Rsi extends EventEmitter {
     /**
      * Plays the specified voice guide on the specified call.
      *
-     * @param rsiNumber   the rsi point extension number
+     * @param rsiNumber   the RSI point extension number
      * @param callRef     the call reference
-     * @param guideNumber the voice guide number as defined in the OmniPcx
-     *                    Enterprise
-     * @param duration    an optional duration for the voice guide in second.
+     * @param guideNumber the voice guide number as defined in the OmniPCX Enterprise
+     * @param duration    an optional duration for the voice guide, in seconds
+     * @returns `true` in case of success; `false` otherwise.
      * @see {@link ON_TONE_GENERATED_START}
      */
     async playVoiceGuide(
@@ -206,26 +208,30 @@ export class Rsi extends EventEmitter {
     }
 
     /**
-     * Ends a route session.
+     * Ends a route session, indicating that no route will be selected.
      *
-     * @param rsiNumber the rsi point extension number
+     * @param rsiNumber the RSI point extension number
      * @param routeCrid the routing session unique identifier
-     * @see {@link ON_ROUTE_REQUEST} event.
+     * @returns `true` in case of success; `false` otherwise.
+     * @see {@link ON_ROUTE_REQUEST} event
      */
     async routeEnd(rsiNumber: string, routeCrid: string): Promise<boolean> {
         return this.#rsiRest.routeEnd(rsiNumber, routeCrid);
     }
 
     /**
-     * Selects a route for the specified route session.
-     * @param rsiNumber        the rsi point extension number
+     * Selects a route as a response to a route request.
+     * <p>
+     * `callingLine` can be used to change the identity of the calling number presented to the called party.
+     *
+     * @param rsiNumber        the RSI point extension number
      * @param routeCrid        the routing session unique identifier
      * @param selectedRoute    the selected route number
-     * @param callingLine      an optional calling line value that will be presented
-     *                         to the selected route
-     * @param associatedData   the optional associated data to attach to the call
-     * @param routeToVoiceMail 'true' if the selected route is the voice mail; 'false' otherwise
-     * @see {@link ON_ROUTE_REQUEST} event.
+     * @param callingLine      an optional calling line number that will be presented to the selected route
+     * @param associatedData   optional correlator data to attach to the call
+     * @param routeToVoiceMail `true` if the selected route is the voice mail; `false` otherwise
+     * @returns `true` in case of success; `false` otherwise.
+     * @see {@link ON_ROUTE_REQUEST} event
      */
     async routeSelect(
         rsiNumber: string,
@@ -246,19 +252,21 @@ export class Rsi extends EventEmitter {
     }
 
     /**
-     * Gets the list of existing route sessions for the specified rsi point.
+     * Gets the list of existing route sessions for the specified RSI point.
      *
-     * @param rsiNumber the rsi point extension number
+     * @param rsiNumber the RSI point extension number
+     * @returns the list of {@link RouteSession} objects representing the route sessions in progress, or `null` in case of error.
      */
     async getRouteSessions(rsiNumber: string): Promise<RouteSession[] | null> {
         return this.#rsiRest.getRouteSessions(rsiNumber);
     }
 
     /**
-     * Return the specified route session.
+     * Returns the specified route session.
      *
-     * @param rsiNumber the rsi point extension number
+     * @param rsiNumber the RSI point extension number
      * @param routeCrid the routing session unique identifier
+     * @returns the {@link RouteSession} object on success; `null` in case of error or if no such route session exists.
      */
     async getRouteSession(rsiNumber: string, routeCrid: string): Promise<RouteSession | null> {
         return this.#rsiRest.getRouteSession(rsiNumber, routeCrid);

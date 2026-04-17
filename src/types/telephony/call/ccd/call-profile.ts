@@ -61,7 +61,7 @@ export class CallProfile {
      * 2. Varargs of skills → `new CallProfile(skill1, skill2, ...)`
      * 3. Single iterable (array, Set, etc.) of skills → `new CallProfile([skill1, skill2])`
      */
-    constructor(...args: (CallProfile.Skill | Iterable<CallProfile.Skill>)[]) {
+    public constructor(...args: (CallProfile.Skill | Iterable<CallProfile.Skill>)[]) {
         this.#skills = new Map<number, CallProfile.Skill>();
 
         if (args.length === 0) return;

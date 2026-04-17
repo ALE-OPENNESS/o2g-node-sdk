@@ -34,12 +34,12 @@ import { EventRegistry } from '../events/event-dispatcher';
 import { SystemStatus } from '../types/maint/sys-status';
 
 /**
- * The MaintenanceService allows retrieving information about the system state,
- * in particular information on the PBX nodes and their connection state.
+ * The Maintenance service provides information about the system state,
+ * in particular information on the OmniPCX Enterprise nodes and their connection state.
  * Information about licenses is also provided per item: total allocated licenses,
  * number currently in use, and expiration date.
  * <p>
- * This service is available to administrator sessions only.
+ * This service does not require any specific license on the O2G server.
  *
  * @example
  * ```typescript
@@ -69,13 +69,13 @@ export class Maintenance extends EventEmitter {
     #maintenanceRest: MaintenanceRest;
 
     /**
-     * Occurs when connection to remote twin server is lost.
+     * Occurs when the connection to the remote twin O2G server is lost.
      * @event
      */
     static readonly ON_REMOTE_SERVER_LINK_DOWN = 'OnRemoteServerLinkDown';
 
     /**
-     * Occurs when connection to remote twin server is recovered.
+     * Occurs when the connection to the remote twin O2G server is recovered.
      * @event
      */
     static readonly ON_REMOTE_SERVER_LINK_UP = 'OnRemoteServerLinkUp';
@@ -93,13 +93,13 @@ export class Maintenance extends EventEmitter {
     static readonly ON_CTI_LINK_UP = 'OnCtiLinkUp';
 
     /**
-     * Occurs when a PBX link is down.
+     * Occurs when the CMIS link to an OmniPCX Enterprise node goes down.
      * @event
      */
     static readonly ON_PBX_LINK_DOWN = 'OnPbxLinkDown';
 
     /**
-     * Occurs when a PBX link is up.
+     * Occurs when the CMIS link to an OmniPCX Enterprise node is re-established.
      * @event
      */
     static readonly ON_PBX_LINK_UP = 'OnPbxLinkUp';
@@ -111,13 +111,13 @@ export class Maintenance extends EventEmitter {
     static readonly ON_PBX_LOADED = 'OnPbxLoaded';
 
     /**
-     * Occurs when the license file will soon expire or has recently expired.
+     * Occurs when a license is about to expire or has expired.
      * @event
      */
     static readonly ON_LICENSE_EXPIRATION = 'OnLicenseExpiration';
 
     /**
-     * Occurs when O2G is ready (all OXE nodes are connected and loaded).
+     * Occurs when the O2G server has started (all OmniPCX Enterprise nodes are connected and loaded).
      * @event
      */
     static readonly ON_SERVER_STARTED = 'OnServerStart';
@@ -147,7 +147,7 @@ export class Maintenance extends EventEmitter {
      * <p>
      * This operation is restricted to an administrator session only.
      *
-     * @returns the {@link SystemStatus} on success; `null` otherwise.
+     * @returns the {@link SystemStatus} on success; `null` otherwise
      */
     async getSystemStatus(): Promise<SystemStatus | null> {
         return await this.#maintenanceRest.getSystemStatus();

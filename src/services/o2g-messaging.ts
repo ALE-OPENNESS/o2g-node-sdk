@@ -28,7 +28,8 @@ import { VoiceMessage } from '../types/messaging/voice-message';
  * the information and the list of voice mails, and manage the mail box. Using
  * this service requires having a <b>TELEPHONY_ADVANCED</b> license.
  * <p>
- * It is possible to download a voice mail as a wav file and to delete existing messages.
+ * It is possible to download a voice mail as a wav file, acknowledge (mark as
+ * read) a voice mail, and delete existing messages.
  */
 export class Messaging {
     #messagingRest: MessagingRest;
@@ -136,7 +137,7 @@ export class Messaging {
     }
 
     /**
-     * Acknowledges the specified voice message.
+     * Acknowledges the specified voice message, marking it as read.
      * <p>
      * If the session has been opened for a user, the `loginName` parameter is
      * ignored, but it is mandatory if the session has been opened by an

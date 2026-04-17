@@ -24,10 +24,10 @@ import { OnEventSummaryUpdated } from '../types/eventsummary/event-summary-event
 import { EventSummaryCounters } from '../types/eventsummary/event-summary-counter';
 
 /**
- * The Event summary service allows a user to get its new message
- * indicators (missed call, voice mails, callback request, fax).
+ * The EventSummary service allows a user to retrieve new message indicators
+ * such as missed calls, voice mails, callback requests, and faxes.
  * <p>
- * Using this service requires having a <b>TELEPHONY_ADVANCED</b> license.
+ * Using this service requires a <b>TELEPHONY_ADVANCED</b> license.
  *
  * @example
  * ```typescript
@@ -49,7 +49,7 @@ export class EventSummary extends EventEmitter {
     #eventSummaryRest: EventSumaryRest;
 
     /**
-     * Event raised each time the user's counters have changed.
+     * Occurs each time the user's event counters have changed.
      * @event
      */
     static readonly ON_EVENT_SUMMARY_UPDATED = 'OnEventSummaryUpdated';
@@ -65,14 +65,13 @@ export class EventSummary extends EventEmitter {
     }
 
     /**
-     * Retrieves main counters for the specified user.
+     * Retrieves the main event counters for the specified user.
      * <p>
      * If the session has been opened for a user, the `loginName` parameter is
-     * ignored, but it is mandatory if the session has been opened by an
-     * administrator.
+     * ignored, but it is mandatory if the session has been opened by an administrator.
      *
      * @param loginName the user login name
-     * @returns the {@link EventSummaryCounters} on success; `null` otherwise.
+     * @returns the {@link EventSummaryCounters} containing the event counters on success; `null` otherwise
      */
     get(loginName: string | null = null): Promise<EventSummaryCounters | null> {
         return this.#eventSummaryRest.get(loginName);

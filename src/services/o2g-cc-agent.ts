@@ -32,8 +32,10 @@ import { OperatorState } from '../types/cc-agent/operator-state';
 import { WithdrawReason } from '../types/cc-agent/withdraw-reason';
 
 /**
- * CallCenterAgent provides services for CCD operators. Using this
- * service requires having a <b>CONTACTCENTER_AGENT</b> license.
+ * `CallCenterAgent` provides access to Contact Center features for CCD operators.
+ * A CCD operator can be either a CCD agent or a CCD supervisor.
+ * <p>
+ * Using this service requires having a <b>CONTACTCENTER_AGENT</b> license.
  */
 export class CallCenterAgent extends EventEmitter {
     #ccAgentRest: CallCenterAgentRest;
@@ -101,6 +103,7 @@ export class CallCenterAgent extends EventEmitter {
      *
      * @param loginName the operator login name
      * @returns the {@link OperatorState} on success; `null` otherwise.
+     * @see requestSnapshot
      */
     async getState(loginName: string | null = null): Promise<OperatorState | null> {
         return await this.#ccAgentRest.getState(loginName);
@@ -220,7 +223,7 @@ export class CallCenterAgent extends EventEmitter {
     }
 
     /**
-     * Puts the specified agent in pause state.
+     * Puts the specified agent in pause.
      * <p>
      * If the session has been opened for a user, the `loginName` parameter is
      * ignored, but it is mandatory if the session has been opened by an administrator.
@@ -233,7 +236,7 @@ export class CallCenterAgent extends EventEmitter {
     }
 
     /**
-     * Requests a supervisor to listen to the specified agent.
+     * Requests a supervisor to listen to the specified agent (permanent listening).
      * <p>
      * On success, an {@link ON_SUPERVISOR_HELP_REQUESTED} event is raised for both the agent and the supervisor.
      * <p>
@@ -280,7 +283,7 @@ export class CallCenterAgent extends EventEmitter {
     }
 
     /**
-     * Requests an intrusion in a CCD call.
+     * Requests intrusion in a CCD call.
      * <p>
      * If the session has been opened for a user, the `loginName` parameter is
      * ignored, but it is mandatory if the session has been opened by an administrator.
@@ -300,7 +303,7 @@ export class CallCenterAgent extends EventEmitter {
      * await O2G.callCenterAgent.changeIntrusionMode(IntrusionMode.NORMAL);
      * ```
      *
-     * @param agentNumber   the extension number of the CCD agent answering the call
+     * @param agentNumber   the extension number of the CCD agent who answers the CCD call
      * @param intrusionMode the intrusion mode
      * @param loginName     the supervisor login name
      * @returns `true` if the operation succeeded; `false` otherwise.
@@ -357,7 +360,7 @@ export class CallCenterAgent extends EventEmitter {
      * If the session has been opened for a user, the `loginName` parameter is
      * ignored, but it is mandatory if the session has been opened by an administrator.
      *
-     * @param agentNumber the extension number of the agent who requested help
+     * @param agentNumber the extension number of the agent who has requested help
      * @param loginName   the supervisor login name
      * @returns `true` if the operation succeeded; `false` otherwise.
      * @see cancelSupervisorHelpRequest
@@ -396,6 +399,7 @@ export class CallCenterAgent extends EventEmitter {
      *
      * @param loginName the agent login name
      * @returns `true` if the request was successfully submitted; `false` otherwise.
+     * @see getState
      */
     async requestSnapshot(loginName: string | null = null): Promise<boolean> {
         return await this.#ccAgentRest.requestSnapshot(loginName);

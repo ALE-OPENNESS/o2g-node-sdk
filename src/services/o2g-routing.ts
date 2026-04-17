@@ -113,8 +113,8 @@ export class Routing extends EventEmitter {
     /**
      * Activates the Do Not Disturb for the specified user.
      * <p>
-     * This method does nothing and returns `true` if the Do Not Disturb is
-     * already activated.
+     * When active, no calls are presented to the user. This method does nothing and
+     * returns `true` if the Do Not Disturb is already activated.
      * <p>
      * If the session has been opened for a user, the `loginName` parameter is
      * ignored, but it is mandatory if the session has been opened by an
@@ -161,7 +161,7 @@ export class Routing extends EventEmitter {
     }
 
     /**
-     * Returns the routing capabilities of the specified user.
+     * Returns the routing capabilities available to the specified user.
      * <p>
      * If the session has been opened for a user, the `loginName` parameter is
      * ignored, but it is mandatory if the session has been opened by an
@@ -177,8 +177,9 @@ export class Routing extends EventEmitter {
     /**
      * Activates the remote extension device for the specified user.
      * <p>
-     * When the remote extension is activated, it rings on incoming calls on the
-     * user's company phone.
+     * When activated, the remote extension rings on incoming calls on the user's
+     * company phone. If it is already activated, this method does nothing and
+     * returns `true`.
      * <p>
      * If the session has been opened for a user, the `loginName` parameter is
      * ignored, but it is mandatory if the session has been opened by an
@@ -195,8 +196,8 @@ export class Routing extends EventEmitter {
     /**
      * Deactivates the remote extension device for the specified user.
      * <p>
-     * When deactivated, it never rings, but it can still be used to place
-     * an outgoing call.
+     * When deactivated, the remote extension does not ring on incoming calls,
+     * but can still be used to place outgoing calls.
      * <p>
      * If the session has been opened for a user, the `loginName` parameter is
      * ignored, but it is mandatory if the session has been opened by an
@@ -225,10 +226,9 @@ export class Routing extends EventEmitter {
     }
 
     /**
-     * Cancels the forward for the specified user.
+     * Cancels the active forward for the specified user.
      * <p>
-     * This method does nothing and returns `true` if there is no forward
-     * activated.
+     * This method does nothing and returns `true` if there is no forward activated.
      * <p>
      * If the session has been opened for a user, the `loginName` parameter is
      * ignored, but it is mandatory if the session has been opened by an
@@ -236,15 +236,18 @@ export class Routing extends EventEmitter {
      *
      * @param loginName the user login name
      * @returns `true` if the operation succeeded; `false` otherwise.
+     * @see forwardOnNumber
+     * @see forwardOnVoiceMail
      */
     async cancelForward(loginName: string | null = null): Promise<boolean> {
         return await this.#routingRest.cancelForward(loginName);
     }
 
     /**
-     * Sets a forward on voice mail with the specified condition, for the specified user.
+     * Activates a forward to the voice mail with the specified condition, for the specified user.
      * <p>
      * This method will fail and return `false` if the user does not have a voice mail.
+     * If a forward is already active, it is replaced by the new one.
      * <p>
      * If the session has been opened for a user, the `loginName` parameter is
      * ignored, but it is mandatory if the session has been opened by an
@@ -254,14 +257,18 @@ export class Routing extends EventEmitter {
      * @param loginName the user login name
      * @returns `true` if the operation succeeded; `false` otherwise.
      * @see forwardOnNumber
+     * @see cancelForward
      */
     async forwardOnVoiceMail(condition: ForwardCondition, loginName: string | null = null): Promise<boolean> {
         return await this.#routingRest.forwardOnVoiceMail(condition, loginName);
     }
 
     /**
-     * Sets a forward on the specified number, with the specified condition, for the
+     * Activates a forward to the specified number, with the specified condition, for the
      * specified user.
+     * <p>
+     * The number must be authorized by the OmniPCX Enterprise numbering policy.
+     * If a forward is already active, it is replaced by the new one.
      * <p>
      * If the session has been opened for a user, the `loginName` parameter is
      * ignored, but it is mandatory if the session has been opened by an
@@ -298,7 +305,7 @@ export class Routing extends EventEmitter {
     }
 
     /**
-     * Cancels the overflow for the specified user.
+     * Cancels the active overflow for the specified user.
      * <p>
      * This method does nothing and returns `true` if there is no overflow activated.
      * <p>
@@ -308,6 +315,7 @@ export class Routing extends EventEmitter {
      *
      * @param loginName the user login name
      * @returns `true` if the operation succeeded; `false` otherwise.
+     * @see overflowOnVoiceMail
      */
     async cancelOverflow(loginName: string | null = null): Promise<boolean> {
         return await this.#routingRest.cancelOverflow(loginName);
@@ -328,8 +336,11 @@ export class Routing extends EventEmitter {
     }
 
     /**
-     * Activates an overflow on voice mail with the specified condition, for the
+     * Activates an overflow to the voice mail with the specified condition, for the
      * specified user.
+     * <p>
+     * The overflow only applies when no forward is active. If an overflow is already
+     * active, it is replaced by the new one.
      * <p>
      * This method will fail and return `false` if the user does not have a voice mail.
      * <p>
@@ -347,7 +358,10 @@ export class Routing extends EventEmitter {
     }
 
     /**
-     * Gets the routing state of the specified user.
+     * Gets the complete routing state of the specified user.
+     * <p>
+     * The routing state includes the forward, overflow, Do Not Disturb and remote
+     * extension activation status in a single call.
      * <p>
      * If the session has been opened for a user, the `loginName` parameter is
      * ignored, but it is mandatory if the session has been opened by an
@@ -361,11 +375,15 @@ export class Routing extends EventEmitter {
     }
 
     /**
-     * Asks a snapshot event on the specified user.
+     * Requests a snapshot event to be fired with the current routing state of the specified user.
      * <p>
-     * The {@link ON_ROUTING_STATE_CHANGED} event will contain the
-     * {@link RoutingState} (forward/overflow/dnd state). If a second request
-     * is asked while the previous one is still in progress, it has no effect.
+     * The {@link ON_ROUTING_STATE_CHANGED} event will contain the {@link RoutingState}
+     * (forward/overflow/DND state). If a second request is made while the previous one is still
+     * in progress, it has no effect.
+     * <p>
+     * If the session has been opened by an administrator and `loginName` is `null`, the snapshot
+     * is requested for all users. The request is immediately acknowledged but processing may take
+     * a long time if the number of users is large.
      * <p>
      * If the session has been opened for a user, the `loginName` parameter is
      * ignored, but it is mandatory if the session has been opened by an

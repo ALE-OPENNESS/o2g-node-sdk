@@ -1228,7 +1228,7 @@ describe('TelephonyRest Full Suite', () => {
         expect(mockHttpClient.post).toHaveBeenCalled();
 
         const [url, body] = mockHttpClient.post.mock.calls[0];
-        expect(url).toBe(`${baseUri}/pilots/30000/transferInfo?loginName=oxe1000`);
+        expect(url).toBe(`${baseUri}/pilots/3/30000/transferInfo?loginName=oxe1000`);
 
         const payload = JSON.parse((body as HttpContent).content);
         expect(payload).toEqual({

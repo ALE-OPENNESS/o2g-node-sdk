@@ -134,11 +134,12 @@ export class CallCenterRealtime extends EventEmitter {
 
     /**
      * Retrieves all CCD objects that currently provide real-time information.
-     *
+     * <p>
      * The returned {@link RtiObjects} includes collections of agents, pilots,
      * queues, and processing groups that can be monitored.
      *
-     * Returns `null` if no objects are available or an error occurs.
+     * @returns The {@link RtiObjects} containing the CCD objects, or `null` if no objects
+     *          are available or an error occurs.
      */
     async getRtiObjects(): Promise<RtiObjects | null> {
         return this.#ccRealtimeRest.getRtiObjects();
@@ -148,7 +149,7 @@ export class CallCenterRealtime extends EventEmitter {
      * Returns all CCD agents that provide real-time information.
      *
      * @returns An array of {@link RtiObjectIdentifier} representing agents,
-     *          or an empty array if none exist.
+     *          or an empty array if none exist, or `null` if an error occurs.
      */
     async getAgents(): Promise<RtiObjectIdentifier[] | null> {
         return this.#ccRealtimeRest.getAgents();

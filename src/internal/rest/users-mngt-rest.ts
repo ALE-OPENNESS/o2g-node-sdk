@@ -32,6 +32,11 @@ type LoginsResponse = {
     loginNames: string[];
 };
 
+type Users = {
+    users: UserJson[];
+};
+
+
 /** @internal */
 export default class UsersManagementRest extends RestService {
     #logger = Logger.create('UsersManagementRest');
@@ -70,7 +75,7 @@ export default class UsersManagementRest extends RestService {
 
         const uriGet = UtilUri.appendQuery(
             this._uri,
-            'deviceNumber=',
+            'deviceNumber',
             AssertUtil.notNullOrEmpty(deviceNumber, 'deviceNumber')
         );
 
@@ -87,7 +92,7 @@ export default class UsersManagementRest extends RestService {
         }
     }
 
-    async createUsers(nodeId: number, deviceNumbers: string[] | null): Promise<boolean> {
+    async createUsers(nodeId: number, deviceNumbers: string[] | null): Promise<User[]|null> {
         if (this.#logger.isLevelEnabled(LogLevel.INFO)) { 
             this.#logger.info(`createUsers nodeId=${nodeId}, deviceNumbers=${deviceNumbers}`);
         }
@@ -107,8 +112,17 @@ export default class UsersManagementRest extends RestService {
             this.#logger.debug(`createUsers request={}`, req);
         }
 
-        let httpResponse = await this._httpClient.post(uriPost, new HttpContent(JSON.stringify(req)));
-        return httpResponse.isSuccessStatusCode();
+        const _json = this.getResult<Users>(await this._httpClient.post(uriPost, new HttpContent(JSON.stringify(req))));
+        if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
+            this.#logger.debug(`createUsers result={}`, _json);
+        }
+
+        if (_json && Array.isArray(_json.users)) {
+            return _json.users.map(User.fromJson);
+        } 
+        else {
+            return null;
+        }
     }
 
     async getByLoginName(loginName: string): Promise<User | null> {

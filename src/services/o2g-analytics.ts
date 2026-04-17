@@ -24,12 +24,11 @@ import { ChargingResult } from '../types/analytics/charging-result';
 import { DateRange } from '../types/common/date-range';
 
 /**
- * The Analytics service allows to retrieve OmniPCX entreprise charging information and incidents.
- * <p>Using this service requires having a <b>ANALYTICS</b> license. This service requires an administrative login.
+ * The Analytics service provides access to OmniPCX Enterprise charging information and incident reports.
  * <p>
- * O2G uses SSH to get the information from an OmniPCX Enterprise node. So
- * <b>SSH must be enabled</b> on the OmniPCX Enterprise node to use this
- * service.
+ * Using this service requires an <b>ANALYTICS</b> license and an administrative login.
+ * O2G uses SSH to collect information from an OmniPCX Enterprise node, so
+ * <b>SSH must be enabled</b> on the node.
  */
 export class Analytics {
     #analyticsRest: AnalyticsRest;
@@ -43,18 +42,22 @@ export class Analytics {
     }
 
     /**
-     * Returns a list of incidents from the specified OmniPCX Enterprise node.
-     * @param nodeId the OmniPCX Enterprise node id
-     * @param last the number of incidents to retrieve
+     * Retrieves a list of incidents from the specified OmniPCX Enterprise node.
+     *
+     * @param nodeId the OmniPCX Enterprise node identifier
+     * @param last the maximum number of incidents to retrieve; pass `0` to retrieve all incidents currently in progress
+     * @returns an array of {@link Incident} objects, or `null` if the request fails
      */
     async getIncidents(nodeId: number, last: number = 0): Promise<Array<Incident> | null> {
         return await this.#analyticsRest.getIncidents(nodeId, last);
     }
 
     /**
-     * Get the list of charging file from the specified node, using the time range filter.
-     * @param nodeId the OmniPCX Enterprise node id
-     * @param filter  time range filter
+     * Retrieves the list of charging files available on the specified node.
+     *
+     * @param nodeId the OmniPCX Enterprise node identifier
+     * @param filter an optional date range filter; when omitted, all available charging files are returned
+     * @returns an array of {@link ChargingFile} objects, or `null` if the request fails
      * @see {@link getChargingsFromFiles}
      */
     async getChargingFiles(nodeId: number, filter: DateRange | null = null): Promise<Array<ChargingFile> | null> {
@@ -62,19 +65,21 @@ export class Analytics {
     }
 
     /**
-     * Query the charging information for the specified node, using the specified options.
+     * Queries the charging information for the specified node using a date range filter and the given options.
      * <p>
-     * If 'all' is set to 'true', all the tickets are returned, including the zero cost ticket, and with the called party; If 'all' is
-     * set to 'false', the total of charging info is returned for each user, the call number giving the number of calls with non null charging cost.
+     * If `all` is set to `true`, all tickets are returned, including zero-cost tickets and the called party.
+     * If `all` is set to `false`, the total charging information is returned per user, with the call count
+     * reflecting only calls that have a non-null charging cost.
      * <p>
-     * The request processes charging files on the OmniPCX Enterprise. The processing is limited to a maximum of 100 files for performance reason. If
-     * the range filter is too large and the number of file to process is greater than 100, the method fails and returns 'null'. In this case, a smaller
-     * range must be specified.
+     * Processing is limited to a maximum of 100 charging files for performance reasons. If the date range filter
+     * is too wide and the number of files to process exceeds 100, the method fails and returns `null`. In that
+     * case, a narrower date range must be specified.
      *
-     * @param nodeId     the OmniPCX Enterprise node id
-     * @param filter     a time range filter
-     * @param topResults allows to return only the 'top N' tickets
-     * @param all        'true' to include tickets with a 0 cost
+     * @param nodeId the OmniPCX Enterprise node identifier
+     * @param filter an optional date range filter
+     * @param topResults an optional limit to return only the top N tickets
+     * @param all `true` to include tickets with a 0 cost
+     * @returns a {@link ChargingResult} object, or `null` in case of error or if the filter yields no results
      */
     async getChargingsFromFilter(
         nodeId: number,
@@ -86,19 +91,23 @@ export class Analytics {
     }
 
     /**
-     * Query the charging information for the specified node, using the specified charging files. The charging files can be retrieved with {@link getChargingFiles}.
+     * Queries the charging information for the specified node, processing the given charging files with the specified options.
      * <p>
-     * If 'all' is set to 'true', all the tickets are returned, including the zero cost ticket, and with the called party; If 'all' is
-     * set to 'false', the total of charging info is returned for each user, the call number giving the number of calls with non null charging cost.
+     * This method gives finer control over the request by letting the caller specify the exact list of charging files to
+     * process. The list can be obtained via {@link getChargingFiles}.
      * <p>
-     * The request processes charging files on the OmniPCX Enterprise. The processing is limited to a maximum of 100 files for performance reason. If
-     * the range filter is too large and the number of file to process is greater than 100, the method fails and returns 'null'. In this case, a smaller
-     * range must be specified.
+     * If `all` is set to `true`, all tickets are returned, including zero-cost tickets and the called party.
+     * If `all` is set to `false`, the total charging information is returned per user, with the call count
+     * reflecting only calls that have a non-null charging cost.
+     * <p>
+     * Processing is limited to a maximum of 100 files for performance reasons. If the number of files exceeds 100,
+     * the method fails and returns `null`.
      *
-     * @param nodeId     the OmniPCX Enterprise node id
-     * @param files     the list of file to process
-     * @param topResults allows to return only the 'top N' tickets
-     * @param all        'true' to include tickets with a 0 cost
+     * @param nodeId the OmniPCX Enterprise node identifier
+     * @param files the list of charging files to process
+     * @param topResults an optional limit to return only the top N tickets
+     * @param all `true` to include tickets with a 0 cost
+     * @returns a {@link ChargingResult} object, or `null` in case of error or if the specified files yield no results
      */
     async getChargingsFromFiles(
         nodeId: number,

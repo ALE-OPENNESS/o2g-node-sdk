@@ -21,9 +21,17 @@ import UsersManagementRest from '../internal/rest/users-mngt-rest';
 import { User } from '../types/users/user';
 
 /**
- * The Users Management service allows an administrator to create, delete and retrieve O2G users.
+ * The Users Management service allows an administrator to create, delete, and retrieve O2G users.
  * <p>
- * This service requires an administrator session.
+ * O2G allows users to be created according to different methods:
+ * <ul>
+ * <li>Automatically when O2G starts, according to the automatic user creation mode.</li>
+ * <li>Through provisioning files.</li>
+ * <li>On demand through this service, which allows creating one user, a list of users,
+ *     or all users on a given OmniPCX Enterprise node.</li>
+ * </ul>
+ * Using this service does not require any specific license. This service requires an
+ * administrator session.
  *
  * @example
  * ```typescript
@@ -58,12 +66,11 @@ export class UsersManagement {
     }
 
     /**
-     * Retrieves the login names of users from the connected OmniPCX Enterprise nodes.
+     * Retrieves a list of user login names from the connected OmniPCX Enterprise nodes.
      * <p>
      * If `nodeIds` is `null`, retrieves the login names from all connected nodes.
      *
      * @param nodeIds optional list of OXE node ids to restrict the query to.
-     *                Only valid for an administrator session.
      * @returns the list of user login names on success; `null` otherwise.
      */
     async getLogins(nodeIds: number[] | null = null): Promise<string[] | null> {
@@ -71,10 +78,10 @@ export class UsersManagement {
     }
 
     /**
-     * Retrieves the login name of a user identified by one of their devices.
+     * Retrieves the login name of a user identified by one of their device directory numbers.
      *
-     * @param deviceNumber the device phone number
-     * @returns the user login name on success; `null` otherwise.
+     * @param deviceNumber a directory number of a device belonging to the user being searched for.
+     * @returns the login name of the user on success; `null` otherwise.
      */
     async getByDeviceNumber(deviceNumber: string): Promise<string | null> {
         return await this.#usersManagementRest.getByDeviceNumber(deviceNumber);
@@ -83,23 +90,24 @@ export class UsersManagement {
     /**
      * Creates O2G users on the specified OmniPCX Enterprise node.
      * <p>
-     * If `deviceNumbers` is `null` or empty, all users on the specified node are created.
+     * If `deviceNumbers` is `null` or empty, all users configured on the specified node
+     * are created.
      *
      * @example
      * ```typescript
      * // Create specific users by device number
-     * await O2G.usersManagement.createUsers(1, ["60200", "60201"]);
+     * const users = await O2G.usersManagement.createUsers(1, ["60200", "60201"]);
      *
      * // Create all users on the node
-     * await O2G.usersManagement.createUsers(1, null);
+     * const allUsers = await O2G.usersManagement.createUsers(1, null);
      * ```
      *
      * @param nodeId        the OXE node number
-     * @param deviceNumbers optional list of device phone numbers identifying the users to create.
+     * @param deviceNumbers optional list of device directory numbers identifying the users to create.
      *                      Pass `null` or an empty array to create all users on the node.
-     * @returns `true` if the operation succeeded; `false` otherwise.
+     * @returns the list of created {@link User} objects on success; `null` otherwise.
      */
-    async createUsers(nodeId: number, deviceNumbers: string[] | null): Promise<boolean> {
+    async createUsers(nodeId: number, deviceNumbers: string[] | null): Promise<User[] | null> {
         return await this.#usersManagementRest.createUsers(nodeId, deviceNumbers);
     }
 

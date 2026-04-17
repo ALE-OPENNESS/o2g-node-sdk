@@ -26,12 +26,13 @@ import { SupportedLanguages } from '../types/users/supported-languages';
 import { Preferences } from '../types/users/preferences';
 
 /**
- * The User service allows:
+ * The Users service allows:
  * <ul>
  * <li>an administrator to retrieve the list of O2G users.</li>
  * <li>a user to get information on another user account.</li>
- * <li>a user to change their password or preferences such as supported language.</li>
+ * <li>a user to change their password or get parameters such as supported languages.</li>
  * </ul>
+ * Using this service does not require any specific license.
  *
  * @example
  * ```typescript
@@ -61,7 +62,7 @@ export class Users extends EventEmitter {
     #usersRest: UsersRest;
 
     /**
-     * Raised on creation of a user.
+     * Raised when a user is created.
      * @event
      */
     static readonly ON_USER_CREATED = 'OnUserCreated';
@@ -73,7 +74,7 @@ export class Users extends EventEmitter {
     static readonly ON_USER_DELETED = 'OnUserDeleted';
 
     /**
-     * Raised on any change on the user's data.
+     * Raised on any change on a user's data.
      * @event
      */
     static readonly ON_USER_INFO_CHANGED = 'OnUserInfoChanged';
@@ -145,7 +146,7 @@ export class Users extends EventEmitter {
     /**
      * Retrieves the information of a user identified by their company extension number.
      *
-     * @param companyPhone the user extension number
+     * @param companyPhone the user company extension number
      * @returns the {@link User} information on success; `null` otherwise.
      */
     async getByCompanyPhone(companyPhone: string): Promise<User | null> {
@@ -174,6 +175,8 @@ export class Users extends EventEmitter {
 
     /**
      * Changes the specified user's password.
+     * <p>
+     * This operation will fail if authentication is delegated to an external LDAP server.
      *
      * @param loginName   the user login name
      * @param oldPassword the current password

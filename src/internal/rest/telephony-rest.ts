@@ -1139,6 +1139,7 @@ export default class TelephonyRest extends RestService {
         let uriPost = UtilUri.appendPath(
             this._uri,
             'pilots',
+            AssertUtil.positive(nodeId, "nodeId").toString(),
             AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'),
             'transferInfo'
         );

@@ -27,9 +27,22 @@ import { Pilot } from '../types/cc-mngt/pilot';
 import { PilotTransferQueryParameters } from '../types/telephony/call/ccd/pilot-transfer-query-param';
 
 /**
- * This service allows an administrator session to manage CCD pilot objects.
+ * `CallCenterManagement` provides operations to configure and manage CCD pilots
+ * and their associated calendars.
  * <p>
- * This service requires having a <b>CONTACTCENTER_SRV</b> license.
+ * Each CCD pilot has two types of calendars:
+ * <ul>
+ *   <li><b>Normal calendar</b> — defines standard pilot behaviour for each day of the
+ *       week. Each day can have up to 10 transitions (time slots).</li>
+ *   <li><b>Exception calendar</b> — defines special days that override the normal
+ *       calendar (e.g. holidays). Each exceptional day can also have up to 10
+ *       transitions.</li>
+ * </ul>
+ * A {@link Transition} represents a time slot in a calendar, including the start
+ * time, the pilot rule to apply, and the pilot operating mode.
+ * <p>
+ * Using this service requires having a <b>CONTACTCENTER_SERVICE</b> license in
+ * CAPEX mode, or 40 api-tel-f subscriptions in OPEX mode (Purple On Demand).
  */
 export class CallCenterManagement {
     #ccManagementRest: CallCenterManagementRest;
@@ -43,10 +56,10 @@ export class CallCenterManagement {
     }
 
     /**
-     * Retrieves the list of CCD pilots configured on the specified OmniPCX Enterprise node.
+     * Returns all CCD pilots configured on the specified OmniPCX Enterprise node.
      *
-     * @param nodeId the PCX Enterprise node id
-     * @returns the list of {@link Pilot} objects on success; `null` otherwise.
+     * @param nodeId the OmniPCX Enterprise node identifier
+     * @returns the list of {@link Pilot} objects, or `null` if no pilots are configured.
      */
     async getPilots(nodeId: number): Promise<Pilot[] | null> {
         return this.#ccManagementRest.getPilots(nodeId);
@@ -76,13 +89,13 @@ export class CallCenterManagement {
      * const pilotAdvanced = await O2G.callCenterManagement.getPilot(1, "60141", queryParam);
      * ```
      *
-     * @param nodeId                  the PCX Enterprise node id
+     * @param nodeId                  the OmniPCX Enterprise node identifier
      * @param pilotNumber             the pilot number
      * @param pilotTransferQueryParam optional call profile context. When provided,
      *                                the pilot information is evaluated against the
      *                                specified agent number, skills and transfer type.
      *                                Requires O2G >= 2.7.4.
-     * @returns the {@link Pilot} information on success; `null` otherwise.
+     * @returns the {@link Pilot} information, or `null` if not found.
      */
     async getPilot(
         nodeId: number,
@@ -97,28 +110,28 @@ export class CallCenterManagement {
     }
 
     /**
-     * Retrieves the routing calendar of the specified CCD pilot.
+     * Returns the calendar associated with the specified CCD pilot.
      * <p>
-     * The calendar defines the normal and exception schedules that govern
+     * The calendar combines the normal and exception schedules that govern
      * the pilot's open/closed state over time.
      *
-     * @param nodeId      the PCX Enterprise node id
+     * @param nodeId      the OmniPCX Enterprise node identifier
      * @param pilotNumber the pilot number
-     * @returns the {@link Calendar} on success; `null` otherwise.
+     * @returns the {@link Calendar} of the pilot, or `null` if not found.
      */
     async getCalendar(nodeId: number, pilotNumber: string): Promise<Calendar | null> {
         return this.#ccManagementRest.getCalendar(nodeId, pilotNumber);
     }
 
     /**
-     * Retrieves the exception calendar of the specified CCD pilot.
+     * Returns the exception calendar for the specified CCD pilot.
      * <p>
      * The exception calendar contains date-specific transitions that override
      * the normal weekly schedule.
      *
-     * @param nodeId      the PCX Enterprise node id
+     * @param nodeId      the OmniPCX Enterprise node identifier
      * @param pilotNumber the pilot number
-     * @returns the {@link ExceptionCalendar} on success; `null` otherwise.
+     * @returns the {@link ExceptionCalendar}, or `null` if not found.
      */
     async getExceptionCalendar(nodeId: number, pilotNumber: string): Promise<ExceptionCalendar | null> {
         return this.#ccManagementRest.getExceptionCalendar(nodeId, pilotNumber);
@@ -142,10 +155,10 @@ export class CallCenterManagement {
      * await O2G.callCenterManagement.deleteExceptionTransition(1, "60141", christmas, 0);
      * ```
      *
-     * @param nodeId         the PCX Enterprise node id
+     * @param nodeId         the OmniPCX Enterprise node identifier
      * @param pilotNumber    the pilot number
-     * @param dateTransition the date for which the exception transition applies
-     * @param transition     the transition to add
+     * @param dateTransition the exceptional day to which the transition applies
+     * @param transition     the {@link Transition} to add
      * @returns `true` if the operation succeeded; `false` otherwise.
      */
     async addExceptionTransition(
@@ -159,11 +172,13 @@ export class CallCenterManagement {
 
     /**
      * Deletes a transition from the exception calendar of the specified CCD pilot.
+     * <p>
+     * The transition is identified by its zero-based index in the list of transitions for the day.
      *
-     * @param nodeId         the PCX Enterprise node id
+     * @param nodeId         the OmniPCX Enterprise node identifier
      * @param pilotNumber    the pilot number
-     * @param dateTransition the date of the exception transition to delete
-     * @param index          the index of the transition to delete
+     * @param dateTransition the exceptional day from which to remove the transition
+     * @param index          the zero-based index of the transition to delete
      * @returns `true` if the operation succeeded; `false` otherwise.
      */
     async deleteExceptionTransition(
@@ -176,13 +191,15 @@ export class CallCenterManagement {
     }
 
     /**
-     * Updates a transition in the exception calendar of the specified CCD pilot.
+     * Modifies a transition in the exception calendar of the specified CCD pilot.
+     * <p>
+     * The transition is identified by its zero-based index in the list of transitions for the day.
      *
-     * @param nodeId         the PCX Enterprise node id
+     * @param nodeId         the OmniPCX Enterprise node identifier
      * @param pilotNumber    the pilot number
-     * @param dateTransition the date of the exception transition to update
-     * @param index          the index of the transition to update
-     * @param transition     the new transition value
+     * @param dateTransition the exceptional day containing the transition to modify
+     * @param index          the zero-based index of the transition to modify
+     * @param transition     the new {@link Transition} value
      * @returns `true` if the operation succeeded; `false` otherwise.
      */
     async setExceptionTransition(
@@ -196,14 +213,14 @@ export class CallCenterManagement {
     }
 
     /**
-     * Retrieves the normal (weekly) calendar of the specified CCD pilot.
+     * Returns the normal (weekly) calendar of the specified CCD pilot.
      * <p>
      * The normal calendar defines the recurring weekly schedule of open/closed
      * transitions for each day of the week.
      *
-     * @param nodeId      the PCX Enterprise node id
+     * @param nodeId      the OmniPCX Enterprise node identifier
      * @param pilotNumber the pilot number
-     * @returns the {@link NormalCalendar} on success; `null` otherwise.
+     * @returns the {@link NormalCalendar}, or `null` if not found.
      */
     async getNormalCalendar(nodeId: number, pilotNumber: string): Promise<NormalCalendar | null> {
         return this.#ccManagementRest.getNormalCalendar(nodeId, pilotNumber);
@@ -230,10 +247,10 @@ export class CallCenterManagement {
      * await O2G.callCenterManagement.deleteNormalTransition(1, "60141", DayOfWeek.MONDAY, 1);
      * ```
      *
-     * @param nodeId      the PCX Enterprise node id
+     * @param nodeId      the OmniPCX Enterprise node identifier
      * @param pilotNumber the pilot number
      * @param day         the day of the week to which the transition applies
-     * @param transition  the transition to add
+     * @param transition  the {@link Transition} to add
      * @returns `true` if the operation succeeded; `false` otherwise.
      */
     async addNormalTransition(
@@ -247,11 +264,13 @@ export class CallCenterManagement {
 
     /**
      * Deletes a transition from the normal calendar of the specified CCD pilot.
+     * <p>
+     * The transition is identified by its zero-based index in the list of transitions for the day.
      *
-     * @param nodeId      the PCX Enterprise node id
+     * @param nodeId      the OmniPCX Enterprise node identifier
      * @param pilotNumber the pilot number
-     * @param day         the day of the week from which the transition is deleted
-     * @param index       the index of the transition to delete
+     * @param day         the day of the week from which to remove the transition
+     * @param index       the zero-based index of the transition to delete
      * @returns `true` if the operation succeeded; `false` otherwise.
      */
     async deleteNormalTransition(nodeId: number, pilotNumber: string, day: DayOfWeek, index: number): Promise<boolean> {
@@ -259,13 +278,15 @@ export class CallCenterManagement {
     }
 
     /**
-     * Updates a transition in the normal calendar of the specified CCD pilot.
+     * Modifies a transition in the normal calendar of the specified CCD pilot.
+     * <p>
+     * The transition is identified by its zero-based index in the list of transitions for the day.
      *
-     * @param nodeId      the PCX Enterprise node id
+     * @param nodeId      the OmniPCX Enterprise node identifier
      * @param pilotNumber the pilot number
-     * @param day         the day of the week containing the transition to update
-     * @param index       the index of the transition to update
-     * @param transition  the new transition value
+     * @param day         the day of the week containing the transition to modify
+     * @param index       the zero-based index of the transition to modify
+     * @param transition  the new {@link Transition} value
      * @returns `true` if the operation succeeded; `false` otherwise.
      */
     async setNormalTransition(
@@ -294,7 +315,7 @@ export class CallCenterManagement {
      * // scheduled calendar transition occurs.
      * ```
      *
-     * @param nodeId      the PCX Enterprise node id
+     * @param nodeId      the OmniPCX Enterprise node identifier
      * @param pilotNumber the pilot number
      * @returns `true` if the operation succeeded; `false` otherwise.
      */
@@ -305,7 +326,7 @@ export class CallCenterManagement {
     /**
      * Forces the specified CCD pilot into the closed state, regardless of its calendar schedule.
      *
-     * @param nodeId      the PCX Enterprise node id
+     * @param nodeId      the OmniPCX Enterprise node identifier
      * @param pilotNumber the pilot number
      * @returns `true` if the operation succeeded; `false` otherwise.
      */

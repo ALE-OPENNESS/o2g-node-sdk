@@ -23,12 +23,14 @@ import { EventRegistry } from '../events/event-dispatcher';
 import { OnPilotCallCreated, OnPilotCallQueued, OnPilotCallRemoved } from '../types/cc-pilot/cc-pilot-events';
 
 /**
- * CallCenterPilot allows an administrator to monitor the CCD pilots. Using this
- * service requires having a <b>CONTACTCENTER_SRV</b> license.
+ * `CallCenterPilot` allows an administrator to monitor CCD pilots.
  * <p>
  * Monitoring a pilot consists of starting the monitoring with {@link monitorStart},
  * then listening to events to track call activity on the pilot. When monitoring
  * is no longer needed, stop it with {@link monitorStop}.
+ * <p>
+ * Using this service requires having a <b>CONTACTCENTER_SERVICE</b> license in
+ * CAPEX mode, or 40 api-tel-f subscriptions in OPEX mode (Purple On Demand).
  *
  * @example
  * ```typescript
@@ -57,19 +59,19 @@ export class CallCenterPilot extends EventEmitter {
     #ccPilotRest: CallCenterPilotRest;
 
     /**
-     * Occurs when a new call arrives on a pilot.
+     * Occurs when a new call arrives on a CCD pilot.
      * @event
      */
     static readonly ON_PILOT_CALL_CREATED = 'OnPilotCallCreated';
 
     /**
-     * Occurs when the call has been queued.
+     * Occurs when a CCD call is routed into a queue.
      * @event
      */
     static readonly ON_PILOT_CALL_QUEUED = 'OnPilotCallQueued';
 
     /**
-     * Occurs when a call has been removed from the pilot: by distribution, cancellation or overflow.
+     * Occurs when a CCD call has been removed from the queue, either by distribution, cancellation, or overflow.
      * @event
      */
     static readonly ON_PILOT_CALL_REMOVED = 'OnPilotCallRemoved';
