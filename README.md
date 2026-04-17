@@ -54,6 +54,11 @@ await O2G.telephony.makeCall("1234", "5678");
 await O2G.shutdown();
 ```
 
+## What's New in 2.5.6
+
+- Fixed a syntax error in the `UserManagement` service that prevented compiling `createUsers`
+- Improved JSDoc documentation across all services for consistency and completeness
+
 ## What's New in 2.5.5
 
 ### Automatic session recovery
