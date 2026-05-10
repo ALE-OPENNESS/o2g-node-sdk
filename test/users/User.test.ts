@@ -45,7 +45,8 @@ describe('User', () => {
         voicemail: sampleVoicemailJson,
         devices: [sampleDeviceJson],
         nodeId: '42',
-        externalLogin: 'external-jdoe'
+        externalLogin: 'external-jdoe',
+        eMailAddress: 'john.doe@mycompany.com'
     };
 
     const sampleUserJsonNoVoicemail: UserJson = {
@@ -98,6 +99,7 @@ describe('User', () => {
             expect(user.loginName).toBe('jdoe');
             expect(user.externalLogin).toBe('external-jdoe');
             expect(user.nodeId).toBe(42);
+            expect(user.emailAddress).toBe('john.doe@mycompany.com')
 
             const devices = user.devices;
             expect(devices).toHaveLength(1);

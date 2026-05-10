@@ -37,6 +37,7 @@ export class User {
     #devices?: Device[];
     #nodeId?: number;
     #externalLogin?: string;
+    #emailaddress?: string;
 
     /**
      * Constructs a new User instance.
@@ -48,6 +49,7 @@ export class User {
      * @param devices - The user's devices, or undefined if none
      * @param nodeId - The OmniPCX Enterprise node ID
      * @param externalLogin - The user's external login, or undefined if none
+     * @param emailAddress - The user's email address, or undefined if none
      * @private
      */
     private constructor(
@@ -58,7 +60,8 @@ export class User {
         voicemail?: Voicemail | null,
         devices?: Device[],
         nodeId?: number,
-        externalLogin?: string
+        externalLogin?: string,
+        emailAddess?: string
     ) {
         this.#companyPhone = companyPhone;
         this.#firstName = firstName;
@@ -68,6 +71,7 @@ export class User {
         this.#devices = devices;
         this.#nodeId = nodeId;
         this.#externalLogin = externalLogin;
+        this.#emailaddress = emailAddess;
     }
 
     /**
@@ -136,6 +140,14 @@ export class User {
     }
 
     /**
+     * Returns the user's email address.
+     * @returns The email address, or null if none
+     */
+    get emailAddress(): string | null {
+        return this.#emailaddress ?? null;
+    }
+
+    /**
      * Creates a new {@link User} instance from JSON data.
      *
      * The JSON object should follow the {@link UserJson} structure. Devices
@@ -155,7 +167,8 @@ export class User {
             json.voicemail ? Voicemail.fromJson(json.voicemail) : null,
             json.devices?.map((d) => Device.fromJson(d)),
             Number(json.nodeId),
-            json.externalLogin
+            json.externalLogin,
+            json.eMailAddress
         );
     }
 }

@@ -71,6 +71,8 @@ export type UserJson = {
      * User external login
      */
     externalLogin?: string;
+
+    eMailAddress?: string;
 };
 
 /** @internal */
