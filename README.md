@@ -54,6 +54,10 @@ await O2G.telephony.makeCall("1234", "5678");
 await O2G.shutdown();
 ```
 
+## What's New in 2.5.7
+
+- Add new field `emailAddress` in object `User`
+
 ## What's New in 2.5.6
 
 - Fixed a syntax error in the `UserManagement` service that prevented compiling `createUsers`
@@ -535,7 +539,7 @@ This SDK follows the O2G API version it targets:
 - **Minor**: O2G API patch version (currently 7.5 → 5)
 - **Patch**: SDK release number
 
-For example, `2.5.5` targets O2G API version 2.7.5.
+For example, `2.5.0` targets O2G API version 2.7.5.
 
 ## License
 
