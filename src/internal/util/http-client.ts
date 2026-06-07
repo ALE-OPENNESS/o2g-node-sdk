@@ -19,17 +19,10 @@
 
 import fetchCookie from 'fetch-cookie';
 import { CookieJar } from 'tough-cookie';
+import { Agent } from 'undici';
 import { IHttpClient } from './IHttpClient';
 import { HttpContent } from './http-content';
 import { HttpResponse } from './http-response';
-
-const cookieJar = new CookieJar();
-
-// Import node-fetch only if fetch is not available globally
-let fetchFunction: typeof fetch;
-
-// Node >= 18, use global fetch with cookie support
-fetchFunction = fetchCookie(fetch, cookieJar);
 
 enum HttpMethod {
     GET = 'GET',
@@ -42,8 +35,40 @@ enum HttpMethod {
 export default class HttpClient implements IHttpClient {
     static DUMP_COOKIES: boolean = false;
 
+    readonly #cookieJar: CookieJar;
+    readonly #fetchFunction: typeof fetch;
+
+    constructor(ca?: string | Buffer | Array<string | Buffer>, allowSelfSigned?: boolean) {
+        this.#cookieJar = new CookieJar();
+
+        if (ca || allowSelfSigned) {
+            // Node.js 18+ global fetch is undici-based. Pass a custom undici
+            // Agent as `dispatcher` to scope TLS options to this SDK instance
+            // only, without touching the global Node.js TLS configuration.
+            const connectOptions: {
+                ca?: string | Buffer | Array<string | Buffer>;
+                rejectUnauthorized?: boolean;
+            } = {};
+            if (ca) connectOptions.ca = ca;
+            if (allowSelfSigned) connectOptions.rejectUnauthorized = false;
+
+            const dispatcher = new Agent({ connect: connectOptions });
+            const fetchWithTls = (
+                input: RequestInfo | URL,
+                init?: RequestInit
+            ): Promise<Response> =>
+                (fetch as (i: RequestInfo | URL, init?: object) => Promise<Response>)(
+                    input,
+                    { ...(init ?? {}), dispatcher }
+                );
+            this.#fetchFunction = fetchCookie(fetchWithTls as typeof fetch, this.#cookieJar);
+        } else {
+            this.#fetchFunction = fetchCookie(fetch, this.#cookieJar);
+        }
+    }
+
     private async printCookies(url: string) {
-        const cookies = await cookieJar.getCookies(url);
+        const cookies = await this.#cookieJar.getCookies(url);
         console.log('Cookies for', url);
         cookies.forEach((cookie) => {
             console.log(`- ${cookie.key}=${cookie.value}`);
@@ -79,10 +104,7 @@ export default class HttpClient implements IHttpClient {
                 await this.printCookies(uri);
             }
 
-            // Wait for fetchFunction to resolve if dynamic import is used
-            const fetchResolved = fetchFunction;
-
-            const response = await fetchResolved(uri, fetchOptions);
+            const response = await this.#fetchFunction(uri, fetchOptions);
             let data: any;
             switch (responseType) {
                 case 'json':

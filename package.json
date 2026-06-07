@@ -62,6 +62,7 @@
     "node-fetch": "^3.3.2",
     "reflect-metadata": "^0.2.2",
     "tough-cookie": "^5.1.2",
+    "undici": "^7.27.2",
     "uuid": "^11.1.0"
   }
 }

@@ -48,6 +48,8 @@ import { ObjectsContainer, TYPES } from './util/injection-container';
 import { SupervisedAccount } from '../supervised-account';
 import { DefaultSessionMonitoringPolicy, SessionMonitoringPolicy, BehaviorAction } from '../session-monitoring-policy';
 import { Host, O2GServers } from '../o2g-servers';
+import { TlsOptions } from '../tls-options';
+import HttpClient from './util/http-client';
 
 // ── Event name constants ──────────────────────────────────────────────────────
 
@@ -76,6 +78,7 @@ export default class Application extends EventEmitter {
     #applicationName: string;
     #servers: O2GServers;
     #apiVersion: string;
+    #httpClient: HttpClient;
     #serviceFactory!: ServiceFactory;
     #serverInfo!: ServerInfo;
     #session!: Session;
@@ -97,11 +100,14 @@ export default class Application extends EventEmitter {
     static readonly O2G_ONCHANNEL_INFORMATION = 'OnChannelInformation';
     private static _logger = Logger.create('Application');
 
-    constructor(applicationName: string, servers: O2GServers, apiVersion: string) {
+    constructor(applicationName: string, servers: O2GServers, apiVersion: string, tlsOptions?: TlsOptions) {
         super();
         this.#applicationName = applicationName;
         this.#servers = servers;
         this.#apiVersion = apiVersion;
+        // HttpClient (and its undici Agent) is created once and reused across
+        // all reconnections so that the Agent is never recreated on session loss.
+        this.#httpClient = new HttpClient(tlsOptions?.ca, tlsOptions?.allowSelfSigned);
         this.#currentHost = servers.primaryHost;
     }
 
@@ -120,7 +126,7 @@ export default class Application extends EventEmitter {
     }
 
     async connect(): Promise<ServiceEndPoint> {
-        this.#serviceFactory = new ServiceFactory(this.#apiVersion);
+        this.#serviceFactory = new ServiceFactory(this.#apiVersion, this.#httpClient);
         this.#serverInfo = await this.#serviceFactory.bootstrap(this.#currentHost);
         return new ServiceEndPoint(this.#serviceFactory, this.#serverInfo);
     }

@@ -102,7 +102,7 @@ class O2GService {
 export class ServiceFactory {
     #apiVersion: string;
 
-    #_httpClient = new HttpClient();
+    #_httpClient: HttpClient;
 
     #logger = Logger.create('ServiceFactory');
     #services: Map<O2GService, any> = new Map<O2GService, any>();
@@ -111,8 +111,9 @@ export class ServiceFactory {
     #accessMode: AccessMode = AccessMode.Private;
     ApiVersion: string | null = null;
 
-    constructor(version: string) {
+    constructor(version: string, httpClient: HttpClient) {
         this.#apiVersion = version;
+        this.#_httpClient = httpClient;
     }
 
     get accessMode(): AccessMode {

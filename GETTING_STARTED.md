@@ -110,19 +110,27 @@ following code:
 
 ```typescript
 import 'reflect-metadata';
-import { O2G, O2GServers, Host } from 'o2g-node-sdk';
-
-// Disable SSL certificate verification for testing only
-// Remove this line in production
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+import { O2G, O2GServers, Host, TlsOptions } from 'o2g-node-sdk';
 
 async function main() {
 
     // 1. Configure the SDK with your O2G server address
     //    The SDK automatically retries if the server is not yet reachable
-    O2G.initialize("MyFirstApp", O2GServers.Builder
-        .primaryHost(new Host("YOUR_O2G_SERVER_ADDRESS"))
-        .build());
+    //
+    //    TlsOptions.Builder.allowSelfSigned() disables certificate validation
+    //    for the SDK only — use when the O2G server has a self-signed
+    //    certificate (common in lab or test environments).
+    //    Replace with .ca(fs.readFileSync('ca.pem')) in production when
+    //    the server certificate is signed by an internal CA.
+    O2G.initialize("MyFirstApp",
+        O2GServers.Builder
+            .primaryHost(new Host("YOUR_O2G_SERVER_ADDRESS"))
+            .build(),
+        "1.0",
+        TlsOptions.Builder
+            .allowSelfSigned()
+            .build()
+    );
 
     // 2. Log in with your credentials
     console.log("Connecting to O2G server...");
@@ -233,12 +241,21 @@ main().catch(console.error);
 - Double-check the server address, login name and password
 - Make sure the O2G server is reachable from your computer (try opening the
   address in a browser)
-- If the server uses a self-signed SSL certificate, add the following line at
-  the very top of `index.ts`, before any imports — and remove it in production:
+- If the server uses a self-signed SSL certificate, pass `TlsOptions` to
+  `O2G.initialize()`:
 
 ```typescript
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+import { TlsOptions } from 'o2g-node-sdk';
+
+O2G.initialize("MyFirstApp",
+    O2GServers.Builder.primaryHost(new Host("YOUR_O2G_SERVER_ADDRESS")).build(),
+    "1.0",
+    TlsOptions.Builder.allowSelfSigned().build()
+);
 ```
+
+  In production, replace `.allowSelfSigned()` with `.ca(fs.readFileSync('ca.pem'))`
+  to supply the CA certificate instead of disabling validation.
 
 **Program keeps retrying and never connects**
 - The SDK retries automatically when the server is unreachable — this is normal

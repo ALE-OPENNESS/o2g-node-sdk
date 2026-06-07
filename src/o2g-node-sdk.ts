@@ -211,12 +211,37 @@ export * from './types/users/voicemail-type';
 
 export * from './ErrorInfo';
 export * from './o2g-servers';
+export * from './tls-options';
 export * from './subscription';
 export * from './supervised-account';
 export * from './session-monitoring-policy'
 export * from './log-level';
 
 import Application, { O2G_RECONNECTED, O2G_SESSION_LOST } from './internal/o2g-application';
+import { TlsOptions } from './tls-options';
+
+function countCerts(ca: string | Buffer | Array<string | Buffer>): number {
+    const entries = Array.isArray(ca) ? ca : [ca];
+    return entries.reduce<number>((total, entry) => {
+        const pem = Buffer.isBuffer(entry) ? entry.toString('utf8') : entry;
+        return total + (pem.match(/-----BEGIN CERTIFICATE-----/g)?.length ?? 1);
+    }, 0);
+}
+
+function logTlsState(tlsOptions?: TlsOptions): void {
+    if (tlsOptions?.allowSelfSigned) {
+        console.info(
+            '[O2G SDK] TLS : allowSelfSigned=true — validation désactivée (lab/recette uniquement)'
+        );
+    } else if (tlsOptions?.ca) {
+        const n = countCerts(tlsOptions.ca);
+        console.info(
+            `[O2G SDK] TLS : validation stricte, CA personnalisée chargée (${n} certificat${n > 1 ? 's' : ''})`
+        );
+    } else {
+        console.info('[O2G SDK] TLS : truststore système Node.js (défaut)');
+    }
+}
 import { Routing } from './services/o2g-routing';
 import { EventSummary } from './services/o2g-eventSummary';
 import { Directory } from './services/o2g-directory';
@@ -339,7 +364,7 @@ export class O2G {
 
     /**
      * Initializes the O2G application with the given name, server configuration,
-     * and optional API version.
+     * and optional API version and TLS options.
      * <p>
      * This method must be called before any other method. It can only be called once;
      * subsequent calls will throw an error.
@@ -347,14 +372,39 @@ export class O2G {
      * @param appName    the application name, used to identify this client on the O2G server
      * @param servers    the O2G server configuration, built with {@link O2GServers.Builder}
      * @param apiVersion the API version to use. Defaults to `"1.0"`
+     * @param tlsOptions optional TLS options. Use {@link TlsOptions.ca} to supply a PEM-encoded
+     *                   CA certificate when the O2G server uses a private or self-signed CA.
      * @throws {Error} if the application has already been initialized
      */
-    static initialize(appName: string, servers: O2GServers, apiVersion: string = '1.0'): void {
+    static initialize(appName: string, servers: O2GServers, apiVersion: string = '1.0', tlsOptions?: TlsOptions): void {
         containerInit();
         if (this._application) {
             throw new Error('O2G has already been initialized.');
         }
-        this._application = new Application(appName, servers, apiVersion);
+
+        logTlsState(tlsOptions);
+
+        // NODE_TLS_REJECT_UNAUTHORIZED=0 is read by Node.js at the tls.connect()
+        // level, below undici — it silently overrides rejectUnauthorized: true on
+        // any Agent, including the one configured by this SDK.
+        if (process.env.NODE_TLS_REJECT_UNAUTHORIZED === '0') {
+            if (tlsOptions?.rejectInsecureEnvironment) {
+                throw new Error(
+                    '[O2G SDK] Startup refused: NODE_TLS_REJECT_UNAUTHORIZED=0 ' +
+                    'is set in the environment, which disables TLS validation for ' +
+                    'the entire process. This is incompatible with ' +
+                    'tls.rejectInsecureEnvironment=true. ' +
+                    'Remove the environment variable or disable rejectInsecureEnvironment.'
+                );
+            }
+            console.warn(
+                '[O2G SDK] WARNING: NODE_TLS_REJECT_UNAUTHORIZED=0 is set — ' +
+                'TLS certificate validation is disabled globally for this process. ' +
+                'Use tls.allowSelfSigned instead to limit the scope to the SDK.'
+            );
+        }
+
+        this._application = new Application(appName, servers, apiVersion, tlsOptions);
 
         // Service instances are cached per session (see getters below).
         // On O2G_SESSION_LOST the cache is cleared so stale references are dropped

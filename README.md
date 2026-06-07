@@ -54,6 +54,29 @@ await O2G.telephony.makeCall("1234", "5678");
 await O2G.shutdown();
 ```
 
+## What's New in 2.5.9
+
+### TLS certificate validation — `TlsOptions`
+
+The SDK now provides fine-grained control over how the O2G server's TLS
+certificate is validated, via a new `TlsOptions` class passed as the optional
+fourth argument to `O2G.initialize()`.
+
+| Mode | How to configure | When to use |
+|---|---|---|
+| System truststore | no argument (default) | Certificate signed by a public or system-trusted CA |
+| Custom CA | `TlsOptions.Builder.ca(pem).build()` | Certificate signed by an internal/private CA |
+| Skip validation | `TlsOptions.Builder.allowSelfSigned().build()` | Development and test environments only |
+| Strict mode | `.rejectInsecureEnvironment()` | Refuse to start if `NODE_TLS_REJECT_UNAUTHORIZED=0` is set |
+
+`allowSelfSigned` is scoped to the SDK only — unlike the global
+`NODE_TLS_REJECT_UNAUTHORIZED=0` environment variable it does not disable TLS
+validation for the entire Node.js process.
+
+See the [TLS Configuration](#tls-configuration) section for full examples.
+
+---
+
 ## What's New in 2.5.8
 
 ### Service instance caching — fixes listeners silenced after recovery
@@ -213,6 +236,89 @@ new Host("10.0.0.1", "93.12.1.1")
 ```
 
 The SDK tries the private address first, then falls back to the public address.
+
+## TLS Configuration
+
+Pass a `TlsOptions` instance as the fourth argument to `O2G.initialize()` to
+control how the SDK validates the O2G server's TLS certificate.
+
+### System truststore (default)
+
+When no `TlsOptions` is passed, Node.js validates the server certificate against
+its built-in CA bundle. This is the recommended mode for production deployments
+where the server certificate is issued by a well-known public CA.
+
+```typescript
+O2G.initialize("MyApp", O2GServers.Builder
+    .primaryHost(new Host("10.0.0.1"))
+    .build());
+```
+
+### Custom CA certificate (private PKI)
+
+If the O2G server uses a certificate signed by an internal or private CA, supply
+the full PEM chain:
+
+```typescript
+import fs from 'node:fs';
+import { O2G, O2GServers, Host, TlsOptions } from 'o2g-node-sdk';
+
+O2G.initialize("MyApp",
+    O2GServers.Builder.primaryHost(new Host("10.0.0.1")).build(),
+    "1.0",
+    TlsOptions.Builder
+        .ca(fs.readFileSync('/etc/ssl/certs/o2g-ca.pem'))
+        .build()
+);
+```
+
+TLS validation is scoped to the SDK — other HTTPS connections in the same
+Node.js process are not affected.
+
+### Self-signed certificate (development only)
+
+If the O2G server uses a self-signed certificate, disable certificate validation
+for the SDK:
+
+```typescript
+import { O2G, O2GServers, Host, TlsOptions } from 'o2g-node-sdk';
+
+O2G.initialize("MyApp",
+    O2GServers.Builder.primaryHost(new Host("10.0.0.1")).build(),
+    "1.0",
+    TlsOptions.Builder
+        .allowSelfSigned()
+        .build()
+);
+```
+
+> **Warning:** `allowSelfSigned` disables certificate validation entirely.
+> Only use this in development or test environments, never in production.
+
+Unlike the global `NODE_TLS_REJECT_UNAUTHORIZED=0` environment variable,
+`allowSelfSigned` is scoped to the SDK only and does not affect other HTTPS
+connections in the process.
+
+### Strict mode (production hardening)
+
+To ensure that `NODE_TLS_REJECT_UNAUTHORIZED=0` cannot silently bypass TLS
+validation in production, combine your CA with `.rejectInsecureEnvironment()`:
+
+```typescript
+O2G.initialize("MyApp",
+    O2GServers.Builder.primaryHost(new Host("10.0.0.1")).build(),
+    "1.0",
+    TlsOptions.Builder
+        .ca(fs.readFileSync('ca.pem'))
+        .rejectInsecureEnvironment()
+        .build()
+);
+```
+
+If `NODE_TLS_REJECT_UNAUTHORIZED=0` is present in the environment when
+`initialize()` is called, the SDK throws an error and refuses to start.
+
+---
 
 ## Session Monitoring and Recovery
 
