@@ -120,8 +120,8 @@ async function main() {
     //    TlsOptions.Builder.allowSelfSigned() disables certificate validation
     //    for the SDK only — use when the O2G server has a self-signed
     //    certificate (common in lab or test environments).
-    //    Replace with .ca(fs.readFileSync('ca.pem')) in production when
-    //    the server certificate is signed by an internal CA.
+    //    In production, set NODE_EXTRA_CA_CERTS=/path/to/corporate-ca.pem
+    //    in your launch script instead and remove the TlsOptions argument.
     O2G.initialize("MyFirstApp",
         O2GServers.Builder
             .primaryHost(new Host("YOUR_O2G_SERVER_ADDRESS"))
@@ -241,8 +241,21 @@ main().catch(console.error);
 - Double-check the server address, login name and password
 - Make sure the O2G server is reachable from your computer (try opening the
   address in a browser)
-- If the server uses a self-signed SSL certificate, pass `TlsOptions` to
-  `O2G.initialize()`:
+- The O2G server likely uses a certificate signed by an internal CA.
+  Node.js does not read the Windows certificate store — you must tell it
+  about the CA explicitly. The recommended approach is to set
+  `NODE_EXTRA_CA_CERTS` before starting your program:
+
+```bash
+NODE_EXTRA_CA_CERTS=/path/to/corporate-ca.pem node index.js
+# or with ts-node:
+NODE_EXTRA_CA_CERTS=/path/to/corporate-ca.pem npx ts-node index.ts
+```
+
+  With this set, no `TlsOptions` is needed in your code.
+
+- If the server uses a **self-signed** certificate (common in lab/test
+  environments), use `TlsOptions` instead:
 
 ```typescript
 import { TlsOptions } from 'o2g-node-sdk';
@@ -254,8 +267,7 @@ O2G.initialize("MyFirstApp",
 );
 ```
 
-  In production, replace `.allowSelfSigned()` with `.ca(fs.readFileSync('ca.pem'))`
-  to supply the CA certificate instead of disabling validation.
+  Never use `allowSelfSigned` in production.
 
 **Program keeps retrying and never connects**
 - The SDK retries automatically when the server is unreachable — this is normal

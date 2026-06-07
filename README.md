@@ -64,10 +64,14 @@ fourth argument to `O2G.initialize()`.
 
 | Mode | How to configure | When to use |
 |---|---|---|
-| System truststore | no argument (default) | Certificate signed by a public or system-trusted CA |
-| Custom CA | `TlsOptions.Builder.ca(pem).build()` | Certificate signed by an internal/private CA |
-| Skip validation | `TlsOptions.Builder.allowSelfSigned().build()` | Development and test environments only |
+| Corporate CA (recommended) | `NODE_EXTRA_CA_CERTS=/path/ca.pem` env var | Standard production deployment — CA as a file on disk |
+| Corporate CA (programmatic) | `TlsOptions.Builder.ca(pem).build()` | CA comes from a database, secret manager, or env var containing PEM content |
+| Self-signed (dev only) | `TlsOptions.Builder.allowSelfSigned().build()` | Development and test environments only |
 | Strict mode | `.rejectInsecureEnvironment()` | Refuse to start if `NODE_TLS_REJECT_UNAUTHORIZED=0` is set |
+
+> **Note:** Node.js does not read the Windows or system certificate store.
+> Internal CA certificates must always be provided explicitly via
+> `NODE_EXTRA_CA_CERTS` or `TlsOptions.ca`.
 
 `allowSelfSigned` is scoped to the SDK only — unlike the global
 `NODE_TLS_REJECT_UNAUTHORIZED=0` environment variable it does not disable TLS
@@ -239,14 +243,23 @@ The SDK tries the private address first, then falls back to the public address.
 
 ## TLS Configuration
 
-Pass a `TlsOptions` instance as the fourth argument to `O2G.initialize()` to
-control how the SDK validates the O2G server's TLS certificate.
+O2G servers in enterprise environments typically use certificates signed by an
+internal CA. Node.js **does not read the Windows or system certificate store** —
+it ships with its own Mozilla-derived CA bundle. You therefore need to explicitly
+tell Node.js about your internal CA using one of the approaches below.
 
-### System truststore (default)
+### `NODE_EXTRA_CA_CERTS` — recommended for most deployments
 
-When no `TlsOptions` is passed, Node.js validates the server certificate against
-its built-in CA bundle. This is the recommended mode for production deployments
-where the server certificate is issued by a well-known public CA.
+The standard Node.js mechanism: point to a PEM file on disk before the process
+starts. Node.js adds those certificates to its built-in bundle without replacing
+the existing public CAs.
+
+```bash
+NODE_EXTRA_CA_CERTS=/etc/ssl/certs/corporate-ca.pem node app.js
+```
+
+With this variable set, `O2G.initialize()` requires no `TlsOptions` at all —
+Node.js already trusts the O2G server's certificate:
 
 ```typescript
 O2G.initialize("MyApp", O2GServers.Builder
@@ -254,10 +267,15 @@ O2G.initialize("MyApp", O2GServers.Builder
     .build());
 ```
 
-### Custom CA certificate (private PKI)
+This is the recommended approach for production deployments where the CA
+certificate is a stable file on the server (systemd unit, Docker, PM2
+ecosystem file, etc.).
 
-If the O2G server uses a certificate signed by an internal or private CA, supply
-the full PEM chain:
+### `TlsOptions.ca` — programmatic alternative
+
+Use this when the CA certificate is not available as a file on disk — for
+example, when it is stored in a database, a secret manager, or an environment
+variable containing the PEM content:
 
 ```typescript
 import fs from 'node:fs';
@@ -272,8 +290,8 @@ O2G.initialize("MyApp",
 );
 ```
 
-TLS validation is scoped to the SDK — other HTTPS connections in the same
-Node.js process are not affected.
+Unlike `NODE_EXTRA_CA_CERTS`, this is scoped to the SDK only and does not
+affect other HTTPS connections in the same Node.js process.
 
 ### Self-signed certificate (development only)
 
@@ -302,14 +320,13 @@ connections in the process.
 ### Strict mode (production hardening)
 
 To ensure that `NODE_TLS_REJECT_UNAUTHORIZED=0` cannot silently bypass TLS
-validation in production, combine your CA with `.rejectInsecureEnvironment()`:
+validation in production, add `.rejectInsecureEnvironment()`:
 
 ```typescript
 O2G.initialize("MyApp",
     O2GServers.Builder.primaryHost(new Host("10.0.0.1")).build(),
     "1.0",
     TlsOptions.Builder
-        .ca(fs.readFileSync('ca.pem'))
         .rejectInsecureEnvironment()
         .build()
 );
@@ -317,6 +334,7 @@ O2G.initialize("MyApp",
 
 If `NODE_TLS_REJECT_UNAUTHORIZED=0` is present in the environment when
 `initialize()` is called, the SDK throws an error and refuses to start.
+This can be combined with `NODE_EXTRA_CA_CERTS` or `TlsOptions.ca`.
 
 ---
 
