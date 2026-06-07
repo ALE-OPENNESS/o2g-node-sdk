@@ -54,6 +54,28 @@ await O2G.telephony.makeCall("1234", "5678");
 await O2G.shutdown();
 ```
 
+## What's New in 2.5.8
+
+### Service instance caching — fixes listeners silenced after recovery
+
+Service getters (`O2G.eventSummary`, `O2G.telephony`, …) now return the **same
+instance** for the lifetime of a session. Previously every call created a new
+object, and because each constructor silently overwrites the shared `EventSink`
+registration, any listener attached to an earlier instance would stop receiving
+events — a particularly subtle failure after session recovery.
+
+The instances are automatically invalidated on `O2G_SESSION_LOST` and
+`O2G_RECONNECTED`, so the first access after recovery always binds to the new
+session. Re-attach your listeners once in the `O2G_RECONNECTED` handler and they
+will keep working across any number of recovery cycles.
+
+```typescript
+O2G.on(O2G.O2G_RECONNECTED, () => {
+    // Re-attach — O2G.eventSummary now returns a fresh instance
+    O2G.eventSummary.on(EventSummary.ON_EVENT_SUMMARY_UPDATED, onEventSummary);
+});
+```
+
 ## What's New in 2.5.7
 
 - Add new field `emailAddress` in object `User`
@@ -248,6 +270,10 @@ O2G.on(O2G.O2G_SESSION_LOST, ({ reason }) => {
 
 O2G.on(O2G.O2G_RECONNECTED, () => {
     console.log("Session recovered — resuming activity.");
+    // Re-attach service listeners here: each service getter returns a fresh
+    // instance after recovery, so listeners registered before the outage must
+    // be re-registered (see "Service instance caching" in What's New 2.5.8).
+    O2G.eventSummary.on(EventSummary.ON_EVENT_SUMMARY_UPDATED, onEventSummary);
 });
 
 O2G.on(O2G.O2G_SERVER_SWITCHED, ({ from, to }) => {

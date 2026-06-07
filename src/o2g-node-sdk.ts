@@ -355,6 +355,36 @@ export class O2G {
             throw new Error('O2G has already been initialized.');
         }
         this._application = new Application(appName, servers, apiVersion);
+
+        // Service instances are cached per session (see getters below).
+        // On O2G_SESSION_LOST the cache is cleared so stale references are dropped
+        // immediately. On O2G_RECONNECTED the cache is cleared again so that the
+        // first post-recovery access always creates a fresh instance bound to the
+        // new Session — regardless of any transient access that may have occurred
+        // during the outage. Both listeners are registered first so they run before
+        // any application-level handlers (EventEmitter preserves registration order).
+        this._application.on(O2G_SESSION_LOST,  () => this._clearServiceCache());
+        this._application.on(O2G_RECONNECTED,   () => this._clearServiceCache());
+    }
+
+    private static _clearServiceCache(): void {
+        this._routing             = null;
+        this._eventSummary        = null;
+        this._users               = null;
+        this._usersManagement     = null;
+        this._telephony           = null;
+        this._directory           = null;
+        this._comlog              = null;
+        this._analytics           = null;
+        this._callCenterAgent     = null;
+        this._callCenterPilot     = null;
+        this._callCenterRealtime  = null;
+        this._callCenterStatistics = null;
+        this._callCenterManagement = null;
+        this._maintenance         = null;
+        this._pbxManagement       = null;
+        this._phoneSetProgramming = null;
+        this._messaging           = null;
     }
 
     /**
@@ -474,7 +504,7 @@ export class O2G {
          */
     static get routing(): Routing {
         if (!this._application) throw new Error('Routing service not available.');
-        return this._application.getRoutingService();
+        return this._routing ??= this._application.getRoutingService();
     }
 
     /**
@@ -483,7 +513,7 @@ export class O2G {
      */
     static get eventSummary(): EventSummary {
         if (!this._application) throw new Error('EventSummary service not available.');
-        return this._application.getEventSummaryService();
+        return this._eventSummary ??= this._application.getEventSummaryService();
     }
 
     /**
@@ -492,7 +522,7 @@ export class O2G {
      */
     static get users(): Users {
         if (!this._application) throw new Error('Users service not available.');
-        return this._application.getUsersService();
+        return this._users ??= this._application.getUsersService();
     }
 
     /**
@@ -501,7 +531,7 @@ export class O2G {
      */
     static get usersManagement(): UsersManagement {
         if (!this._application) throw new Error('UsersManagement service not available.');
-        return this._application.getUserManagementService();
+        return this._usersManagement ??= this._application.getUserManagementService();
     }
 
     /**
@@ -510,7 +540,7 @@ export class O2G {
      */
     static get telephony(): Telephony {
         if (!this._application) throw new Error('Telephony service not available.');
-        return this._application.getTelephonyService();
+        return this._telephony ??= this._application.getTelephonyService();
     }
 
     /**
@@ -519,7 +549,7 @@ export class O2G {
      */
     static get directory(): Directory {
         if (!this._application) throw new Error('Directory service not available.');
-        return this._application.getDirectoryService();
+        return this._directory ??= this._application.getDirectoryService();
     }
 
     /**
@@ -528,7 +558,7 @@ export class O2G {
      */
     static get comlog(): CommunicationLog {
         if (!this._application) throw new Error('CommunicationLog service not available.');
-        return this._application.getCommunicationLogService();
+        return this._comlog ??= this._application.getCommunicationLogService();
     }
 
     /**
@@ -537,7 +567,7 @@ export class O2G {
      */
     static get analytics(): Analytics {
         if (!this._application) throw new Error('Analytics service not available.');
-        return this._application.getAnalyticsService();
+        return this._analytics ??= this._application.getAnalyticsService();
     }
 
     /**
@@ -546,7 +576,7 @@ export class O2G {
      */
     static get callCenterAgent(): CallCenterAgent {
         if (!this._application) throw new Error('CallCenterAgent service not available.');
-        return this._application.getCallCenterAgentService();
+        return this._callCenterAgent ??= this._application.getCallCenterAgentService();
     }
 
     /**
@@ -555,7 +585,7 @@ export class O2G {
      */
     static get callCenterPilot(): CallCenterPilot {
         if (!this._application) throw new Error('CallCenterPilot service not available.');
-        return this._application.getCallCenterPilotService();
+        return this._callCenterPilot ??= this._application.getCallCenterPilotService();
     }
 
     /**
@@ -564,7 +594,7 @@ export class O2G {
      */
     static get callCenterRealtime(): CallCenterRealtime {
         if (!this._application) throw new Error('CallCenterRealtime service not available.');
-        return this._application.getCallCenterRealtimeService();
+        return this._callCenterRealtime ??= this._application.getCallCenterRealtimeService();
     }
 
     /**
@@ -573,7 +603,7 @@ export class O2G {
      */
     static get callCenterStatistics(): CallCenterStatistics {
         if (!this._application) throw new Error('CallCenterStatistics service not available.');
-        return this._application.getCallCenterStatisticsService();
+        return this._callCenterStatistics ??= this._application.getCallCenterStatisticsService();
     }
 
     /**
@@ -582,7 +612,7 @@ export class O2G {
      */
     static get callCenterManagement(): CallCenterManagement {
         if (!this._application) throw new Error('CallCenterManagement service not available.');
-        return this._application.getCallCenterManagementService();
+        return this._callCenterManagement ??= this._application.getCallCenterManagementService();
     }
 
     /**
@@ -591,7 +621,7 @@ export class O2G {
      */
     static get maintenance(): Maintenance {
         if (!this._application) throw new Error('Maintenance service not available.');
-        return this._application.getMaintenanceService();
+        return this._maintenance ??= this._application.getMaintenanceService();
     }
 
     /**
@@ -600,7 +630,7 @@ export class O2G {
      */
     static get pbxManagement(): PbxManagement {
         if (!this._application) throw new Error('PbxManagement service not available.');
-        return this._application.getPbxManagementService();
+        return this._pbxManagement ??= this._application.getPbxManagementService();
     }
 
     /**
@@ -609,7 +639,7 @@ export class O2G {
      */
     static get phoneSetProgramming(): PhoneSetProgramming {
         if (!this._application) throw new Error('PhoneSetProgramming service not available.');
-        return this._application.getPhoneSetProgrammingService();
+        return this._phoneSetProgramming ??= this._application.getPhoneSetProgrammingService();
     }
 
     /**
@@ -618,7 +648,7 @@ export class O2G {
      */
     static get messaging(): Messaging {
         if (!this._application) throw new Error('Messaging service not available.');
-        return this._application.getMessagingService();
+        return this._messaging ??= this._application.getMessagingService();
     }
 }
 
