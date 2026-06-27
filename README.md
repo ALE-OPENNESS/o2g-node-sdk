@@ -189,6 +189,14 @@ console.log(`Connected to: ${O2G.currentHost}`);
 
 ---
 
+## What's new in 2.5.9
+
+- `Subscription.Builder` now resets its state after each `build()`, so event packages no longer accumulate across successive builds.
+- `SessionMonitoringPolicy.onEventError()` now logs unhandled event-listener exceptions through the SDK logger (honoring `O2G.setLogLevel()`) instead of swallowing them.
+- `SupervisedAccount` documentation corrected to use the `withLoginName()` / `withPhoneNumber()` factory methods (the constructor is private).
+
+See [CHANGELOG.md](CHANGELOG.md) for the full 2.5.9 entry.
+
 ## Getting Started
 
 New to TypeScript or Node.js? Follow the [Getting Started guide](GETTING_STARTED.md)
@@ -478,7 +486,7 @@ O2G.initialize("MyApp", O2GServers.Builder
     .build());
 
 // Open a supervised session on behalf of jdoe
-await O2G.login("admin", "password", new SupervisedAccount("jdoe"));
+await O2G.login("admin", "password", SupervisedAccount.withLoginName("jdoe"));
 
 // Now operates as jdoe — loginName is ignored
 await O2G.telephony.getCalls();

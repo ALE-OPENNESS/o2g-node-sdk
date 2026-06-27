@@ -4,6 +4,14 @@
  * Licensed under the MIT License.
  */
 
+import { Logger } from './internal/util/logger';
+
+// NOTE: Logger.error(format, ...args) only substitutes args into `{}` placeholders
+// in the format string — it does NOT forward extra args to the console. Passing an
+// error as a trailing arg without a `{}` (as most SDK call sites do) silently drops
+// it. onEventError therefore uses an explicit `{}` so the stack trace is logged.
+const _logger = Logger.create('SessionMonitor');
+
 /**
  * Represents the action the SDK should take in response to a failure.
  */
@@ -166,7 +174,9 @@ export class SessionMonitoringPolicy {
      *
      * @param err - the error thrown by the event listener
      */
-    onEventError(err: Error): void { }
+    onEventError(err: Error): void {
+        _logger.error('Unhandled exception in event listener: {}', err?.stack ?? err);
+    }
 }
 
 /**

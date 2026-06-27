@@ -551,7 +551,12 @@ export abstract class Subscription {
         }
 
         build() {
-            return new SubscriptionImpl(this._version, this._timeout, this._filter, this._webHook);
+            const instance = new SubscriptionImpl(this._version, this._timeout, this._filter, this._webHook);
+            this._version = '1.0';
+            this._timeout = 0;
+            this._filter = new EventFilter();
+            this._webHook = null;
+            return instance;
         }
     })();
 }

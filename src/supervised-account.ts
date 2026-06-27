@@ -36,6 +36,21 @@ enum SupervisedAccountType {
  * In other words, this allows a supervisor to operate as the supervised user or administrator for services
  * that rely on the session.
  *
+ * @example
+ * ```typescript
+ * // The constructor is private — create a SupervisedAccount via the static
+ * // factory methods, then pass it as the third argument to O2G.login(). The
+ * // supervisor authenticates with their own credentials.
+ *
+ * // Supervise a user identified by login name
+ * const byLogin = SupervisedAccount.withLoginName("jdoe");
+ * await O2G.login("admin", "adminPassword", byLogin);
+ *
+ * // Supervise a user identified by phone number
+ * const byPhone = SupervisedAccount.withPhoneNumber("70120");
+ * await O2G.login("admin", "adminPassword", byPhone);
+ * ```
+ *
  * @see Application.login
  */
 export class SupervisedAccount {
