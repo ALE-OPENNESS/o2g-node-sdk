@@ -55,7 +55,7 @@ export default class RsiRest extends RestService {
     }
 
     async enableRsiPoint(rsiNumber: string, backup: boolean): Promise<boolean> {
-        let uriPost = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber'), 'enable');
+        let uriPost = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber')), 'enable');
         if (backup) {
             uriPost = UtilUri.appendQuery(uriPost, "backup")
         }
@@ -65,7 +65,7 @@ export default class RsiRest extends RestService {
     }
 
     async disableRsiPoint(rsiNumber: string): Promise<boolean> {
-        const uriPost = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber'), 'disable');
+        const uriPost = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber')), 'disable');
         const httpResponse = await this._httpClient.post(uriPost);
         return httpResponse.isSuccessStatusCode();
     }
@@ -80,7 +80,7 @@ export default class RsiRest extends RestService {
     ) {
         const uriPost = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber')),
             'collectDigits'
         );
 
@@ -105,9 +105,9 @@ export default class RsiRest extends RestService {
     async stopCollectDigits(rsiNumber: string, collCrid: string): Promise<boolean> {
         const uriDelete = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber')),
             'collectDigits',
-            AssertUtil.notNullOrEmpty(collCrid, 'collCrid')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(collCrid, 'collCrid'))
         );
 
         const httpResponse = await this._httpClient.delete(uriDelete);
@@ -115,7 +115,7 @@ export default class RsiRest extends RestService {
     }
 
     async playTone(rsiNumber: string, callRef: string, tone: Tones, duration: number): Promise<boolean> {
-        const uriPost = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber'), 'playTone');
+        const uriPost = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber')), 'playTone');
 
         const json = JSON.stringify({
             callRef: AssertUtil.notNullOrEmpty(callRef, 'callRef'),
@@ -128,7 +128,7 @@ export default class RsiRest extends RestService {
     }
 
     async cancelTone(rsiNumber: string, callRef: string): Promise<boolean> {
-        const uriPost = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber'), 'stopTone');
+        const uriPost = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber')), 'stopTone');
 
         const json = JSON.stringify({
             callRef: AssertUtil.notNullOrEmpty(callRef, 'callRef'),
@@ -146,7 +146,7 @@ export default class RsiRest extends RestService {
     ): Promise<boolean> {
         const uriPost = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber')),
             'playVoiceGuide'
         );
 
@@ -163,7 +163,7 @@ export default class RsiRest extends RestService {
     }
 
     async routeEnd(rsiNumber: string, routeCrid: string): Promise<boolean> {
-        const uriPost = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber'), 'routeEnd');
+        const uriPost = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber')), 'routeEnd');
 
         const json = JSON.stringify({
             routeCrid: routeCrid,
@@ -181,7 +181,7 @@ export default class RsiRest extends RestService {
         associatedData: string | null,
         routeToVoiceMail: boolean | null
     ): Promise<boolean> {
-        const uriPost = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber'), 'routeSelect');
+        const uriPost = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber')), 'routeSelect');
 
         let req: any = new Object();
         req.routeCrid = AssertUtil.notNullOrEmpty(routeCrid, 'routeCrid');
@@ -204,7 +204,7 @@ export default class RsiRest extends RestService {
     async getRouteSessions(rsiNumber: string): Promise<RouteSession[] | null> {
         const uriGet = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber')),
             'routeSessions'
         );
 
@@ -220,9 +220,9 @@ export default class RsiRest extends RestService {
     async getRouteSession(rsiNumber: string, routeCrid: string): Promise<RouteSession | null> {
         const uriGet = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(rsiNumber, 'rsiNumber')),
             'routeSessions',
-            AssertUtil.notNullOrEmpty(routeCrid, 'routeCrid')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(routeCrid, 'routeCrid'))
         );
 
         const _json = this.getResult<RouteSessionJson>(await this._httpClient.get(uriGet));

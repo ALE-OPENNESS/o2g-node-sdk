@@ -91,6 +91,8 @@ export default class PbxManagementRest extends RestService {
 
         let uriGet = UtilUri.appendPath(this._uri, AssertUtil.positive(nodeId, 'nodeId').toString(), 'model');
         if (objectName) {
+            // Not URL-encoded: PBX object identifiers are hierarchical paths
+            // (e.g. "Subscribers/31000") where '/' is a meaningful separator.
             uriGet = UtilUri.appendPath(uriGet, objectName);
         }
 

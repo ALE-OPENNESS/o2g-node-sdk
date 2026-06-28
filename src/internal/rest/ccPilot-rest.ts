@@ -29,14 +29,14 @@ export default class CallCenterPilotRest extends RestService {
     }
 
     async monitorStart(pilotNumber: string): Promise<boolean> {
-        const uriPost = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'));
+        const uriPost = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')));
 
         let httpResponse = await this._httpClient.post(uriPost);
         return httpResponse.isSuccessStatusCode();
     }
 
     async monitorStop(pilotNumber: string): Promise<boolean> {
-        const uriDelete = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'));
+        const uriDelete = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')));
 
         const httpResponse = await this._httpClient.delete(uriDelete);
         return httpResponse.isSuccessStatusCode();

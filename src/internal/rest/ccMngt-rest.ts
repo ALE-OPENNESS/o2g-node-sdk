@@ -84,7 +84,7 @@ export default class CallCenterManagementRest extends RestService {
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
             'pilots',
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'))
         );
 
         const _json = this.getResult<PilotJson>(await this._httpClient.get(uriGet));
@@ -110,7 +110,7 @@ export default class CallCenterManagementRest extends RestService {
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
             'pilots',
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'))
         );
 
         const req = JSON.stringify(pilotTransferQueryParam.toJson());
@@ -133,7 +133,7 @@ export default class CallCenterManagementRest extends RestService {
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
             'pilots',
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')),
             'calendar'
         );
 
@@ -155,7 +155,7 @@ export default class CallCenterManagementRest extends RestService {
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
             'pilots',
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')),
             'calendar/exception'
         );
 
@@ -183,7 +183,7 @@ export default class CallCenterManagementRest extends RestService {
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
             'pilots',
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')),
             'calendar/exception',
             formatCalendarDate(AssertUtil.notNull(dateTransition, 'dateTransition'))
         );
@@ -212,7 +212,7 @@ export default class CallCenterManagementRest extends RestService {
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
             'pilots',
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')),
             'calendar/exception',
             formatCalendarDate(AssertUtil.notNull(dateTransition, 'dateTransition')),
             'transitions',
@@ -240,7 +240,7 @@ export default class CallCenterManagementRest extends RestService {
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
             'pilots',
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')),
             'calendar/exception',
             formatCalendarDate(AssertUtil.notNull(dateTransition, 'dateTransition')),
             'transitions',
@@ -265,7 +265,7 @@ export default class CallCenterManagementRest extends RestService {
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
             'pilots',
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')),
             'calendar/normal'
         );
 
@@ -292,7 +292,7 @@ export default class CallCenterManagementRest extends RestService {
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
             'pilots',
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')),
             'calendar/normal',
             DayOfWeek.toJson(day)
         );
@@ -321,7 +321,7 @@ export default class CallCenterManagementRest extends RestService {
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
             'pilots',
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')),
             'calendar/normal',
             DayOfWeek.toJson(day),
             'transitions',
@@ -349,7 +349,7 @@ export default class CallCenterManagementRest extends RestService {
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
             'pilots',
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')),
             'calendar/normal',
             DayOfWeek.toJson(day),
             'transitions',
@@ -375,7 +375,7 @@ export default class CallCenterManagementRest extends RestService {
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
             'pilots',
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')),
             'open'
         );
 
@@ -393,7 +393,7 @@ export default class CallCenterManagementRest extends RestService {
             this._uri,
             AssertUtil.positive(nodeId, 'nodeId').toString(),
             'pilots',
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')),
             'close'
         );
 

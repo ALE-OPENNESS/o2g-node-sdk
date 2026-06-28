@@ -188,7 +188,7 @@ export default class CallCenterAgentRest extends RestService {
             this.#logger.info(`_doAgentAction action=${action}, loginName=${loginName}`);
         }
 
-        let uriPost = UtilUri.appendPath(this._uri, action);
+        let uriPost = UtilUri.appendPath(this._uri, encodeURIComponent(action));
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
         }

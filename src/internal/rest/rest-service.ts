@@ -46,7 +46,13 @@ export class RestService {
             const contentDisposition = httpResponse.headers.get('content-disposition');
             if (contentDisposition) {
                 const match = /filename\*?=(?:UTF-8''|")?([^;\r\n"]+)/i.exec(contentDisposition);
-                return match ? decodeURIComponent(match[1]) : null;
+                if (!match) return null;
+                // The Content-Disposition header is server-controlled. Keep only the
+                // base name so a malicious/spoofed server cannot inject path traversal
+                // sequences (e.g. "../../etc/x") and force a write outside the temp dir.
+                const decoded = decodeURIComponent(match[1]);
+                const baseName = path.basename(decoded.replace(/\\/g, '/'));
+                return baseName ? baseName : null;
             }
         }
         return null;

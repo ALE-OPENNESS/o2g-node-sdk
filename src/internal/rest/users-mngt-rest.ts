@@ -130,7 +130,7 @@ export default class UsersManagementRest extends RestService {
             this.#logger.info(`getByLoginName loginName=${loginName}`);
         }
 
-        const uriGet = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(loginName, 'loginName'));
+        const uriGet = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')));
 
         const _json = this.getResult<UserJson>(await this._httpClient.get(uriGet));
         if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
@@ -146,7 +146,7 @@ export default class UsersManagementRest extends RestService {
             this.#logger.info(`deleteUser loginName=${loginName}`);
         }
 
-        const uriDelete = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(loginName, 'loginName'));
+        const uriDelete = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')));
 
         const httpResponse = await this._httpClient.delete(uriDelete);
         return httpResponse.isSuccessStatusCode();

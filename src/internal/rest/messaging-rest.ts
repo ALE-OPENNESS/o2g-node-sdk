@@ -79,7 +79,7 @@ export default class MessagingRest extends RestService {
             this.#logger.info(`getMailboxInfo mailboxId=${mailboxId}, loginName=${loginName}`);
         }
 
-        let uriPost = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId'));
+        let uriPost = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId')));
         if (loginName != null) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
         }
@@ -123,7 +123,7 @@ export default class MessagingRest extends RestService {
             this.#logger.info(`getVoiceMessages mailboxId={}, newOnly={}, offet={}, limit={}, loginName={}`, mailboxId, newOnly, offset, limit, loginName);
         }
 
-        let uriGet = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId'), 'voicemails');
+        let uriGet = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId')), 'voicemails');
         if (loginName != null) {
             uriGet = UtilUri.appendQuery(uriGet, 'loginName', loginName);
         }
@@ -165,9 +165,9 @@ export default class MessagingRest extends RestService {
 
         let uriGet = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId')),
             'voicemails',
-            AssertUtil.notNullOrEmpty(voicemailId, 'voicemailId')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(voicemailId, 'voicemailId'))
         );
 
 
@@ -187,9 +187,9 @@ export default class MessagingRest extends RestService {
         
         let uriGet = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId')),
             'voicemails',
-            AssertUtil.notNullOrEmpty(voicemailId, 'voicemailId')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(voicemailId, 'voicemailId'))
         );
 
         if (loginName != null) {
@@ -210,7 +210,7 @@ export default class MessagingRest extends RestService {
             this.#logger.info(`acknowledgeVoiceMessage mailboxId={}, msgIds={}, loginName={}`, mailboxId, msgIds, loginName);
         }
         
-        let uriDelete = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId'), 'voicemails');
+        let uriDelete = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId')), 'voicemails');
 
         if (loginName != null) {
             uriDelete = UtilUri.appendQuery(uriDelete, 'loginName', loginName);
@@ -236,9 +236,9 @@ export default class MessagingRest extends RestService {
         
         let uriDelete = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(mailboxId, 'mailboxId')),
             'voicemails',
-            AssertUtil.notNullOrEmpty(voicemailId, 'voicemailId')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(voicemailId, 'voicemailId'))
         );
 
         if (loginName != null) {

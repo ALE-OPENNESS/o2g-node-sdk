@@ -48,7 +48,7 @@ export default class UsersRest extends RestService {
 
         let uriGet = this._uri;
         if (loginName) {
-            uriGet = UtilUri.appendPath(uriGet, loginName);
+            uriGet = UtilUri.appendPath(uriGet, encodeURIComponent(loginName));
         }
 
         const _json = this.getResult<UserJson>(await this._httpClient.get(uriGet));
@@ -113,7 +113,7 @@ export default class UsersRest extends RestService {
         }
 
         const _json = this.getResult<PreferencesJson>(
-            await this._httpClient.get(UtilUri.appendPath(this._uri, loginName, 'preferences'))
+            await this._httpClient.get(UtilUri.appendPath(this._uri, encodeURIComponent(loginName), 'preferences'))
         );
         if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
             this.#logger.debug(`getPreferences result={}`, _json);
@@ -129,7 +129,7 @@ export default class UsersRest extends RestService {
         }
 
         const _json = this.getResult<SupportedLanguagesJson>(
-            await this._httpClient.get(UtilUri.appendPath(this._uri, loginName, 'preferences/supportedLanguages'))
+            await this._httpClient.get(UtilUri.appendPath(this._uri, encodeURIComponent(loginName), 'preferences/supportedLanguages'))
         );
         if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) { 
             this.#logger.debug(`getSupportedLanguages result={}`, _json);
@@ -150,7 +150,7 @@ export default class UsersRest extends RestService {
         });
 
         let httpResponse = await this._httpClient.put(
-            UtilUri.appendPath(this._uri, loginName, 'password'),
+            UtilUri.appendPath(this._uri, encodeURIComponent(loginName), 'password'),
             new HttpContent(json)
         );
         return httpResponse.isSuccessStatusCode();

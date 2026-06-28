@@ -163,7 +163,7 @@ export default class TelephonyRest extends RestService {
     async getCall(callRef: string, loginName: string | null): Promise<Call | null> {
         this.#logger.info(`getCall callRef={}, loginName={}`, callRef, loginName);
 
-        let uriGet = UtilUri.appendPath(this._uri, 'calls', AssertUtil.notNullOrEmpty(callRef, 'callRef'));
+        let uriGet = UtilUri.appendPath(this._uri, 'calls', encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')));
         if (loginName) {
             uriGet = UtilUri.appendQuery(uriGet, 'loginName', loginName);
         }
@@ -364,7 +364,7 @@ export default class TelephonyRest extends RestService {
     async release(callRef: string, loginName: string | null): Promise<boolean> {
         this.#logger.info(`release callRef={}, loginName={}`, callRef, loginName);
 
-        let uriDelete = UtilUri.appendPath(this._uri, 'calls', AssertUtil.notNullOrEmpty(callRef, 'callRef'));
+        let uriDelete = UtilUri.appendPath(this._uri, 'calls', encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')));
         if (loginName) {
             uriDelete = UtilUri.appendQuery(uriDelete, 'loginName', loginName);
         }
@@ -379,7 +379,7 @@ export default class TelephonyRest extends RestService {
         let uriPost = UtilUri.appendPath(
             this._uri,
             'calls',
-            AssertUtil.notNullOrEmpty(callRef, 'callRef'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')),
             'alternate'
         );
 
@@ -395,7 +395,7 @@ export default class TelephonyRest extends RestService {
     async answer(callRef: string, deviceId: string): Promise<boolean> {
         this.#logger.info(`answer callRef={}, deviceId={}`, callRef, deviceId);
 
-        let uriPost = UtilUri.appendPath(this._uri, 'calls', AssertUtil.notNullOrEmpty(callRef, 'callRef'), 'answer');
+        let uriPost = UtilUri.appendPath(this._uri, 'calls', encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')), 'answer');
 
         const _json = JSON.stringify({
             deviceId: AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
@@ -412,7 +412,7 @@ export default class TelephonyRest extends RestService {
         let uriPost = UtilUri.appendPath(
             this._uri,
             'calls',
-            AssertUtil.notNullOrEmpty(callRef, 'callRef'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')),
             'attachdata'
         );
 
@@ -439,7 +439,7 @@ export default class TelephonyRest extends RestService {
         let uriPost = UtilUri.appendPath(
             this._uri,
             'calls',
-            AssertUtil.notNullOrEmpty(callRef, 'callRef'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')),
             'blindtransfer'
         );
         if (loginName) {
@@ -459,7 +459,7 @@ export default class TelephonyRest extends RestService {
     async callback(callRef: string, loginName: string | null): Promise<boolean> {
         this.#logger.info(`callback callRef={}, loginName={}`, callRef, loginName);
 
-        let uriPost = UtilUri.appendPath(this._uri, 'calls', AssertUtil.notNullOrEmpty(callRef, 'callRef'), 'callback');
+        let uriPost = UtilUri.appendPath(this._uri, 'calls', encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')), 'callback');
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
         }
@@ -474,7 +474,7 @@ export default class TelephonyRest extends RestService {
         let uriGet = UtilUri.appendPath(
             this._uri,
             'calls',
-            AssertUtil.notNullOrEmpty(callRef, 'callRef'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')),
             'deviceLegs'
         );
         if (loginName) {
@@ -498,9 +498,9 @@ export default class TelephonyRest extends RestService {
         let uriGet = UtilUri.appendPath(
             this._uri,
             'calls',
-            AssertUtil.notNullOrEmpty(callRef, 'callRef'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')),
             'deviceLegs',
-            AssertUtil.notNullOrEmpty(legId, 'legId')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(legId, 'legId'))
         );
 
         if (loginName) {
@@ -516,7 +516,7 @@ export default class TelephonyRest extends RestService {
     async dropme(callRef: string, loginName: string | null): Promise<boolean> {
         this.#logger.info(`dropme callRef={}, loginName={}`, callRef, loginName);
 
-        let uriPost = UtilUri.appendPath(this._uri, 'calls', AssertUtil.notNullOrEmpty(callRef, 'callRef'), 'dropme');
+        let uriPost = UtilUri.appendPath(this._uri, 'calls', encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')), 'dropme');
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
         }
@@ -528,7 +528,7 @@ export default class TelephonyRest extends RestService {
     async hold(callRef: string, deviceId: string, loginName: string | null): Promise<boolean> {
         this.#logger.info(`hold callRef={}, deviceId={}, loginName={}`, callRef, deviceId, loginName);
 
-        let uriPost = UtilUri.appendPath(this._uri, 'calls', AssertUtil.notNullOrEmpty(callRef, 'callRef'), 'hold');
+        let uriPost = UtilUri.appendPath(this._uri, 'calls', encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')), 'hold');
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
         }
@@ -545,7 +545,7 @@ export default class TelephonyRest extends RestService {
     async merge(callRef: string, heldCallRef: string, loginName: string | null): Promise<boolean> {
         this.#logger.info(`merge callRef={}, heldCallRef={}, loginName={}`, callRef, heldCallRef, loginName);
 
-        let uriPost = UtilUri.appendPath(this._uri, 'calls', AssertUtil.notNullOrEmpty(callRef, 'callRef'), 'merge');
+        let uriPost = UtilUri.appendPath(this._uri, 'calls', encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')), 'merge');
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
         }
@@ -565,7 +565,7 @@ export default class TelephonyRest extends RestService {
         let uriPost = UtilUri.appendPath(
             this._uri,
             'calls',
-            AssertUtil.notNullOrEmpty(callRef, 'callRef'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')),
             'overflowToVoiceMail'
         );
         if (loginName) {
@@ -579,7 +579,7 @@ export default class TelephonyRest extends RestService {
     async park(callRef: string, parkTo: string | null, loginName: string | null): Promise<boolean> {
         this.#logger.info(`park callRef={}, parkTo={}, loginName={}`, callRef, parkTo, loginName);
 
-        let uriPost = UtilUri.appendPath(this._uri, 'calls', AssertUtil.notNullOrEmpty(callRef, 'callRef'), 'park');
+        let uriPost = UtilUri.appendPath(this._uri, 'calls', encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')), 'park');
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
         }
@@ -599,7 +599,7 @@ export default class TelephonyRest extends RestService {
         let uriGet = UtilUri.appendPath(
             this._uri,
             'calls',
-            AssertUtil.notNullOrEmpty(callRef, 'callRef'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')),
             'participants'
         );
         if (loginName) {
@@ -627,9 +627,9 @@ export default class TelephonyRest extends RestService {
         let uriGet = UtilUri.appendPath(
             this._uri,
             'calls',
-            AssertUtil.notNullOrEmpty(callRef, 'callRef'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')),
             'participants',
-            AssertUtil.notNullOrEmpty(participantId, 'participantId')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(participantId, 'participantId'))
         );
 
         if (loginName) {
@@ -648,9 +648,9 @@ export default class TelephonyRest extends RestService {
         let uriDelete = UtilUri.appendPath(
             this._uri,
             'calls',
-            AssertUtil.notNullOrEmpty(callRef, 'callRef'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')),
             'participants',
-            AssertUtil.notNullOrEmpty(participantId, 'participantId')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(participantId, 'participantId'))
         );
 
         if (loginName) {
@@ -672,7 +672,7 @@ export default class TelephonyRest extends RestService {
         let uriPost = UtilUri.appendPath(
             this._uri,
             'calls',
-            AssertUtil.notNullOrEmpty(callRef, 'callRef'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')),
             'reconnect'
         );
         if (loginName) {
@@ -695,7 +695,7 @@ export default class TelephonyRest extends RestService {
         let uriPost = UtilUri.appendPath(
             this._uri,
             'calls',
-            AssertUtil.notNullOrEmpty(callRef, 'callRef'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')),
             'recording'
         );
         if (loginName) {
@@ -716,7 +716,7 @@ export default class TelephonyRest extends RestService {
     ): Promise<boolean> {
         this.#logger.info(`redirect callRef={}, redirectTo={}, anonymous={}, loginName={}`, callRef, redirectTo, anonymous, loginName);
 
-        let uriPost = UtilUri.appendPath(this._uri, 'calls', AssertUtil.notNullOrEmpty(callRef, 'callRef'), 'redirect');
+        let uriPost = UtilUri.appendPath(this._uri, 'calls', encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')), 'redirect');
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
         }
@@ -734,7 +734,7 @@ export default class TelephonyRest extends RestService {
     async retrieve(callRef: string, deviceId: string, loginName: string | null): Promise<boolean> {
         this.#logger.info(`retrieve callRef={}, deviceId={}, loginName={}`, callRef, deviceId, loginName);
 
-        let uriPost = UtilUri.appendPath(this._uri, 'calls', AssertUtil.notNullOrEmpty(callRef, 'callRef'), 'retrieve');
+        let uriPost = UtilUri.appendPath(this._uri, 'calls', encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')), 'retrieve');
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
         }
@@ -751,7 +751,7 @@ export default class TelephonyRest extends RestService {
     async sendDtmf(callRef: string, deviceId: string, number: string): Promise<boolean> {
         this.#logger.info(`sendDtmf callRef={}, deviceId={}, number={}`, callRef, deviceId, number);
 
-        let uriPost = UtilUri.appendPath(this._uri, 'calls', AssertUtil.notNullOrEmpty(callRef, 'callRef'), 'sendDtmf');
+        let uriPost = UtilUri.appendPath(this._uri, 'calls', encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')), 'sendDtmf');
 
         const _json = JSON.stringify({
             deviceId: AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
@@ -769,7 +769,7 @@ export default class TelephonyRest extends RestService {
         let uriPost = UtilUri.appendPath(
             this._uri,
             'calls',
-            AssertUtil.notNullOrEmpty(callRef, 'callRef'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')),
             'sendaccountinfo'
         );
 
@@ -786,7 +786,7 @@ export default class TelephonyRest extends RestService {
     async transfer(callRef: string, heldCallRef: string, loginName: string | null): Promise<boolean> {
         this.#logger.info(`transfer callRef={}, heldCallRef={}, loginName={}`, callRef, heldCallRef, loginName);
 
-        let uriPost = UtilUri.appendPath(this._uri, 'calls', AssertUtil.notNullOrEmpty(callRef, 'callRef'), 'transfer');
+        let uriPost = UtilUri.appendPath(this._uri, 'calls', encodeURIComponent(AssertUtil.notNullOrEmpty(callRef, 'callRef')), 'transfer');
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
         }
@@ -851,7 +851,7 @@ export default class TelephonyRest extends RestService {
     async getDeviceState(deviceId: string, loginName: string | null): Promise<DeviceState | null> {
         this.#logger.info(`getDeviceState deviceId={}, loginName={}`, deviceId, loginName);
 
-        let uriGet = UtilUri.appendPath(this._uri, 'devices', AssertUtil.notNullOrEmpty(deviceId, 'deviceId'));
+        let uriGet = UtilUri.appendPath(this._uri, 'devices', encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')));
         if (loginName) {
             uriGet = UtilUri.appendQuery(uriGet, 'loginName', loginName);
         }
@@ -873,7 +873,7 @@ export default class TelephonyRest extends RestService {
         let uriPost = UtilUri.appendPath(
             this._uri,
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'pickup'
         );
 
@@ -894,7 +894,7 @@ export default class TelephonyRest extends RestService {
         let uriPost = UtilUri.appendPath(
             this._uri,
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'intrusion'
         );
 
@@ -908,7 +908,7 @@ export default class TelephonyRest extends RestService {
         let uriPut = UtilUri.appendPath(
             this._uri,
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'ithmicro'
         );
 
@@ -922,7 +922,7 @@ export default class TelephonyRest extends RestService {
         let uriPost = UtilUri.appendPath(
             this._uri,
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'unpark'
         );
 
@@ -979,7 +979,7 @@ export default class TelephonyRest extends RestService {
         let uriPost = UtilUri.appendPath(
             this._uri,
             'huntingGroupMember',
-            AssertUtil.notNullOrEmpty(hgNumber, 'hgNumber')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(hgNumber, 'hgNumber'))
         );
         if (loginName) {
             uriPost = UtilUri.appendQuery(uriPost, 'loginName', loginName);
@@ -995,7 +995,7 @@ export default class TelephonyRest extends RestService {
         var uriDelete = UtilUri.appendPath(
             this._uri,
             'huntingGroupMember',
-            AssertUtil.notNullOrEmpty(hgNumber, 'hgNumber')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(hgNumber, 'hgNumber'))
         );
         if (loginName) {
             uriDelete = UtilUri.appendQuery(uriDelete, 'loginName', loginName);
@@ -1057,7 +1057,7 @@ export default class TelephonyRest extends RestService {
         let uriDelete = UtilUri.appendPath(
             this._uri,
             'incomingCallbacks',
-            AssertUtil.notNullOrEmpty(callbackId, 'callbackId')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(callbackId, 'callbackId'))
         );
         if (loginName) {
             uriDelete = UtilUri.appendQuery(uriDelete, 'loginName', loginName);
@@ -1140,7 +1140,7 @@ export default class TelephonyRest extends RestService {
             this._uri,
             'pilots',
             AssertUtil.positive(nodeId, "nodeId").toString(),
-            AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(pilotNumber, 'pilotNumber')),
             'transferInfo'
         );
 

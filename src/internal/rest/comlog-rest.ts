@@ -120,7 +120,7 @@ export default class CommunicationLogRest extends RestService {
             this.#logger.info(`getComRecord recordId=${recordId}, loginName=${loginName}`);
         }
 
-        let uriGet = UtilUri.appendPath(this._uri, recordId);
+        let uriGet = UtilUri.appendPath(this._uri, encodeURIComponent(recordId));
         if (loginName) {
             uriGet = UtilUri.appendQuery(uriGet, 'loginName', loginName);
         }
@@ -139,7 +139,7 @@ export default class CommunicationLogRest extends RestService {
             this.#logger.info(`deleteComRecord recordId=${recordId}, loginName=${loginName}`);
         }
 
-        let uriDelete = UtilUri.appendPath(this._uri, recordId);
+        let uriDelete = UtilUri.appendPath(this._uri, encodeURIComponent(recordId));
         if (loginName) {
             uriDelete = UtilUri.appendQuery(uriDelete, 'loginName', loginName);
         }

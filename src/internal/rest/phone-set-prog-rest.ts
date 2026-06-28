@@ -60,7 +60,7 @@ export default class PhoneSetProgrammingRest extends RestService {
             this.#logger.info(`getDevices loginName={}`, loginName);
         }
 
-        const uriGet = UtilUri.appendPath(this._uri, AssertUtil.notNullOrEmpty(loginName, 'loginName'), 'devices');
+        const uriGet = UtilUri.appendPath(this._uri, encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')), 'devices');
 
         const devices = this.getResult<DeviceListJson>(await this._httpClient.get(uriGet));
         this.#logger.debug(`getDevices result={}`, devices);
@@ -80,9 +80,9 @@ export default class PhoneSetProgrammingRest extends RestService {
 
         const uriGet = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(loginName, 'loginName'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')),
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId')
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId'))
         );
 
         return this.getResult<Device>(await this._httpClient.get(uriGet));
@@ -95,9 +95,9 @@ export default class PhoneSetProgrammingRest extends RestService {
 
         const uriGet = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(loginName, 'loginName'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')),
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'programmeableKeys'
         );
 
@@ -121,9 +121,9 @@ export default class PhoneSetProgrammingRest extends RestService {
 
         const uriGet = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(loginName, 'loginName'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')),
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'programmedKeys'
         );
 
@@ -147,9 +147,9 @@ export default class PhoneSetProgrammingRest extends RestService {
 
         const uriPut = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(loginName, 'loginName'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')),
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'programmeableKeys',
             AssertUtil.positiveStrict(AssertUtil.notNull(key, 'key').position, 'key.position').toString()
         );
@@ -170,9 +170,9 @@ export default class PhoneSetProgrammingRest extends RestService {
 
         const uriDelete = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(loginName, 'loginName'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')),
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'programmeableKeys',
             AssertUtil.positiveStrict(position, 'position').toString()
         );
@@ -188,9 +188,9 @@ export default class PhoneSetProgrammingRest extends RestService {
 
         const uriGet = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(loginName, 'loginName'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')),
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'softKeys'
         );
 
@@ -214,9 +214,9 @@ export default class PhoneSetProgrammingRest extends RestService {
 
         const uriPut = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(loginName, 'loginName'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')),
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'softKeys',
             AssertUtil.positiveStrict(AssertUtil.notNull(key, 'key').position, 'key.position').toString()
         );
@@ -237,9 +237,9 @@ export default class PhoneSetProgrammingRest extends RestService {
 
         const uriDelete = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(loginName, 'loginName'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')),
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'softKeys',
             AssertUtil.positiveStrict(position, 'position').toString()
         );
@@ -261,10 +261,10 @@ export default class PhoneSetProgrammingRest extends RestService {
 
         let uriPut = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(loginName, 'loginName'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')),
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
-            action
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
+            encodeURIComponent(action)
         );
 
         uriPut = UtilUri.appendQuery(uriPut, 'activate', activate ? 'true' : 'false');
@@ -296,9 +296,9 @@ export default class PhoneSetProgrammingRest extends RestService {
 
         const uriGet = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(loginName, 'loginName'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')),
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'pin'
         );
 
@@ -318,9 +318,9 @@ export default class PhoneSetProgrammingRest extends RestService {
 
         const uriPut = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(loginName, 'loginName'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')),
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'pin'
         );
 
@@ -337,9 +337,9 @@ export default class PhoneSetProgrammingRest extends RestService {
 
         const uriGet = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(loginName, 'loginName'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')),
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'dynamicState'
         );
 
@@ -359,9 +359,9 @@ export default class PhoneSetProgrammingRest extends RestService {
 
         const uriPut = UtilUri.appendPath(
             this._uri,
-            AssertUtil.notNullOrEmpty(loginName, 'loginName'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(loginName, 'loginName')),
             'devices',
-            AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
             'associate'
         );
 
