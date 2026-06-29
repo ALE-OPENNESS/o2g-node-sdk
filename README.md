@@ -54,7 +54,7 @@ await O2G.telephony.makeCall("1234", "5678");
 await O2G.shutdown();
 ```
 
-## What's New in 2.5.9
+## What's New in 2.5.10
 
 ### TLS certificate validation — `TlsOptions`
 
