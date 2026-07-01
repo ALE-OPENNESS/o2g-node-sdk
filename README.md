@@ -54,7 +54,32 @@ await O2G.telephony.makeCall("1234", "5678");
 await O2G.shutdown();
 ```
 
+## What's New in 2.5.11
+
+### Chunk eventing now honours `TlsOptions`
+
+The chunk-eventing stream previously opened its HTTP connection with the global
+`fetch`, bypassing the SDK's TLS configuration. A custom CA or `allowSelfSigned`
+set via `TlsOptions` therefore applied to REST calls but **not** to the event
+stream, which could fail to connect against a server using an internal or
+self-signed certificate.
+
+The TLS-scoped undici `Agent` created once in the `Application` constructor is
+now shared with the eventing stream, so chunk eventing validates the server
+certificate with exactly the same rules as every other SDK request. There is no
+API change — existing `TlsOptions` configuration now simply applies everywhere.
+
+---
+
 ## What's New in 2.5.10
+
+- `Subscription.Builder` now resets its state after each `build()`, so event packages no longer accumulate across successive builds.
+- `SessionMonitoringPolicy.onEventError()` now logs unhandled event-listener exceptions through the SDK logger (honoring `O2G.setLogLevel()`) instead of swallowing them.
+- `SupervisedAccount` documentation corrected to use the `withLoginName()` / `withPhoneNumber()` factory methods (the constructor is private).
+
+---
+
+## What's New in 2.5.9
 
 ### TLS certificate validation — `TlsOptions`
 
@@ -188,14 +213,6 @@ console.log(`Connected to: ${O2G.currentHost}`);
 ```
 
 ---
-
-## What's new in 2.5.9
-
-- `Subscription.Builder` now resets its state after each `build()`, so event packages no longer accumulate across successive builds.
-- `SessionMonitoringPolicy.onEventError()` now logs unhandled event-listener exceptions through the SDK logger (honoring `O2G.setLogLevel()`) instead of swallowing them.
-- `SupervisedAccount` documentation corrected to use the `withLoginName()` / `withPhoneNumber()` factory methods (the constructor is private).
-
-See [CHANGELOG.md](CHANGELOG.md) for the full 2.5.9 entry.
 
 ## Getting Started
 

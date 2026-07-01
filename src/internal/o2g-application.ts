@@ -50,6 +50,7 @@ import { DefaultSessionMonitoringPolicy, SessionMonitoringPolicy, BehaviorAction
 import { Host, O2GServers } from '../o2g-servers';
 import { TlsOptions } from '../tls-options';
 import HttpClient from './util/http-client';
+import { Agent } from 'undici';
 
 // ── Event name constants ──────────────────────────────────────────────────────
 
@@ -79,6 +80,7 @@ export default class Application extends EventEmitter {
     #servers: O2GServers;
     #apiVersion: string;
     #httpClient: HttpClient;
+    #agent: Agent | undefined;
     #serviceFactory!: ServiceFactory;
     #serverInfo!: ServerInfo;
     #session!: Session;
@@ -105,9 +107,19 @@ export default class Application extends EventEmitter {
         this.#applicationName = applicationName;
         this.#servers = servers;
         this.#apiVersion = apiVersion;
-        // HttpClient (and its undici Agent) is created once and reused across
-        // all reconnections so that the Agent is never recreated on session loss.
-        this.#httpClient = new HttpClient(tlsOptions?.ca, tlsOptions?.allowSelfSigned);
+        // The undici Agent carries the SDK's TLS configuration. It is created
+        // once here and reused across all reconnections — and shared between the
+        // REST HttpClient and the ChunkEventing stream — so that TLS options are
+        // never lost and the Agent is never recreated on session loss.
+        this.#agent = (tlsOptions?.ca || tlsOptions?.allowSelfSigned)
+            ? new Agent({
+                  connect: {
+                      ca: tlsOptions.ca,
+                      rejectUnauthorized: !tlsOptions.allowSelfSigned,
+                  },
+              })
+            : undefined;
+        this.#httpClient = new HttpClient(this.#agent);
         this.#currentHost = servers.primaryHost;
     }
 
@@ -283,7 +295,8 @@ export default class Application extends EventEmitter {
             this.#password,
             this.#applicationName,
             this.#supervisedAccount,
-            this.#monitoringPolicy
+            this.#monitoringPolicy,
+            this.#agent
         );
 
         session.setOnSessionLost((reason) => {

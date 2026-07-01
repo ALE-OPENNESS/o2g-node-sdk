@@ -38,28 +38,22 @@ export default class HttpClient implements IHttpClient {
     readonly #cookieJar: CookieJar;
     readonly #fetchFunction: typeof fetch;
 
-    constructor(ca?: string | Buffer | Array<string | Buffer>, allowSelfSigned?: boolean) {
+    constructor(agent?: Agent) {
         this.#cookieJar = new CookieJar();
 
-        if (ca || allowSelfSigned) {
-            // Node.js 18+ global fetch is undici-based. Pass a custom undici
-            // Agent as `dispatcher` to scope TLS options to this SDK instance
-            // only, without touching the global Node.js TLS configuration.
-            const connectOptions: {
-                ca?: string | Buffer | Array<string | Buffer>;
-                rejectUnauthorized?: boolean;
-            } = {};
-            if (ca) connectOptions.ca = ca;
-            if (allowSelfSigned) connectOptions.rejectUnauthorized = false;
-
-            const dispatcher = new Agent({ connect: connectOptions });
+        if (agent) {
+            // Node.js 18+ global fetch is undici-based. Application supplies a
+            // ready-made undici Agent carrying the SDK's TLS configuration; pass
+            // it as `dispatcher` on every fetch so TLS options are scoped to this
+            // SDK instance only, without touching the global Node.js TLS config.
+            // The same Agent is shared with ChunkEventing's streaming fetch.
             const fetchWithTls = (
                 input: RequestInfo | URL,
                 init?: RequestInit
             ): Promise<Response> =>
                 (fetch as (i: RequestInfo | URL, init?: object) => Promise<Response>)(
                     input,
-                    { ...(init ?? {}), dispatcher }
+                    { ...(init ?? {}), dispatcher: agent }
                 );
             this.#fetchFunction = fetchCookie(fetchWithTls as typeof fetch, this.#cookieJar);
         } else {

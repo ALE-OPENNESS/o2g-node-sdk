@@ -22,6 +22,7 @@ import { EventDispatcher } from '../types/events/events';
 import { BehaviorAction, SessionMonitoringPolicy } from '../session-monitoring-policy';
 import { Logger } from '../internal/util/logger';
 import { LogLevel } from '../log-level';
+import { Agent } from 'undici';
 
 /** @internal */
 export default class ChunkEventing {
@@ -39,16 +40,21 @@ export default class ChunkEventing {
     // Tracks consecutive network-level errors to allow policy escalation
     #consecutiveErrors = 0;
 
+    // undici Agent carrying the SDK's TLS configuration, shared with HttpClient.
+    #agent: Agent | undefined;
+
     constructor(
         uri: string,
         eventDispatcher: EventDispatcher,
         monitoringPolicy: SessionMonitoringPolicy,
-        onSessionLost: (reason: string) => void
+        onSessionLost: (reason: string) => void,
+        agent?: Agent
     ) {
         this.#uri = uri;
         this.#eventDispatcher = eventDispatcher;
         this.#monitoringPolicy = monitoringPolicy;
         this.#onSessionLost = onSessionLost;
+        this.#agent = agent;
     }
 
     async start(): Promise<void> {
@@ -66,6 +72,14 @@ export default class ChunkEventing {
             headers: { Accept: '*/*' },
             signal,
         };
+
+        // Reuse the SDK's TLS-scoped undici Agent for the streaming fetch so the
+        // chunk channel honours the same CA / self-signed configuration as the
+        // REST calls. `dispatcher` is an undici extension absent from the DOM
+        // RequestInit type, hence the cast.
+        if (this.#agent) {
+            (fetchOptions as RequestInit & { dispatcher?: Agent }).dispatcher = this.#agent;
+        }
 
         try {
             if (this.#logger.isLevelEnabled(LogLevel.DEBUG)) {

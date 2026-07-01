@@ -25,6 +25,7 @@ import { Session } from './session';
 import { SupervisedAccount } from '../supervised-account';
 import SessionsRest from './rest/sessions-rest';
 import { SessionMonitoringPolicy } from '../session-monitoring-policy';
+import { Agent } from 'undici';
 
 /** @internal */
 export class ServiceEndPoint {
@@ -43,7 +44,8 @@ export class ServiceEndPoint {
         password: string,
         applicationName: string,
         supervisedAccount: SupervisedAccount | null,
-        monitoringPolicy: SessionMonitoringPolicy
+        monitoringPolicy: SessionMonitoringPolicy,
+        agent?: Agent
     ): Promise<Session> {
         AssertUtil.notNullOrEmpty(login, 'login');
         AssertUtil.notNullOrEmpty(password, 'password');
@@ -65,7 +67,7 @@ export class ServiceEndPoint {
         if (sessionInfo) {
             this.#logger.debug('Session opened: TimeToLive = {}', sessionInfo.timeToLive);
             this.#serviceFactory.setServices(sessionInfo);
-            return new Session(this.#serviceFactory, sessionInfo, login, monitoringPolicy);
+            return new Session(this.#serviceFactory, sessionInfo, login, monitoringPolicy, agent);
         } 
         else {
             await sessionsService.close();

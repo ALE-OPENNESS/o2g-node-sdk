@@ -45,6 +45,7 @@ import { CallCenterStatistics } from '../services/o2g-cc-stat';
 import { ObjectsContainer, TYPES } from './util/injection-container';
 import { EventDispatcher } from '../types/events/events';
 import { BehaviorAction, SessionMonitoringPolicy } from '../session-monitoring-policy';
+import { Agent } from 'undici';
 
 
 /** @internal */
@@ -57,6 +58,7 @@ export class Session {
     #chunkEventing!: ChunkEventing;
     #monitoringPolicy: SessionMonitoringPolicy;
     #onSessionLostCallback: ((reason: string) => void) | undefined;
+    #agent: Agent | undefined;
 
     #logger = Logger.create('Session');
 
@@ -64,12 +66,14 @@ export class Session {
         serviceFactory: ServiceFactory,
         sessionInfo: SessionInfo,
         login: string,
-        monitoringPolicy: SessionMonitoringPolicy
+        monitoringPolicy: SessionMonitoringPolicy,
+        agent?: Agent
     ) {
         this.#serviceFactory = serviceFactory;
         this.#sessionInfo = sessionInfo;
         this.#loginName = login;
         this.#monitoringPolicy = monitoringPolicy;
+        this.#agent = agent;
 
         this.startKeepAlive();
     }
@@ -319,7 +323,8 @@ export class Session {
                 pollingUrl,
                 eventSink,
                 this.#monitoringPolicy,
-                (reason) => this.#onSessionLost(reason)
+                (reason) => this.#onSessionLost(reason),
+                this.#agent
             );
             this.#chunkEventing.start();
 
