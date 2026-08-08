@@ -54,6 +54,70 @@ await O2G.telephony.makeCall("1234", "5678");
 await O2G.shutdown();
 ```
 
+## What's New in 2.5.12
+
+### `O2G.O2G_SERVER_SWITCHED` — now usable from application code
+
+The geographic-HA failover event has been emitted internally since 2.5.5, but the
+constant naming it was never exposed on the facade: `O2G.O2G_SERVER_SWITCHED` was
+`undefined`. Following the documented example therefore failed to compile under
+TypeScript (`TS2339`), and in JavaScript registered a listener under the event
+name `undefined` — silently, with nothing in the logs and no failover supervision
+at all.
+
+The accessor now exists. The event name itself is unchanged (`"serverSwitched"`),
+so code that worked around this with the string literal keeps working.
+
+```typescript
+O2G.on(O2G.O2G_SERVER_SWITCHED, ({ from, to }) => {
+    console.warn(`Switched from ${from.privateAddress} to ${to.privateAddress} permanently.`);
+});
+```
+
+The handler receives `{ from: Host, to: Host }`, and `O2G.currentHost` is now
+already updated to the secondary by the time it runs — previously the event was
+emitted just *before* that update, so a handler reading `O2G.currentHost`
+synchronously observed the server it had just left. Because failover is permanent,
+the event fires at most once per process. Register it between `initialize()` and
+`login()`: the switch can occur while the initial connection is still being
+retried, which is before `login()` resolves.
+
+### `O2G.analytics` — three cumulative prerequisites
+
+The services table listed `O2G.analytics` as requiring no license at all. It in
+fact has **three** requirements, and all of them must hold: the `ANALYTICS`
+license, SSH enabled on every OmniPCX Enterprise node to be queried, and an
+**administrator session** — the service is unavailable to user and supervised
+sessions whatever the license. If any one is missing, every method returns `null`
+with no exception and nothing logged, so an unmet prerequisite is
+indistinguishable from an empty result.
+
+The services table gained a "Session / other prerequisites" column, since a
+license-only table cannot express two of those three conditions. Four
+contact-centre services also had their license corrected in JSDoc:
+`CallCenterManagement`, `CallCenterPilot` and `CallCenterStatistics` named a
+`CONTACTCENTER_SERVICE` license that does not exist, and `CallCenterRealtime`
+named none at all. All four now state `CONTACTCENTER_SVCS`, with the OPEX
+equivalent of 40 `api-tel-f` subscriptions.
+
+### `SessionMonitoringPolicy` — two documented callbacks that never existed
+
+The custom-policy example overrode `onSessionLost()` and `onSessionRecovered()`.
+Neither has ever been a member of `SessionMonitoringPolicy`, which has exactly
+eight callbacks. Overriding a name absent from the base class is legal in both
+TypeScript and JavaScript, so this failed silently: the methods were simply never
+called, leaving session supervision dead with nothing in the logs.
+
+The two mechanisms are distinct. The policy **decides** what to do about an
+anomaly and returns a `Behavior`; session loss and recovery are **notified** as
+events on the facade. The example now uses `O2G.on(O2G.O2G_SESSION_LOST, ...)` and
+`O2G.on(O2G.O2G_RECONNECTED, ...)` for those, and carries the reminder to
+re-attach service listeners after recovery.
+
+Documentation only — no API change.
+
+---
+
 ## What's New in 2.5.11
 
 ### Chunk eventing now honours `TlsOptions`
@@ -377,11 +441,10 @@ crashes or becomes unreachable, the SDK:
 
 ### Custom monitoring policy
 
-Extend `SessionMonitoringPolicy` to control SDK behaviour and receive
-notifications:
+Extend `SessionMonitoringPolicy` to control how the SDK reacts to failures:
 
 ```typescript
-import { O2G, SessionMonitoringPolicy, Behavior, LogLevel } from 'o2g-node-sdk';
+import { O2G, SessionMonitoringPolicy, Behavior, EventSummary } from 'o2g-node-sdk';
 
 class MyMonitoringPolicy extends SessionMonitoringPolicy {
 
@@ -395,20 +458,49 @@ class MyMonitoringPolicy extends SessionMonitoringPolicy {
         return Behavior.abort(); // trigger session recovery
     }
 
-    onSessionLost(reason: string): void {
-        console.warn(`Session lost (${reason}) — SDK is recovering...`);
-    }
-
-    onSessionRecovered(): void {
-        console.log("Session recovered — back online.");
+    onKeepAliveFatalError(): void {
+        console.warn("Session no longer exists on the server — recovery starting.");
     }
 }
 
 O2G.setMonitoringPolicy(new MyMonitoringPolicy());
+
+// Session loss and recovery are events on the O2G facade — NOT policy callbacks.
+O2G.on(O2G.O2G_SESSION_LOST, ({ reason }) => {
+    console.warn(`Session lost (${reason}) — SDK is recovering...`);
+});
+
+O2G.on(O2G.O2G_RECONNECTED, () => {
+    console.log("Session recovered — back online.");
+    // Mandatory: every service getter returns a fresh instance after recovery,
+    // so listeners registered before the outage are now orphaned and must be
+    // re-registered. See "Session lifecycle events" below.
+    O2G.eventSummary.on(EventSummary.ON_EVENT_SUMMARY_UPDATED, onEventSummary);
+});
 ```
 
-Set the policy before calling `O2G.login()`. If not set, the
+Set the policy after `O2G.initialize()` and before `O2G.login()`. If not set, the
 `DefaultSessionMonitoringPolicy` is used.
+
+**The policy decides; the events notify.** These are two distinct mechanisms, and
+the distinction is easy to miss. A policy callback is consulted when something
+goes wrong and *returns a `Behavior`* telling the SDK what to do about it — retry,
+retry after a delay, or abort. The `O2G_SESSION_LOST` and `O2G_RECONNECTED`
+events carry no decision: they report that the session state has already changed,
+and exist purely so the application can react. Session loss and recovery are
+therefore only ever observable as events, never as policy callbacks.
+
+The policy has **exactly eight** callbacks — three decision callbacks that must
+return a `Behavior` (`onConnectError`, `onChunkError`, `onKeepAliveError`) and
+five notification callbacks that return nothing (`onChunkEstablished`,
+`onChunkFatalError`, `onKeepAliveDone`, `onKeepAliveFatalError`, `onEventError`).
+
+⚠️ Overriding any *other* method name in your subclass **fails silently**. A
+method such as `onSessionLost` or `onSessionRecovered` does not exist on the base
+class, so it is simply a new method that the SDK never calls — and neither
+TypeScript nor JavaScript reports an error, because adding a method to a subclass
+is perfectly legal. The result is dead session monitoring with nothing in the
+logs. Use the events above for loss and recovery.
 
 ### Session lifecycle events
 
@@ -426,9 +518,19 @@ O2G.on(O2G.O2G_RECONNECTED, () => {
 });
 
 O2G.on(O2G.O2G_SERVER_SWITCHED, ({ from, to }) => {
-    console.warn(`Switched from ${from} to ${to} permanently.`);
+    console.warn(`Switched from ${from.privateAddress} to ${to.privateAddress} permanently.`);
 });
 ```
+
+`O2G_SERVER_SWITCHED` carries `{ from: Host, to: Host }`, and `O2G.currentHost`
+is already updated to the secondary by the time the handler runs. Because the
+switch is permanent, it is emitted at most once per process.
+
+**Register it between `initialize()` and `login()`.** The switch can occur while
+the initial connection is still being retried — that is, before `login()`
+resolves — so a listener attached after `await O2G.login(...)` may miss a
+failover that happened at startup. `initialize()` is synchronous, so there is no
+difficulty in registering earlier.
 
 ### Default behaviours
 
@@ -556,25 +658,50 @@ working examples with common frameworks.
 
 ## Services
 
-| Service | Description | License Required |
-|---|---|---|
-| `O2G.telephony` | Call control, transfer, conference, recording | `TELEPHONY_ADVANCED` |
-| `O2G.routing` | Forward, overflow, Do Not Disturb | `TELEPHONY_ADVANCED` |
-| `O2G.comlog` | Communication history records | `TELEPHONY_ADVANCED` |
-| `O2G.messaging` | Voicemail and mailbox management | `TELEPHONY_ADVANCED` |
-| `O2G.directory` | Enterprise directory search | `TELEPHONY_ADVANCED` |
-| `O2G.eventSummary` | Missed calls, voicemail counters | `TELEPHONY_ADVANCED` |
-| `O2G.users` | User profile and preferences | — |
-| `O2G.callCenterAgent` | CCD agent state and skills | `CONTACTCENTER_AGENT` |
-| `O2G.callCenterPilot` | CCD pilot monitoring | `CONTACTCENTER_SVCS` |
-| `O2G.callCenterRealtime` | Real-time ACD statistics | `CONTACTCENTER_SVCS` |
-| `O2G.callCenterStatistics` | Historical ACD statistics | `CONTACTCENTER_SVCS` |
-| `O2G.callCenterManagement` | CCD pilot and calendar management | `CONTACTCENTER_SVCS` |
-| `O2G.maintenance` | System status and PBX health | — |
-| `O2G.pbxManagement` | PBX object model management | `MANAGEMENT` |
-| `O2G.phoneSetProgramming` | Phone device keys and settings | — |
-| `O2G.usersManagement` | Administrator user management | — |
-| `O2G.analytics` | Charging and incident data | — |
+A license is only one of the prerequisites a service can have. Session type and
+server-side configuration matter too, and when a prerequisite is unmet the
+methods return `null` rather than raising an error — so read the third column,
+not only the second.
+
+| Service | Description | License Required | Session / other prerequisites |
+|---|---|---|---|
+| `O2G.telephony` | Call control, transfer, conference, recording | `TELEPHONY_ADVANCED` | `basicMakeCall`, `basicAnswerCall`, `basicDropMe` need no license |
+| `O2G.routing` | Forward, overflow, Do Not Disturb | `TELEPHONY_ADVANCED` | |
+| `O2G.comlog` | Communication history records | `TELEPHONY_ADVANCED` | |
+| `O2G.messaging` | Voicemail and mailbox management | `TELEPHONY_ADVANCED` | |
+| `O2G.directory` | Enterprise directory search | `TELEPHONY_ADVANCED` | |
+| `O2G.eventSummary` | Missed calls, voicemail counters | `TELEPHONY_ADVANCED` | |
+| `O2G.users` | User profile and preferences | — | |
+| `O2G.callCenterAgent` | CCD agent state and skills | `CONTACTCENTER_AGENT` | |
+| `O2G.callCenterPilot` | CCD pilot monitoring | `CONTACTCENTER_SVCS` | Administrator session |
+| `O2G.callCenterRealtime` | Real-time ACD statistics | `CONTACTCENTER_SVCS` | Administrator session |
+| `O2G.callCenterStatistics` | Historical ACD statistics | `CONTACTCENTER_SVCS` | |
+| `O2G.callCenterManagement` | CCD pilot and calendar management | `CONTACTCENTER_SVCS` | |
+| `O2G.maintenance` | System status and PBX health | — | |
+| `O2G.pbxManagement` | PBX object model management | `MANAGEMENT` | Administrator session |
+| `O2G.phoneSetProgramming` | Phone device keys and settings | — | |
+| `O2G.usersManagement` | Administrator user management | — | Administrator session |
+| `O2G.analytics` | Charging and incident data | `ANALYTICS` | **Administrator session** (never user or supervised) **and SSH enabled on every OXE node** — see below |
+
+For the four `CONTACTCENTER_SVCS` services, the license applies in CAPEX mode;
+in OPEX mode (Purple On Demand) the equivalent is 40 `api-tel-f` subscriptions.
+
+### `O2G.analytics` — three cumulative prerequisites
+
+`O2G.analytics` is the one service whose requirements are commonly
+under-specified, so they are worth stating in full. **All three** of the
+following must hold:
+
+1. the **`ANALYTICS`** license on the O2G server;
+2. **SSH enabled on every OmniPCX Enterprise node** to be queried — O2G collects
+   charging and incident data over SSH;
+3. an **administrator session**. Analytics is unavailable to user and supervised
+   sessions **whatever the license**.
+
+If any one of them is missing, **every** `O2G.analytics` method returns `null`.
+No exception is thrown and nothing is logged, so an unmet prerequisite looks
+exactly like an empty result. Check all three before treating a `null` as a data
+problem.
 
 ## Examples
 
@@ -683,9 +810,13 @@ O2G.initialize("MyApp", O2GServers.Builder
     .secondaryHost(new Host("10.0.0.2"))
     .build());
 
+// Registered before login(): failover can happen during the initial connection
+// retries, so a listener attached after login() may miss a startup switch.
 O2G.on(O2G.O2G_SERVER_SWITCHED, ({ from, to }) => {
-    console.warn(`Switched from ${from} to ${to} permanently.`);
+    console.warn(`Switched from ${from.privateAddress} to ${to.privateAddress} permanently.`);
 });
+
+const success = await O2G.login("user", "password");
 ```
 
 ## Migration from previous versions

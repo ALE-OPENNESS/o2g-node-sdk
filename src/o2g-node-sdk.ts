@@ -217,7 +217,7 @@ export * from './supervised-account';
 export * from './session-monitoring-policy'
 export * from './log-level';
 
-import Application, { O2G_RECONNECTED, O2G_SESSION_LOST } from './internal/o2g-application';
+import Application, { O2G_RECONNECTED, O2G_SERVER_SWITCHED, O2G_SESSION_LOST } from './internal/o2g-application';
 import { TlsOptions } from './tls-options';
 
 function countCerts(ca: string | Buffer | Array<string | Buffer>): number {
@@ -332,6 +332,35 @@ export class O2G {
     static get O2G_RECONNECTED(): string {
         return O2G_RECONNECTED;
     }
+
+    /**
+     * The event name fired when the SDK switches from the primary to the
+     * secondary server. Only relevant when geographic HA is configured with a
+     * secondary host via {@link O2GServers}.
+     *
+     * The handler receives `{ from: Host, to: Host }` — the server left behind
+     * and the one now in use. {@link O2G.currentHost} is already updated to the
+     * secondary by the time the handler runs.
+     *
+     * Because the switch is permanent — the SDK never fails back to the primary —
+     * this event is emitted **at most once per process**.
+     *
+     * Register the listener between {@link O2G.initialize} and {@link O2G.login}:
+     * the switch can occur while the initial connection is still being retried,
+     * which is before `login()` resolves, so a listener attached afterwards may
+     * miss a failover that happened at startup.
+     *
+     * @example
+     * ```ts
+     * O2G.on(O2G.O2G_SERVER_SWITCHED, ({ from, to }) => {
+     *     console.warn(`Switched from ${from.privateAddress} to ${to.privateAddress} permanently.`);
+     * });
+     * ```
+     */
+    static get O2G_SERVER_SWITCHED(): string {
+        return O2G_SERVER_SWITCHED;
+    }
+
     /**
      * The event name fired when O2G channel information is received.
      * Use with {@link O2G.on} to listen for channel information events.

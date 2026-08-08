@@ -26,9 +26,18 @@ import { DateRange } from '../types/common/date-range';
 /**
  * The Analytics service provides access to OmniPCX Enterprise charging information and incident reports.
  * <p>
- * Using this service requires an <b>ANALYTICS</b> license and an administrative login.
- * O2G uses SSH to collect information from an OmniPCX Enterprise node, so
- * <b>SSH must be enabled</b> on the node.
+ * <b>This service has three cumulative prerequisites.</b> All three must be met:
+ * <ol>
+ * <li>an <b>ANALYTICS</b> license on the O2G server;</li>
+ * <li><b>SSH enabled on every OmniPCX Enterprise node</b> to be queried — O2G
+ *     collects charging and incident data over SSH;</li>
+ * <li>an <b>administrator session</b>. This service is unavailable to user and
+ *     supervised sessions <b>whatever the license</b>.</li>
+ * </ol>
+ * If any one of the three is missing, <b>every method of this service returns
+ * `null`</b>. No exception is thrown and nothing is logged, so an unmet
+ * prerequisite is indistinguishable from an empty result. Verify all three
+ * before investigating a `null` return as a data problem.
  */
 export class Analytics {
     #analyticsRest: AnalyticsRest;
@@ -43,6 +52,10 @@ export class Analytics {
 
     /**
      * Retrieves a list of incidents from the specified OmniPCX Enterprise node.
+     * <p>
+     * A `null` return may also mean that one of the three service prerequisites
+     * — ANALYTICS license, SSH on the node, administrator session — is not met;
+     * see {@link Analytics}.
      *
      * @param nodeId the OmniPCX Enterprise node identifier
      * @param last the maximum number of incidents to retrieve; pass `0` to retrieve all incidents currently in progress
@@ -54,6 +67,10 @@ export class Analytics {
 
     /**
      * Retrieves the list of charging files available on the specified node.
+     * <p>
+     * A `null` return may also mean that one of the three service prerequisites
+     * — ANALYTICS license, SSH on the node, administrator session — is not met;
+     * see {@link Analytics}.
      *
      * @param nodeId the OmniPCX Enterprise node identifier
      * @param filter an optional date range filter; when omitted, all available charging files are returned
@@ -74,6 +91,10 @@ export class Analytics {
      * Processing is limited to a maximum of 100 charging files for performance reasons. If the date range filter
      * is too wide and the number of files to process exceeds 100, the method fails and returns `null`. In that
      * case, a narrower date range must be specified.
+     * <p>
+     * A `null` return may also mean that one of the three service prerequisites
+     * — ANALYTICS license, SSH on the node, administrator session — is not met;
+     * see {@link Analytics}.
      *
      * @param nodeId the OmniPCX Enterprise node identifier
      * @param filter an optional date range filter
@@ -102,6 +123,10 @@ export class Analytics {
      * <p>
      * Processing is limited to a maximum of 100 files for performance reasons. If the number of files exceeds 100,
      * the method fails and returns `null`.
+     * <p>
+     * A `null` return may also mean that one of the three service prerequisites
+     * — ANALYTICS license, SSH on the node, administrator session — is not met;
+     * see {@link Analytics}.
      *
      * @param nodeId the OmniPCX Enterprise node identifier
      * @param files the list of charging files to process

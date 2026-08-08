@@ -34,7 +34,7 @@ import { ReportObservationPeriod } from '../types/cc-stats/scheduled/report-obs-
 /**
  * Provides access to historical ACD statistics and reporting for CCD agents and pilots.
  * <p>
- * Using this service requires a <b>CONTACTCENTER_SERVICE</b> license in CAPEX mode, or a
+ * Using this service requires a <b>CONTACTCENTER_SVCS</b> license in CAPEX mode, or a
  * <b>40 api-tel-f</b> subscription in OPEX mode (Purple On Demand).
  * <p>
  * This service supports two modes of data retrieval:

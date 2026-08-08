@@ -38,6 +38,9 @@ import {
  * This service is available only to administrators and delivers the same
  * level of information as the legacy RTI interface available in the CCS.
  * <p>
+ * Using this service requires having a <b>CONTACTCENTER_SVCS</b> license in
+ * CAPEX mode, or 40 api-tel-f subscriptions in OPEX mode (Purple On Demand).
+ * <p>
  * The CCD objects that can be monitored include CCD agents, pilots, waiting
  * queues, processing groups associated with agents, and other processing
  * groups (e.g. forward, guide).

@@ -208,12 +208,16 @@ export default class Application extends EventEmitter {
         Application._logger.warn(
             'Primary server unreachable. Switching to secondary permanently.'
         );
+        this.#currentHost = this.#servers.secondaryHost!;
+        this.#usingSecondary = true;
+
+        // Emitted last, and deliberately so: EventEmitter dispatches
+        // synchronously, so a handler reading O2G.currentHost during the event
+        // must observe the secondary, not the server just left behind.
         this.emit(O2G_SERVER_SWITCHED, {
             from: this.#servers.primaryHost,
             to: this.#servers.secondaryHost,
         });
-        this.#currentHost = this.#servers.secondaryHost!;
-        this.#usingSecondary = true;
     }
 
     // ── Recovery ──────────────────────────────────────────────────────────

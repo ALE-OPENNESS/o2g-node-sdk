@@ -41,7 +41,7 @@ import { PilotTransferQueryParameters } from '../types/telephony/call/ccd/pilot-
  * A {@link Transition} represents a time slot in a calendar, including the start
  * time, the pilot rule to apply, and the pilot operating mode.
  * <p>
- * Using this service requires having a <b>CONTACTCENTER_SERVICE</b> license in
+ * Using this service requires having a <b>CONTACTCENTER_SVCS</b> license in
  * CAPEX mode, or 40 api-tel-f subscriptions in OPEX mode (Purple On Demand).
  */
 export class CallCenterManagement {

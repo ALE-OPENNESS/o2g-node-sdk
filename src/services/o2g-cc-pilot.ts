@@ -29,7 +29,7 @@ import { OnPilotCallCreated, OnPilotCallQueued, OnPilotCallRemoved } from '../ty
  * then listening to events to track call activity on the pilot. When monitoring
  * is no longer needed, stop it with {@link monitorStop}.
  * <p>
- * Using this service requires having a <b>CONTACTCENTER_SERVICE</b> license in
+ * Using this service requires having a <b>CONTACTCENTER_SVCS</b> license in
  * CAPEX mode, or 40 api-tel-f subscriptions in OPEX mode (Purple On Demand).
  *
  * @example

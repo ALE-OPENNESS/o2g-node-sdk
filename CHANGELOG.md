@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.12] - 2026-08-08
+
+### Fixed
+
+- Documentation: `O2G.analytics` prerequisites corrected. The service requires **three cumulative** conditions — the `ANALYTICS` license, SSH enabled on every OmniPCX Enterprise node, and an **administrator session** (it is unavailable to user and supervised sessions whatever the license). If any one is missing every method returns `null`, with no exception and nothing logged. The README services table previously listed `O2G.analytics` as requiring **no license at all**; the class JSDoc named the three conditions but never stated the silent-`null` consequence. Corrected in the class JSDoc, in all four method JSDoc blocks, and in the README. No code change.
+- Documentation: the README services table gained a "Session / other prerequisites" column. A license-only table was misleading, since two of the three Analytics prerequisites are not licenses. The table also now records that the `CONTACTCENTER_SVCS` license applies in CAPEX mode, with 40 `api-tel-f` subscriptions as the OPEX (Purple On Demand) equivalent.
+- Documentation: the `CallCenterManagement`, `CallCenterPilot` and `CallCenterStatistics` JSDoc all named a `CONTACTCENTER_SERVICE` license; the correct value is `CONTACTCENTER_SVCS`, as already used in the README table and in `Subscription`. The three service JSDoc blocks were the only remaining users of the wrong name.
+- Documentation: `CallCenterRealtime` JSDoc named no license at all, so the `CONTACTCENTER_SVCS` requirement listed in the README table was unbacked by the sources. All four `CONTACTCENTER_SVCS` services now state the license, with the CAPEX/OPEX alternative, in their class JSDoc.
+
+### Added
+
+- `O2G.O2G_SERVER_SWITCHED` is now exposed as a static accessor on the `O2G` facade. The event itself has been emitted since 2.5.5 and documented in the README, but the accessor was never added, so `O2G.on(O2G.O2G_SERVER_SWITCHED, ...)` failed to compile under TypeScript (`TS2339`) and silently registered a listener under the event name `undefined` in JavaScript. The event name is unchanged (`"serverSwitched"`), so code that worked around this with the string literal keeps working. The handler receives `{ from: Host, to: Host }`, and because geographic failover is permanent the event is emitted at most once per process.
+
+### Fixed
+
+- The `O2G_SERVER_SWITCHED` event is now emitted *after* the internal current-host update rather than before it. `EventEmitter` dispatches synchronously, so a handler that read `O2G.currentHost` during the event previously observed the primary — the server just left behind — instead of the secondary now in use.
+- README: the two `O2G_SERVER_SWITCHED` examples interpolated the `Host` objects directly (`${from}`), printing `[object Object]`; they now read `from.privateAddress` / `to.privateAddress`. Added guidance to register the listener between `initialize()` and `login()`, since failover can occur during the initial connection retries — before `login()` resolves.
+
 ## [2.5.11] - 2026-07-01
 
 ### Fixed
