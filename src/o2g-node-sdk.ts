@@ -108,6 +108,7 @@ export * from './types/common/main-type';
 export * from './types/common/party-info-type';
 export * from './types/common/party-info';
 export * from './types/common/service-state';
+export * from './types/common/type-of-number';
 
 export * from './types/directory/criteria';
 export * from './types/directory/filter-item';
@@ -179,6 +180,7 @@ export * from './types/telephony/call/ccd/call-profile';
 export * from './types/telephony/call/ccd/pilot-info';
 export * from './types/telephony/call/ccd/pilot-status';
 export * from './types/telephony/call/ccd/pilot-transfer-info';
+export * from './types/telephony/call/ccd/pilot-transfer-mode';
 export * from './types/telephony/call/ccd/pilot-transfer-query-param';
 export * from './types/telephony/call/ccd/queue-data';
 export * from './types/telephony/call/call-cause';

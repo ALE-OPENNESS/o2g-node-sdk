@@ -18,6 +18,8 @@
  */
 
 import {
+    AgentPOSPhoneStateRatioJson,
+    OnAgentPOSRtiChangedJson,
     OnAgentProcessingGroupRtiChangedJson,
     OnAgentRtiChangedJson,
     OnOtherProcessingGroupRtiChangedJson,
@@ -74,7 +76,6 @@ export class OnAgentRtiChanged {
     #currentPG?: string;
     #associatedSet?: string;
     #withdrawReason?: number;
-    #afeKey?: number;
 
     /**
      * @internal
@@ -103,7 +104,6 @@ export class OnAgentRtiChanged {
         this.#currentPG = json.currentPG;
         this.#associatedSet = json.associatedSet;
         this.#withdrawReason = json.withdrawReason;
-        this.#afeKey = json.afeKey;
     }
 
     /**
@@ -229,11 +229,6 @@ export class OnAgentRtiChanged {
     get withdrawReason(): number | undefined {
         return this.#withdrawReason;
     }
-
-    /** Returns the AFE key associated with the agent. */
-    get afeKey(): number | undefined {
-        return this.#afeKey;
-    }
 }
 
 /**
@@ -262,7 +257,6 @@ export class OnPilotRtiChanged {
     #worstEfficiencyInList?: number;
     #bestServiceLevelInList?: number;
     #bestEfficiencyInList?: number;
-    #afeKey?: number;
 
     /**
      * @internal
@@ -287,7 +281,6 @@ export class OnPilotRtiChanged {
         this.#worstEfficiencyInList = json.worstEfficiencyInList;
         this.#bestServiceLevelInList = json.bestServiceLevelInList;
         this.#bestEfficiencyInList = json.bestEfficiencyInList;
-        this.#afeKey = json.afeKey;
     }
 
     /**
@@ -393,11 +386,6 @@ export class OnPilotRtiChanged {
     get bestEfficiencyInList(): number | undefined {
         return this.#bestEfficiencyInList;
     }
-
-    /** Returns the CCD key of this pilot object. */
-    get afeKey(): number | undefined {
-        return this.#afeKey;
-    }
 }
 
 /**
@@ -419,7 +407,6 @@ export class OnQueueRtiChanged {
     #fillingRate?: number;
     #expectedWaitingTime?: number;
     #longestWaitingTimeInList?: number;
-    #afeKey?: number;
 
     /**
      * @internal
@@ -437,7 +424,6 @@ export class OnQueueRtiChanged {
         this.#fillingRate = json.fillingRate;
         this.#expectedWaitingTime = json.expectedWaitingTime;
         this.#longestWaitingTimeInList = json.longestWaitingTimeInList;
-        this.#afeKey = json.afeKey;
     }
 
     /**
@@ -508,11 +494,6 @@ export class OnQueueRtiChanged {
     get longestWaitingTimeInList(): number | undefined {
         return this.#longestWaitingTimeInList;
     }
-
-    /** Returns the CCD key of this queue object. */
-    get afeKey(): number | undefined {
-        return this.#afeKey;
-    }
 }
 
 /**
@@ -564,7 +545,6 @@ export class OnAgentProcessingGroupRtiChanged {
     #pilotsBestServiceLevel?: number;
     #pilotsBestEfficiency?: number;
     #queuesLongestWaitingTime?: number;
-    #afeKey?: number;
 
     /**
      * @internal
@@ -597,7 +577,6 @@ export class OnAgentProcessingGroupRtiChanged {
         this.#pilotsBestServiceLevel = json.pilotsBestServiceLevel;
         this.#pilotsBestEfficiency = json.pilotsBestEfficiency;
         this.#queuesLongestWaitingTime = json.queuesLongestWaitingTime;
-        this.#afeKey = json.afeKey;
     }
 
     /**
@@ -743,11 +722,6 @@ export class OnAgentProcessingGroupRtiChanged {
     get queuesLongestWaitingTime(): number | undefined {
         return this.#queuesLongestWaitingTime;
     }
-
-    /** Returns the object CCD key. */
-    get afeKey(): number | undefined {
-        return this.#afeKey;
-    }
 }
 
 /**
@@ -773,7 +747,6 @@ export class OnOtherProcessingGroupRtiChanged {
     #state: ServiceState;
     #nbOfACDCalls?: number;
     #incomingTraffic?: number;
-    #afeKey?: number;
 
     /**
      * @internal
@@ -785,7 +758,6 @@ export class OnOtherProcessingGroupRtiChanged {
         this.#state = json.state;
         this.#nbOfACDCalls = json.nbOfACDCalls;
         this.#incomingTraffic = json.incomingTraffic;
-        this.#afeKey = json.afeKey;
     }
 
     /** Returns the name of the processing group */
@@ -818,15 +790,128 @@ export class OnOtherProcessingGroupRtiChanged {
         return this.#incomingTraffic;
     }
 
-    /** Returns the CCD key of this processing group */
-    get afeKey(): number | undefined {
-        return this.#afeKey;
-    }
-
     /**
      * @internal
      */
     static fromJson(json: OnOtherProcessingGroupRtiChangedJson): OnOtherProcessingGroupRtiChanged {
         return new OnOtherProcessingGroupRtiChanged(json);
+    }
+}
+
+
+/**
+ * Represents the duration spent by an agent in a specific phone state.
+ * @see OnAgentPOSRtiChanged
+ * @since 2.8
+ */
+export class AgentPOSPhoneStateDistribution {
+    #state: AgentPhoneState;
+    #duration: number;
+
+    /**
+     * @internal
+     */
+    private constructor(json: AgentPOSPhoneStateRatioJson) {
+        this.#state = json.state;
+        this.#duration = json.duration;
+    }
+
+    /**
+     * @internal
+     */
+    static fromJson(json: AgentPOSPhoneStateRatioJson): AgentPOSPhoneStateDistribution {
+        return new AgentPOSPhoneStateDistribution(json);
+    }
+
+    /** Returns the agent's phone state. */
+    get state(): AgentPhoneState {
+        return this.#state;
+    }
+
+    /** Returns the duration spent in this phone state, in seconds. */
+    get duration(): number {
+        return this.#duration;
+    }
+}
+
+/**
+ * Event representing CCD agent statistic over the observation period.
+ *
+ * This class is delivered at the end of the statistic observation timer.
+ *
+ * Typical usage:
+ * ```ts
+ * override onAgentPOSRtiChanged(e: OnAgentPOSRtiChanged): void {
+ *   const phoneStateDistribution = e.phoneStateDistribution;
+ *   // ...
+ * }
+ * ```
+ *
+ * @see CallCenterRealtimeService
+ * @see Context
+ * @since 2.8
+ */
+export class OnAgentPOSRtiChanged {
+    #name: string;
+    #firstName?: string;
+    #number: string;
+    #node: number;
+    #phoneStateDistribution: AgentPOSPhoneStateDistribution[];
+
+    /**
+     * @internal
+     */
+    private constructor(json: OnAgentPOSRtiChangedJson) {
+        this.#name = json.name;
+        this.#firstName = json.firstName;
+        this.#number = json.number;
+        this.#node = json.node;
+        this.#phoneStateDistribution = json.phoneStateRatio.map(
+            (ratio) => AgentPOSPhoneStateDistribution.fromJson(ratio)
+        );
+    }
+
+    /**
+     * @internal
+     */
+    static fromJson(json: OnAgentPOSRtiChangedJson): OnAgentPOSRtiChanged {
+        return new OnAgentPOSRtiChanged(json);
+    }
+
+    /** Returns the agent's last name. */
+    get name(): string {
+        return this.#name;
+    }
+
+    /** Returns the agent's first name. */
+    get firstName(): string | undefined {
+        return this.#firstName;
+    }
+
+    /** Returns the agent's directory number. */
+    get number(): string {
+        return this.#number;
+    }
+
+    /** Returns the node number associated with the agent. */
+    get node(): number {
+        return this.#node;
+    }
+
+    /** Returns the phone state ratios, including the duration spent in each state. */
+    get phoneStateDistribution(): AgentPOSPhoneStateDistribution[] {
+        return this.#phoneStateDistribution;
+    }
+
+    /**
+     * Returns the duration spent in the specified phone state, in seconds.
+     *
+     * @param agentState - The phone state for which to retrieve the duration.
+     * @returns The duration in seconds, or undefined if the state is not found.
+     */
+    getDuration(agentState: AgentPhoneState): number | undefined {
+        return this.#phoneStateDistribution.find(
+            (ratio) => ratio.state === agentState
+        )?.duration;
     }
 }

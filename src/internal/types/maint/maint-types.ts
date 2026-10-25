@@ -102,6 +102,22 @@ export type PbxStatusJson = {
     monitoredUserNumber?: number;
 
     lmsConnectionStatus?: boolean;
+
+    /**
+     * Whether the CTI link between the O2G server and this OmniPCX Enterprise node is secured.
+     * @since O2G 2.8
+     */
+    ctiSecuredLink?: boolean;
+
+    /**
+     * The AFE connection status of this OmniPCX Enterprise node.
+     */
+    afeConnectionStatus?: boolean;
+
+    /**
+     * The AFE RTI status of this OmniPCX Enterprise node.
+     */
+    afeRTIStatus?: boolean;
 };
 
 /**

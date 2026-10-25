@@ -54,6 +54,53 @@ await O2G.telephony.makeCall("1234", "5678");
 await O2G.shutdown();
 ```
 
+## What's New in 2.6.0
+
+Several features below require O2G 2.8; against an older server the call fails
+or the new property is `null` / `false`.
+
+### Consultation call to a CCD pilot or RSI point — `PilotTransferMode`
+
+`makePilotOrRSIConsultationCall()` replaces `makePilotOrRSISupervisedTransferCall()`
+(now deprecated) and lets the application choose how the pilot handles the call:
+
+| `PilotTransferMode` | Behaviour |
+|---|---|
+| `ForceSupervised` | The pilot performs call distribution to select an agent |
+| `ForceNotSupervised` | No distribution: the call can be transferred whatever the agent availability |
+| `NotForced` | The transfer mode configured on the pilot decides |
+
+```typescript
+import { O2G, PilotTransferMode } from 'o2g-node-sdk';
+
+await O2G.telephony.makePilotOrRSIConsultationCall(
+    "60120", "21000", PilotTransferMode.ForceNotSupervised, null, null, null);
+```
+
+The deprecated method keeps its behaviour: it delegates with `ForceSupervised`.
+
+### Other additions
+
+- `Telephony.putDeviceInService()` / `putDeviceOutOfService()` (O2G 2.8).
+- `Telephony.attachData()` takes an optional `callProfile`, to attach ACR skills to
+  an existing call. A bug that always sent an empty profile is fixed.
+- `CallCenterRealtime.ON_AGENT_POS_RTI_CHANGED`: time spent by an agent in each
+  phone state over the statistic observation period.
+- `PartyInfoType.typeOfExternalNumber` (`TypeOfNumber.NATIONAL` / `INTERNATIONAL`, O2G 2.8).
+- `PbxStatus.ctiSecuredLink`, `afeConnectionStatus`, `afeRTIStatus`.
+- `CallCause.NETWORK_NOT_OBTAINABLE`.
+
+### Breaking: `afeKey` removed from real-time events
+
+The `afeKey` getter no longer exists on `OnAgentRtiChanged`, `OnPilotRtiChanged`,
+`OnQueueRtiChanged`, `OnAgentProcessingGroupRtiChanged` and
+`OnOtherProcessingGroupRtiChanged`. Code reading it no longer compiles under
+TypeScript and reads `undefined` in JavaScript.
+
+See the [CHANGELOG](CHANGELOG.md) for the full list.
+
+---
+
 ## What's New in 2.5.12
 
 ### `O2G.O2G_SERVER_SWITCHED` — now usable from application code
@@ -839,13 +886,19 @@ O2G.initialize("MyApp", O2GServers.Builder
 
 ## Versioning
 
-This SDK follows the O2G API version it targets:
+The SDK version is tied to the O2G version it targets:
 
 - **Major**: O2G API major version (currently 2)
-- **Minor**: O2G API patch version (currently 7.5 → 5)
-- **Patch**: SDK release number
+- **Minor**: incremented for each new O2G version supported
+- **Patch**: SDK release number, free for SDK fixes and improvements
 
-For example, `2.5.0` targets O2G API version 2.7.5.
+| SDK | Targets O2G |
+|---|---|
+| `2.6.x` | 2.8 |
+| `2.5.x` | 2.7.5 |
+
+Features marked "Requires O2G 2.8" fail, or return `null` / `false`, against an
+older O2G server.
 
 ## License
 

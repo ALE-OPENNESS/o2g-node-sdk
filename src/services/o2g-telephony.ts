@@ -43,6 +43,7 @@ import { Participant } from '../types/telephony/call/participant';
 import { DeviceState } from '../types/telephony/device/device-state';
 import { PilotTransferQueryParameters } from '../types/telephony/call/ccd/pilot-transfer-query-param';
 import { CallProfile } from '../types/telephony/call/ccd/call-profile';
+import { PilotTransferMode } from '../types/telephony/call/ccd/pilot-transfer-mode';
 
 /**
  * The TelephonyService allows a user to initiate calls and activate
@@ -366,6 +367,7 @@ export class Telephony extends EventEmitter {
      *                       <em>Advanced Call Routing</em> distribution strategy is in use
      * @param loginName      the login name
      * @returns `true` if the operation succeeded; `false` otherwise.
+     * @deprecated Use {@link makePilotOrRSIConsultationCall} instead.
      */
     async makePilotOrRSISupervisedTransferCall(
         deviceId: string,
@@ -374,14 +376,73 @@ export class Telephony extends EventEmitter {
         callProfile: CallProfile | null = null,
         loginName: string | null = null
     ): Promise<boolean | null> {
-        return await this.#telephonyRest.makePilotOrRSISupervisedTransferCall(
+        return await this.#telephonyRest.makePilotOrRSIConsultationCall(
             deviceId,
             pilot,
+            PilotTransferMode.ForceSupervised,
             correlatorData,
             callProfile,
             loginName
         );
     }
+
+    /**
+     * Initiates a consultation call to a CCD pilot or an RSI point.
+     * <p>
+     * The behavior of the CCD pilot or RSI point depends on the
+     * {@code pilotTransferMode} parameter:
+     * <ul>
+     *   <li>{@code ForceSupervissed}: the CCD pilot or RSI point performs
+     *       call distribution to select an agent to be alerted.</li>
+     *   <li>{@code ForceNotSupervised}: the CCD pilot or RSI point does not
+     *       perform call distribution. The call can therefore be transferred
+     *       to the pilot or RSI point regardless of agent availability.</li>
+     *   <li>{@code NotForced}: the transfer mode configured for the CCD pilot
+     *       or RSI point determines whether call distribution is performed.</li>
+     * </ul>
+     * <p>
+     * The {@code callProfile} parameter is mandatory when the
+     * <em>Advanced Call Routing</em> distribution strategy is configured
+     * and call distribution is performed.
+     * <p>
+     * If the session has been opened for a user, the {@code loginName}
+     * parameter is ignored. If the session has been opened by an administrator,
+     * {@code loginName} is mandatory.
+     *
+     * @param deviceId the phone number of the device from which the call is
+     *                 placed. If the session has been opened for a user,
+     *                 this must be one of the user's devices.
+     * @param pilot the CCD pilot or RSI point number to call
+     * @param pilotTransferMode determines how the CCD pilot or RSI point
+     *                          handles the consultation call
+     * @param correlatorData optional correlator data to attach to the call
+     * @param callProfile the call profile associated with the call; mandatory
+     *                    when the <em>Advanced Call Routing</em> distribution
+     *                    strategy is configured and call distribution is performed
+     * @param loginName the login name; ignored for user sessions and mandatory
+     *                  for administrator sessions
+     * @returns {@code true} if the operation succeeded, {@code false} otherwise
+     * @since O2G 2.8
+     */
+    async makePilotOrRSIConsultationCall(
+        deviceId: string,
+        pilot: string,
+        pilotTransferMode: PilotTransferMode | null,
+        correlatorData: CorrelatorData | null,
+        callProfile: CallProfile | null,
+        loginName: string | null
+    ): Promise<boolean | null> {
+        return await this.#telephonyRest.makePilotOrRSIConsultationCall(
+            deviceId,
+            pilot,
+            pilotTransferMode,
+            correlatorData,
+            callProfile,
+            loginName
+        );
+    }
+
+
 
     /**
      * Initiates a local call to a CCD pilot or a RSI point.
@@ -476,10 +537,11 @@ export class Telephony extends EventEmitter {
      * @param deviceId       the device phone number for which the operation is performed;
      *                       if the session is opened by a user, this must be one of the user's devices
      * @param correlatorData the correlator data to attach
+     * @param callProfile    the call profile to associated to this call
      * @returns `true` if the operation succeeded; `false` otherwise.
      */
-    async attachData(callRef: string, deviceId: string, correlatorData: CorrelatorData): Promise<boolean> {
-        return await this.#telephonyRest.attachData(callRef, deviceId, correlatorData);
+    async attachData(callRef: string, deviceId: string, correlatorData: CorrelatorData | null, callProfile: CallProfile | null = null): Promise<boolean> {
+        return await this.#telephonyRest.attachData(callRef, deviceId, correlatorData, callProfile);
     }
 
     /**
@@ -1233,5 +1295,57 @@ export class Telephony extends EventEmitter {
         loginName: string | null = null
     ): Promise<PilotInfo | null> {
         return await this.#telephonyRest.getPilotInfo(nodeId, pilotNumber, pilotTransferQueryParam, loginName);
+    }
+
+    /**
+     * Puts the specified device in service.
+     *
+     * Requires O2G 2.8 or later.
+     *
+     * The resulting state change is notified through the
+     * {@link Telephony.ON_DEVICE_STATE_MODIFIED} and
+     * {@link Telephony.ON_USER_STATE_MODIFIED} events.
+     *
+     * @param deviceId The device number of the device to put in service.
+     * @returns `true` if the operation succeeded; `false` otherwise.
+     *
+     * @since O2G 2.8
+     * @see putDeviceOutOfService
+     * @see Telephony.ON_DEVICE_STATE_MODIFIED
+     * @see Telephony.ON_USER_STATE_MODIFIED
+     *
+     * @example
+     * ```typescript
+     * const ok = await O2G.telephony.putDeviceInService("60120");
+     * ```
+     */
+    async putDeviceInService(deviceId: string): Promise<boolean> {
+        return await this.#telephonyRest.putDeviceInService(deviceId);
+    }
+
+    /**
+     * Puts the specified device out of service.
+     *
+     * Requires O2G 2.8 or later.
+     *
+     * The resulting state change is notified through the
+     * {@link Telephony.ON_DEVICE_STATE_MODIFIED} and
+     * {@link Telephony.ON_USER_STATE_MODIFIED} events.
+     *
+     * @param deviceId The device number of the device to put out of service.
+     * @returns `true` if the operation succeeded; `false` otherwise.
+     *
+     * @since O2G 2.8
+     * @see putDeviceInService
+     * @see Telephony.ON_DEVICE_STATE_MODIFIED
+     * @see Telephony.ON_USER_STATE_MODIFIED
+     *
+     * @example
+     * ```typescript
+     * const ok = await O2G.telephony.putDeviceOutOfService("60120");
+     * ```
+     */
+    async putDeviceOutOfService(deviceId: string): Promise<boolean> {
+        return await this.#telephonyRest.putDeviceOutOfService(deviceId);
     }
 }

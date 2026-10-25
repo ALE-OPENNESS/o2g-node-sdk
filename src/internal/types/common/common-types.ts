@@ -19,6 +19,7 @@
 
 import { DeviceType } from '../../../types/common/device-type';
 import { MainType } from '../../../types/common/main-type';
+import { TypeOfNumber } from '../../../types/common/type-of-number';
 
 /** @internal */
 export type O2GAuthenticateResult = {
@@ -139,6 +140,11 @@ export type PartyInfoJson = {
          * The main type.
          */
         main: MainType;
+
+        /**
+         * In case of external number, gives national or international indication.
+         */
+        typeOfExternalNumber?: TypeOfNumber; 
 
         /**
          * The sub-type.

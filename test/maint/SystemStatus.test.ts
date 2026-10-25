@@ -254,6 +254,14 @@ describe('SystemStatus', () => {
             expect(systemStatus.primaryServiceStatus!.services![0].name).toBe("apache");
             expect(systemStatus.primaryServiceStatus!.services![0].status).toBe("STARTED");
 
+            // PBX nodes check
+            expect(systemStatus.pbxs!.length).toBe(4);
+            expect(systemStatus.pbxs![0].name).toBe("bsbice29");
+            expect(systemStatus.pbxs![0].nodeId).toBe(7);
+            expect(systemStatus.pbxs![0].ctiLinkState).toBe("CONNECTED_MAIN");
+            expect(systemStatus.pbxs![0].monitoredUserNumber).toBe(3879);
+            expect(systemStatus.pbxs![0].ctiSecuredLink).toBe(false);
+
             // License check
             expect(systemStatus.license!.type).toBe("FLEXLM");
 

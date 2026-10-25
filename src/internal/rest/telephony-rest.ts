@@ -50,6 +50,7 @@ import { HttpContent } from '../util/http-content';
 import { PilotTransferQueryParameters } from '../../types/telephony/call/ccd/pilot-transfer-query-param';
 import { CallProfile } from '../../types/telephony/call/ccd/call-profile';
 import { Logger } from '../util/logger';
+import { PilotTransferMode } from '../../types/telephony/call/ccd/pilot-transfer-mode';
 
 /** @internal */
 type CallListJson = {
@@ -291,9 +292,10 @@ export default class TelephonyRest extends RestService {
         return httpResponse.isSuccessStatusCode();
     }
 
-    async makePilotOrRSISupervisedTransferCall(
+    async makePilotOrRSIConsultationCall(
         deviceId: string,
         pilot: string,
+        pilotTransferMode: PilotTransferMode | null,
         correlatorData: CorrelatorData | null,
         callProfile: CallProfile | null,
         loginName: string | null
@@ -312,15 +314,26 @@ export default class TelephonyRest extends RestService {
             req.hexaBinaryAssociatedData = HexaString.toHexaString(correlatorData.asByteArray());
         }
 
-        req.acdCall = new Object();
-        req.acdCall.supervisedTransfer = true;
+        let acdCall: any = new Object();
+        if (pilotTransferMode != null) {
+            if (pilotTransferMode == PilotTransferMode.ForceSupervised) {
+                acdCall.supervisedTransfer = true;
+            }
+            else if (pilotTransferMode == PilotTransferMode.ForceNotSupervised) {
+                acdCall.supervisedTransfer = false;
+            }
+        }
 
         if (callProfile) {
-            req.acdCall.skills = callProfile.toJson();
+            acdCall.skills = callProfile.toJson();
+        }
+
+        if (Object.keys(acdCall).length > 0) {
+            req.acdCall = acdCall;
         }
 
         const _json = JSON.stringify(req);
-        this.#logger.debug(`makePilotOrRSISupervisedTransferCall request={}`, _json);
+        this.#logger.debug(`makePilotOrRSIConsultationCall request={}`, _json);
 
         const httpResponse = await this._httpClient.post(uriPost, new HttpContent(_json));
         return httpResponse.isSuccessStatusCode();
@@ -406,7 +419,7 @@ export default class TelephonyRest extends RestService {
         return httpResponse.isSuccessStatusCode();
     }
 
-    async attachData(callRef: string, deviceId: string, correlatorData: CorrelatorData): Promise<boolean> {
+    async attachData(callRef: string, deviceId: string, correlatorData: CorrelatorData|null, callProfile: CallProfile|null): Promise<boolean> {
         this.#logger.info(`attachData callRef={}, deviceId={}`, callRef, deviceId);
 
         let uriPost = UtilUri.appendPath(
@@ -416,12 +429,18 @@ export default class TelephonyRest extends RestService {
             'attachdata'
         );
 
-        const byteValue: Uint8Array = AssertUtil.notNull(correlatorData, 'correlatorData').asByteArray();
+        let req: any = new Object();
+        req.deviceId = AssertUtil.notNullOrEmpty(deviceId, 'deviceId');
 
-        const _json = JSON.stringify({
-            deviceId: AssertUtil.notNullOrEmpty(deviceId, 'deviceId'),
-            hexaBinaryAssociatedData: HexaString.toHexaString(byteValue),
-        });
+        if (correlatorData != null) {
+            const byteValue: Uint8Array = AssertUtil.notNull(correlatorData, 'correlatorData').asByteArray();
+            req.hexaBinaryAssociatedData = HexaString.toHexaString(byteValue);
+        }
+
+        if (callProfile != null) {
+            req.skills = callProfile.toJson();
+        }
+        const _json = JSON.stringify(req);
         this.#logger.debug(`attachData request={}`, _json);
 
         const httpResponse = await this._httpClient.post(uriPost, new HttpContent(_json));
@@ -1159,5 +1178,34 @@ export default class TelephonyRest extends RestService {
         this.#logger.debug(`getPilotInfo request={}`, _json);
 
         return _json ? PilotInfo.fromJson(_json) : null;
+    }
+
+    async putDeviceInService(deviceId: string): Promise<boolean> {
+         this.#logger.info(`putDeviceInService deviceId={}`, deviceId);
+
+        let uriPost = UtilUri.appendPath(
+            this._uri,
+            'devices',
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
+            'putInService'
+        );
+
+        const httpResponse = await this._httpClient.post(uriPost);
+        return httpResponse.isSuccessStatusCode();
+    }
+    
+    
+    async putDeviceOutOfService(deviceId: string): Promise<boolean> {
+         this.#logger.info(`putDeviceOutOfService deviceId={}`, deviceId);
+
+        let uriPost = UtilUri.appendPath(
+            this._uri,
+            'devices',
+            encodeURIComponent(AssertUtil.notNullOrEmpty(deviceId, 'deviceId')),
+            'putOutOfService'
+        );
+
+        const httpResponse = await this._httpClient.post(uriPost);
+        return httpResponse.isSuccessStatusCode();
     }
 }

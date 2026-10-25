@@ -25,6 +25,7 @@ import { Call } from "../../src/types/telephony/call";
 import { CallProfile } from "../../src/types/telephony/call/ccd/call-profile";
 import { PilotInfo } from "../../src/types/telephony/call/ccd/pilot-info";
 import { PilotStatus } from "../../src/types/telephony/call/ccd/pilot-status";
+import { PilotTransferMode } from "../../src/types/telephony/call/ccd/pilot-transfer-mode";
 import { PilotTransferQueryParameters } from "../../src/types/telephony/call/ccd/pilot-transfer-query-param";
 import { CorrelatorData } from "../../src/types/telephony/call/correlator-data";
 import { Leg } from "../../src/types/telephony/call/leg";
@@ -326,17 +327,17 @@ describe('TelephonyRest Full Suite', () => {
 
 
     // ----------------------------
-    // makePilotOrRSISupervisedTransferCall
+    // makePilotOrRSIConsultationCall
     // ----------------------------
-    it('makePilotOrRSISupervisedTransferCall should include optional fields', async () => {
+    it('makePilotOrRSIConsultationCall should include optional fields', async () => {
 
         mockHttpClient.post.mockResolvedValue(new HttpResponse(200, null, ''));
 
         const correlatorData = new CorrelatorData("Marketing");
         const callProfile = new CallProfile(new CallProfile.Skill(1, 2, true), new CallProfile.Skill(2, 3, true))
 
-        const result = await service.makePilotOrRSISupervisedTransferCall(
-            "3001", "21000", correlatorData, callProfile, 'john'
+        const result = await service.makePilotOrRSIConsultationCall(
+            "3001", "21000", PilotTransferMode.ForceSupervised, correlatorData, callProfile, 'john'
         );
 
         expect(mockHttpClient.post).toHaveBeenCalled();
@@ -370,6 +371,62 @@ describe('TelephonyRest Full Suite', () => {
         });
 
         expect(result).toBe(true);
+    });
+
+
+    it('makePilotOrRSIConsultationCall should set supervisedTransfer false for ForceNotSupervised', async () => {
+
+        mockHttpClient.post.mockResolvedValue(new HttpResponse(200, null, ''));
+
+        await service.makePilotOrRSIConsultationCall(
+            "3001", "21000", PilotTransferMode.ForceNotSupervised, null, null, null
+        );
+
+        const [url, body] = mockHttpClient.post.mock.calls[0];
+        expect(url).toBe(`${baseUri}/calls`);
+        expect(JSON.parse((body as HttpContent).content)).toEqual({
+            deviceId: "3001",
+            callee: "21000",
+            acdCall: { supervisedTransfer: false }
+        });
+    });
+
+    it('makePilotOrRSIConsultationCall should omit acdCall for NotForced without call profile', async () => {
+
+        mockHttpClient.post.mockResolvedValue(new HttpResponse(200, null, ''));
+
+        await service.makePilotOrRSIConsultationCall(
+            "3001", "21000", PilotTransferMode.NotForced, null, null, null
+        );
+
+        const [, body] = mockHttpClient.post.mock.calls[0];
+        expect(JSON.parse((body as HttpContent).content)).toEqual({
+            deviceId: "3001",
+            callee: "21000"
+        });
+    });
+
+    it('makePilotOrRSIConsultationCall should send only skills for NotForced with call profile', async () => {
+
+        mockHttpClient.post.mockResolvedValue(new HttpResponse(200, null, ''));
+
+        const callProfile = new CallProfile(new CallProfile.Skill(1, 2, true));
+        await service.makePilotOrRSIConsultationCall(
+            "3001", "21000", PilotTransferMode.NotForced, null, callProfile, null
+        );
+
+        const [, body] = mockHttpClient.post.mock.calls[0];
+        expect(JSON.parse((body as HttpContent).content)).toEqual({
+            deviceId: "3001",
+            callee: "21000",
+            acdCall: {
+                skills: {
+                    skills: [
+                        { skillNumber: 1, acrStatus: true, expertEvalLevel: 2 }
+                    ]
+                }
+            }
+        });
     });
 
 
@@ -472,7 +529,7 @@ describe('TelephonyRest Full Suite', () => {
         mockHttpClient.post.mockResolvedValue(new HttpResponse(200, null, ''));
 
         const correlatorData = new CorrelatorData("Marketing");
-        const result = await service.attachData("11111aaaaa", '32000', correlatorData);
+        const result = await service.attachData("11111aaaaa", '32000', correlatorData, null);
 
         expect(mockHttpClient.post).toHaveBeenCalled();
 
@@ -484,6 +541,28 @@ describe('TelephonyRest Full Suite', () => {
         expect(payload).toEqual({
             deviceId: "32000",
             hexaBinaryAssociatedData: '4d61726b6574696e67'
+        });
+
+        expect(result).toBe(true);
+    });
+
+
+    it('attachData should include call profile skills', async () => {
+
+        mockHttpClient.post.mockResolvedValue(new HttpResponse(200, null, ''));
+
+        const callProfile = new CallProfile(new CallProfile.Skill(1, 2, true));
+        const result = await service.attachData("11111aaaaa", '32000', null, callProfile);
+
+        const [url, body] = mockHttpClient.post.mock.calls[0];
+        expect(url).toBe(`${baseUri}/calls/11111aaaaa/attachdata`);
+        expect(JSON.parse((body as HttpContent).content)).toEqual({
+            deviceId: "32000",
+            skills: {
+                skills: [
+                    { skillNumber: 1, acrStatus: true, expertEvalLevel: 2 }
+                ]
+            }
         });
 
         expect(result).toBe(true);
@@ -1248,5 +1327,28 @@ describe('TelephonyRest Full Suite', () => {
         expect(pilotInfo?.saturation).toBe(false);
         expect(pilotInfo?.waitingTime).toBe(65);
         expect(pilotInfo?.pilotTransferInfo?.pilotStatus).toBe(PilotStatus.BLOCKED_ON_RULE);
+    });
+
+    // ----------------------------
+    // putDeviceInService / putDeviceOutOfService
+    // ----------------------------
+    it('putDeviceInService should POST correct URL', async () => {
+
+        mockHttpClient.post.mockResolvedValue(new HttpResponse(200, null, ''));
+
+        const result = await service.putDeviceInService('32000');
+
+        expect(mockHttpClient.post).toHaveBeenCalledWith(`${baseUri}/devices/32000/putInService`);
+        expect(result).toBe(true);
+    });
+
+    it('putDeviceOutOfService should POST correct URL', async () => {
+
+        mockHttpClient.post.mockResolvedValue(new HttpResponse(200, null, ''));
+
+        const result = await service.putDeviceOutOfService('32000');
+
+        expect(mockHttpClient.post).toHaveBeenCalledWith(`${baseUri}/devices/32000/putOutOfService`);
+        expect(result).toBe(true);
     });
 });

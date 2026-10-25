@@ -18,6 +18,7 @@
  */
 
 import { MainType } from './main-type';
+import { TypeOfNumber } from './type-of-number';
 
 /**
  * Represents the type of a party in a call, composed of a main type and an
@@ -29,13 +30,15 @@ import { MainType } from './main-type';
  */
 export class PartyInfoType {
     #main: MainType;
+    #typeOfExternalNumber?: TypeOfNumber;
     #subType?: string;
 
     /**
      * @internal
      */
-    private constructor(main: MainType, subType?: string) {
+    private constructor(main: MainType, typeOfExternalNumber?: TypeOfNumber, subType?: string) {
         this.#main = main;
+        this.#typeOfExternalNumber = typeOfExternalNumber;
         this.#subType = subType;
     }
 
@@ -55,9 +58,20 @@ export class PartyInfoType {
     }
 
     /**
+     * The type of external number of this party.
+     * `null` if number is not external.
+     * Requires O2G 2.8 or later.
+     *
+     * @since O2G 2.8
+     */
+    get typeOfExternalNumber(): TypeOfNumber | null {
+        return this.#typeOfExternalNumber ?? null;
+    }
+
+    /**
      * @internal
      */
-    static fromJson(json: { main: MainType; subType?: string }): PartyInfoType {
-        return new PartyInfoType(json.main, json.subType);
+    static fromJson(json: { main: MainType; typeOfExternalNumber?: TypeOfNumber, subType?: string }): PartyInfoType {
+        return new PartyInfoType(json.main, json.typeOfExternalNumber, json.subType);
     }
 }

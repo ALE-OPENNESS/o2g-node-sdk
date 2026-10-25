@@ -24,6 +24,7 @@ import CallCenterRealtimeRest from '../internal/rest/ccRealtime-rest';
 import { RtiObjectIdentifier } from '../types/cc-rt/rti-object-identifier';
 import { RtiContext } from '../types/cc-rt/rti-context';
 import {
+    OnAgentPOSRtiChanged,
     OnAgentProcessingGroupRtiChanged,
     OnAgentRtiChanged,
     OnOtherProcessingGroupRtiChanged,
@@ -120,6 +121,13 @@ export class CallCenterRealtime extends EventEmitter {
      * @event
      */
     static readonly ON_OTHER_PG_RTI_CHANGED = 'OnPGOtherRtiChanged';
+
+    /**
+     * Occurs at statistic observation period to provide CCD agent statistics over the POS.
+     * @event
+     * @since 2.8
+     */
+    static readonly ON_AGENT_POS_RTI_CHANGED = 'OnAgentPOSRtiChanged';
     /**
      *
      * @internal
@@ -133,6 +141,7 @@ export class CallCenterRealtime extends EventEmitter {
         eventRegistry.register(this, CallCenterRealtime.ON_OTHER_PG_RTI_CHANGED, OnOtherProcessingGroupRtiChanged);
         eventRegistry.register(this, CallCenterRealtime.ON_PILOT_RTI_CHANGED, OnPilotRtiChanged);
         eventRegistry.register(this, CallCenterRealtime.ON_QUEUE_RTI_CHANGED, OnQueueRtiChanged);
+        eventRegistry.register(this, CallCenterRealtime.ON_AGENT_POS_RTI_CHANGED, OnAgentPOSRtiChanged);
     }
 
     /**

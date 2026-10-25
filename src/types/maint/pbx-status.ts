@@ -38,6 +38,9 @@ export class PbxStatus {
     #ctiLinkState?: CTILinkState;
     #secured?: boolean;
     #monitoredUserNumber?: number;
+    #ctiSecuredLink?: boolean;
+    #afeConnectionStatus?: boolean;
+    #afeRTIStatus?: boolean;
 
     /**
      * Creates a PbxStatus instance.
@@ -51,6 +54,9 @@ export class PbxStatus {
      * @param ctiLinkState - Current CSTA link state
      * @param secured - Whether the PBX node is secured (SSH)
      * @param monitoredUserNumber - Number of monitored users on this PBX node
+     * @param ctiSecuredLink - Whether the CTI link with this PBX node is secured (O2G 2.8+)
+     * @param afeConnectionStatus - AFE connection status of this PBX node
+     * @param afeRTIStatus - AFE RTI status of this PBX node
      */
     private constructor(
         name?: string,
@@ -62,7 +68,10 @@ export class PbxStatus {
         loaded?: boolean,
         ctiLinkState?: CTILinkState,
         secured?: boolean,
-        monitoredUserNumber?: number
+        monitoredUserNumber?: number,
+        ctiSecuredLink?: boolean,
+        afeConnectionStatus?: boolean,
+        afeRTIStatus?: boolean
     ) {
         this.#name = name;
         this.#nodeId = nodeId;
@@ -74,6 +83,9 @@ export class PbxStatus {
         this.#ctiLinkState = ctiLinkState;
         this.#secured = secured;
         this.#monitoredUserNumber = monitoredUserNumber;
+        this.#ctiSecuredLink = ctiSecuredLink;
+        this.#afeConnectionStatus = afeConnectionStatus;
+        this.#afeRTIStatus = afeRTIStatus;
     }
 
     /**
@@ -158,6 +170,31 @@ export class PbxStatus {
     }
 
     /**
+     * Whether the CTI link between the O2G server and this PBX node is secured.
+     * @returns {boolean} True if secured, false otherwise
+     * @since O2G 2.8
+     */
+    get ctiSecuredLink(): boolean {
+        return this.#ctiSecuredLink ?? false;
+    }
+
+    /**
+     * Whether the connection between the O2G server and the AFE service (CCD) running on this PBX is established. 
+     * @returns {boolean} True if connected, false otherwise
+     */
+    get afeConnectionStatus(): boolean {
+        return this.#afeConnectionStatus ?? false;
+    }
+
+    /**
+     * AFE RTI status of this PBX node
+     * @returns {boolean} True if active, false otherwise
+     */
+    get afeRTIStatus(): boolean {
+        return this.#afeRTIStatus ?? false;
+    }
+
+    /**
      * Creates a PbxStatus instance from a JSON object.
      * @param json - JSON representation of a PBX node status
      * @returns {PbxStatus} A new PbxStatus instance
@@ -175,7 +212,10 @@ export class PbxStatus {
             json.loaded,
             json.ctiLinkState,
             json.secured,
-            json.monitoredUserNumber
+            json.monitoredUserNumber,
+            json.ctiSecuredLink,
+            json.afeConnectionStatus,
+            json.afeRTIStatus
         );
     }
 }

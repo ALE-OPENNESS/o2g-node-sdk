@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2026-10-26
+
+First release targeting O2G 2.8. The SDK minor version is incremented for each new O2G version supported (`2.5.x` targeted O2G 2.7.5).
+
+### Added
+
+- `Telephony.makePilotOrRSIConsultationCall(deviceId, pilot, pilotTransferMode, correlatorData, callProfile, loginName)` initiates a consultation call to a CCD pilot or RSI point with an explicit transfer mode, given by the new `PilotTransferMode` enum: `ForceSupervised` (the pilot performs call distribution), `ForceNotSupervised` (no distribution, so the call can be transferred whatever the agent availability) or `NotForced` (the pilot's own configuration decides). Requires O2G 2.8.
+- `Telephony.putDeviceInService(deviceId)` and `Telephony.putDeviceOutOfService(deviceId)`. The resulting state change is notified through `ON_DEVICE_STATE_MODIFIED` and `ON_USER_STATE_MODIFIED`. Requires O2G 2.8.
+- `Telephony.attachData()` accepts an optional fourth parameter `callProfile`, to associate a call profile (ACR skills) with an existing call. `correlatorData` may now be `null` when only a call profile is attached.
+- `CallCenterRealtime.ON_AGENT_POS_RTI_CHANGED` event (`OnAgentPOSRtiChanged`), delivered at the end of each statistic observation period with the time spent by a CCD agent in each phone state (`phoneStateDistribution`, or `getDuration(state)` for a single state).
+- `PartyInfoType.typeOfExternalNumber` indicates whether an external number is national or international, through the new `TypeOfNumber` enum; `null` for internal parties. Requires O2G 2.8.
+- `PbxStatus.ctiSecuredLink`, `PbxStatus.afeConnectionStatus` and `PbxStatus.afeRTIStatus`.
+- `CallCause.NETWORK_NOT_OBTAINABLE`.
+
+### Changed
+
+- When calling a pilot, `acdCall` is now only sent in the request when it carries something: a forced transfer mode or a call profile. With `NotForced` (or no mode) and no call profile, the request no longer contains an empty `acdCall` object.
+
+### Deprecated
+
+- `Telephony.makePilotOrRSISupervisedTransferCall()`: use `makePilotOrRSIConsultationCall()` with `PilotTransferMode.ForceSupervised`, which is exactly what the deprecated method now delegates to.
+
+### Removed
+
+- The `afeKey` getter on `OnAgentRtiChanged`, `OnPilotRtiChanged`, `OnQueueRtiChanged`, `OnAgentProcessingGroupRtiChanged` and `OnOtherProcessingGroupRtiChanged`. Code reading `event.afeKey` no longer compiles under TypeScript and gets `undefined` in JavaScript.
+
+### Fixed
+
+- `Telephony.attachData()` serialized the call profile with `JSON.stringify` directly. `CallProfile` keeps its skills in a private (`#`) field, which `JSON.stringify` ignores, so the server always received `skills: {}`. The profile is now serialized with `toJson()`, as `makePilotOrRSIConsultationCall()` already did.
+
 ## [2.5.12] - 2026-08-08
 
 ### Fixed

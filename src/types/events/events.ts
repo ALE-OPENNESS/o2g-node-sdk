@@ -26,6 +26,7 @@ import {
 } from '../cc-agent/cc-agent-events';
 import { OnPilotCallCreated, OnPilotCallQueued, OnPilotCallRemoved } from '../cc-pilot/cc-pilot-events';
 import {
+    OnAgentPOSRtiChanged,
     OnAgentProcessingGroupRtiChanged,
     OnAgentRtiChanged,
     OnOtherProcessingGroupRtiChanged,
@@ -173,6 +174,7 @@ export interface EventMap {
     OnPGOtherRtiChanged: OnOtherProcessingGroupRtiChanged;
     OnPilotRtiChanged: OnPilotRtiChanged;
     OnQueueRtiChanged: OnQueueRtiChanged;
+    OnAgentPOSRtiChanged: OnAgentPOSRtiChanged;
 
     // callCenterStatistics
     OnAcdStatsProgress: OnAcdStatsProgress;

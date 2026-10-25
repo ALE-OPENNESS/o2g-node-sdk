@@ -118,7 +118,7 @@ export type OnAgentRtiChangedJson = {
     currentPG?: string;
     associatedSet?: string;
     withdrawReason?: number;
-    afeKey?: number;
+    afeKey: number;
 };
 
 /** @internal */
@@ -142,7 +142,7 @@ export type OnPilotRtiChangedJson = {
     worstEfficiencyInList?: number;
     bestServiceLevelInList?: number;
     bestEfficiencyInList?: number;
-    afeKey?: number;
+    afeKey: number;
 };
 
 /** @internal */
@@ -159,7 +159,7 @@ export type OnQueueRtiChangedJson = {
     fillingRate?: number;
     expectedWaitingTime?: number;
     longestWaitingTimeInList?: number;
-    afeKey?: number;
+    afeKey: number;
 };
 
 /** @internal */
@@ -191,7 +191,7 @@ export type OnAgentProcessingGroupRtiChangedJson = {
     pilotsBestServiceLevel?: number;
     pilotsBestEfficiency?: number;
     queuesLongestWaitingTime?: number;
-    afeKey?: number;
+    afeKey: number;
 };
 
 /** @internal */
@@ -215,5 +215,22 @@ export type OnOtherProcessingGroupRtiChangedJson = {
     incomingTraffic?: number;
 
     /** CCD key of the object */
-    afeKey?: number;
+    afeKey: number;
+};
+
+/** @internal */
+export type AgentPOSPhoneStateRatioJson = {
+    state: AgentPhoneState,
+    duration: number
+}
+
+
+/** @internal */
+export type OnAgentPOSRtiChangedJson = {
+    name: string;
+    firstName?: string;
+    number: string;
+    node: number;
+    afeKey: number;
+    phoneStateRatio: AgentPOSPhoneStateRatioJson[]
 };

@@ -62,6 +62,12 @@ export enum CallCause {
     DESTINATION_NOT_OBTAINABLE = 'DESTINATION_NOT_OBTAINABLE',
 
     /**
+     * The network cannot be reached.
+     * @since O2G 2.8
+     */
+    NETWORK_NOT_OBTAINABLE = 'NETWORK_NOT_OBTAINABLE',
+
+    /**
      * The device is in DND.
      **/
     DO_NOT_DISTURB = 'DO_NOT_DISTURB',
@@ -103,7 +109,7 @@ export enum CallCause {
 
     /**
      * The call has been put in wait state.
-     * @since 2.7.4
+     * @since O2G 2.7.4
      */
     CAMP_ON = 'CAMP_ON',
 
