@@ -90,13 +90,6 @@ The deprecated method keeps its behaviour: it delegates with `ForceSupervised`.
 - `PbxStatus.ctiSecuredLink`, `afeConnectionStatus`, `afeRTIStatus`.
 - `CallCause.NETWORK_NOT_OBTAINABLE`.
 
-### Breaking: `afeKey` removed from real-time events
-
-The `afeKey` getter no longer exists on `OnAgentRtiChanged`, `OnPilotRtiChanged`,
-`OnQueueRtiChanged`, `OnAgentProcessingGroupRtiChanged` and
-`OnOtherProcessingGroupRtiChanged`. Code reading it no longer compiles under
-TypeScript and reads `undefined` in JavaScript.
-
 See the [CHANGELOG](CHANGELOG.md) for the full list.
 
 ---
@@ -879,10 +872,6 @@ O2G.initialize("MyApp", O2GServers.Builder
     .primaryHost(new Host("10.0.0.1"))
     .build());
 ```
-
-## API Reference
-
-- [O2G REST API Reference](https://api.dspp.al-enterprise.com/o2g/)
 
 ## Versioning
 
