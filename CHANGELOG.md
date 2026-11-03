@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.1] - 2026-11-03
+
+### Security
+
+- Bumped `undici` to `^7.30.1` to fix high-severity advisories in `7.0.0 - 7.30.0`, including TLS certificate validation bypasses (dropped TLS options in `Agent` and connect options in `BalancedPool`) that affect the SDK's TLS connections to O2G servers, plus TLS 1.2 renegotiation DoS and response splitting/desync issues. Stays on the 7.x line (no breaking change).
+- Bumped `adm-zip` to `^0.6.1` to fix high-severity advisories in `<=0.6.0` (zip-bomb memory allocation, symlink-based arbitrary file overwrite, SUID/SGID preservation and related DoS). This is a `adm-zip` major bump.
+
 ## [2.6.0] - 2026-10-26
 
 First release targeting O2G 2.8. The SDK minor version is incremented for each new O2G version supported (`2.5.x` targeted O2G 2.7.5).
