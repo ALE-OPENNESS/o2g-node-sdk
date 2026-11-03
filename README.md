@@ -54,6 +54,23 @@ await O2G.telephony.makeCall("1234", "5678");
 await O2G.shutdown();
 ```
 
+## What's New in 2.6.1
+
+Security maintenance release — no API change.
+
+- `undici` bumped to `^7.30.1`, fixing high-severity advisories in `7.0.0 - 7.30.0`
+  that affect the SDK's TLS connections to O2G servers: certificate validation
+  bypasses (dropped TLS options in `Agent` / connect options in `BalancedPool`),
+  TLS 1.2 renegotiation DoS, and response splitting/desync. Stays on the 7.x line.
+- `adm-zip` bumped to `^0.6.1` (major), fixing high-severity advisories in
+  `<=0.6.0`: zip-bomb memory allocation, symlink-based arbitrary file overwrite,
+  SUID/SGID preservation and related DoS.
+
+`npm audit --omit=dev` reports 0 vulnerabilities. Run `npm install` to pick up the
+new versions. See the [CHANGELOG](CHANGELOG.md) for details.
+
+---
+
 ## What's New in 2.6.0
 
 Several features below require O2G 2.8; against an older server the call fails
